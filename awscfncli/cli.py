@@ -40,6 +40,7 @@ STATUS_TO_COLOR = {
     'UPDATE_ROLLBACK_FAILED': colorama.Fore.RED,
     'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': colorama.Fore.YELLOW,
     'UPDATE_ROLLBACK_COMPLETE': colorama.Fore.GREEN,
+    'UPDATE_FAILED': colorama.Fore.RED,
     'REVIEW_IN_PROGRESS': colorama.Fore.BLUE,
 }
 
