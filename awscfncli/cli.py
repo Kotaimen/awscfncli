@@ -141,16 +141,23 @@ def cli(ctx, config):
         template_body = f.read()
 
     # generate parameters
-    template_parameters = list(
-        {'ParameterKey': k, 'ParameterValue': normalize(v)}
-        for k, v in six.iteritems(config['Parameters'])
-    )
+
+    if 'Parameters' in config:
+        template_parameters = list(
+            {'ParameterKey': k, 'ParameterValue': normalize(v)}
+            for k, v in six.iteritems(config['Parameters'])
+        )
+    else:
+        template_parameters = []
 
     # generate tags
-    tags = list(
-        {'Key': k, 'Value': v}
-        for k, v in six.iteritems(config['Tags'])
-    )
+    if 'Tags' in config:
+        tags = list(
+            {'Key': k, 'Value': v}
+            for k, v in six.iteritems(config['Tags'])
+        )
+    else:
+        tags = []
 
     # set context object
     ctx.obj['region'] = config['Stack']['region']
