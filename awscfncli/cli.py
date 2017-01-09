@@ -5,15 +5,21 @@ from __future__ import with_statement
 
 """Simple CloudFormation Stack Management Tool"""
 
+import os
 import yaml
 import click
 import boto3
 import botocore.exceptions
 import time
 import threading
-import pprint
 import colorama
 import six
+import requests
+
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 __author__ = 'kotaimen'
 __date__ = '31/12/2016'
@@ -108,6 +114,62 @@ def normalize(v):
         return v
 
 
+_s3_client = boto3.client('s3')
+
+
+class S3TemplateLoader(object):
+    def __init__(self, bucket, key):
+        self._bucket = bucket
+        self._key = key
+
+    def load(self):
+        response = _s3_client.get_object(Bucket=self._bucket, Key=self._key)
+        if response:
+            return response['Body']
+
+
+class LocalTemplateLoader(object):
+    def __init__(self, filename):
+        self._filename = filename
+
+    def load(self):
+        with open(self._filename, 'r') as fp:
+            return fp.read()
+
+
+class URLTemplateLoader(object):
+    def __init__(self, url):
+        self._url = url
+
+    def load(self):
+        response = requests.get(self._url)
+        return response.content
+
+
+def load_template(template_uri):
+    o = urlparse(template_uri)
+
+    scheme = o.scheme
+    if scheme == 's3':
+        bucket = o.netloc
+        key = o.path.lstrip('/')
+
+        loader = S3TemplateLoader(bucket=bucket, key=key)
+
+    elif scheme == '':
+        filename = os.path.normpath(o.path)
+
+        loader = LocalTemplateLoader(filename=filename)
+
+    elif scheme in ['http', 'https']:
+        loader = URLTemplateLoader(url=template_uri)
+
+    else:
+        raise ValueError("Unknown Template URI '%s'." % template_uri)
+
+    return loader.load()
+
+
 #
 # Click CLI
 #
@@ -138,8 +200,12 @@ def cli(ctx, config):
 
     # load template
     # XXX: Add support for S3 template and automatic upload
-    with open(config['Stack']['template']) as f:
-        template_body = f.read()
+    try:
+        uri = config['Stack']['template']
+        template_body = load_template(uri)
+    except Exception as e:
+        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
+        raise
 
     # generate parameters
 
