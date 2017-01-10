@@ -7,7 +7,7 @@ __date__ = '04/01/2017'
 
 import time
 import click
-import boto3
+import botocore.exceptions
 import threading
 
 STATUS_TO_COLOR = {
@@ -20,7 +20,7 @@ STATUS_TO_COLOR = {
     'DELETE_IN_PROGRESS': dict(fg='white', dim=True),
     'DELETE_FAILED': dict(fg='red'),
     'DELETE_SKIPPED': dict(fg='white', dim=True),
-    'DELETE_COMPLETE': dict(fg='white', dim=True),
+    'DELETE_COMPLETE': dict(fg='green'),
     'UPDATE_IN_PROGRESS': dict(fg='yellow'),
     'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='green'),
     'UPDATE_COMPLETE': dict(fg='green'),
@@ -51,9 +51,14 @@ def tail_stack_events(stack,
             break
 
         # get all stack events, latest at latest_events
-        events = list(stack.events.all())
-        events.reverse()
-        event_count = len(events)
+        try:
+            events = list(stack.events.all())
+        except botocore.exceptions.ClientError as e:
+            click.echo(e.message)
+            break
+        else:
+            events.reverse()
+            event_count = len(events)
 
         for n, e in enumerate(events):
             # skip visited events
@@ -64,7 +69,7 @@ def tail_stack_events(stack,
 
             if first_run:
                 if latest_events > 0:
-                    if n < len(events) - latest_events:
+                    if n < event_count - latest_events:
                         continue
 
             click.echo(e.timestamp.strftime('%x %X'), nl=False)
@@ -87,11 +92,11 @@ def tail_stack_events(stack,
         time.sleep(check_interval)
 
 
-def tail_stack_events_daemon(stack,
-                             latest_events=5,
-                             event_limit=10000,
-                             time_limit=3600,
-                             check_interval=5):
+def start_tail_stack_events_daemon(stack,
+                                   latest_events=5,
+                                   event_limit=10000,
+                                   time_limit=3600,
+                                   check_interval=5):
     thread = threading.Thread(target=tail_stack_events,
                               args=(stack, latest_events, event_limit,
                                     time_limit, check_interval))

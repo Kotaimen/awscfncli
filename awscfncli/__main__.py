@@ -3,7 +3,7 @@
 __author__ = 'kotaimen'
 __date__ = '09/01/2017'
 
-from cli import cli
+from awscfncli.cli import cli
 
 if __name__ == '__main__':
     cli()
