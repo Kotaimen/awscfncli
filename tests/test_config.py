@@ -61,15 +61,10 @@ def test_load_stack_config_with_error(tmpdir):
     mock_config = \
         """
         Stack:
+          Region:               ap-northeast-1
           TemplateURL:          http://s3.amazonaws.com/example/example.template
-          Parameters:
-            ParameterKey1:      ParameterValue1
-            ParameterKey2:      ParameterValue2
-          Tags:
-            TagKey1:            TagValue1
-            TagKey2:            TagValue2
         """
-    path = tmpdir.join('config1.yml')
+    path = tmpdir.join('config.yml')
     path.write(mock_config)
 
     with pytest.raises(KeyError):
@@ -82,14 +77,9 @@ def test_load_stack_config_with_error(tmpdir):
         """
         Stack:
           StackName:            ExampleStack
-          Parameters:
-            ParameterKey1:      ParameterValue1
-            ParameterKey2:      ParameterValue2
-          Tags:
-            TagKey1:            TagValue1
-            TagKey2:            TagValue2
+          Region:               ap-northeast-1
         """
-    path = tmpdir.join('config2.yml')
+    path = tmpdir.join('config.yml')
     path.write(mock_config)
 
     with pytest.raises(KeyError):
@@ -102,16 +92,45 @@ def test_load_stack_config_with_error(tmpdir):
         """
         Stack:
           StackName:            ExampleStack
+          Region:               ap-northeast-1
           TemplateBody:         /example.template
           TemplateURL:          http://s3.amazonaws.com/example/example.template
-          Parameters:
-            ParameterKey1:      ParameterValue1
-            ParameterKey2:      ParameterValue2
-          Tags:
-            TagKey1:            TagValue1
-            TagKey2:            TagValue2
         """
-    path = tmpdir.join('config2.yml')
+    path = tmpdir.join('config.yml')
+    path.write(mock_config)
+
+    with pytest.raises(KeyError):
+        load_stack_config(path.strpath)
+
+    path.remove()
+
+    # Invalid parameter type
+    mock_config = \
+        """
+        Stack:
+          StackName:            ExampleStack
+          Region:               ap-northeast-1
+          TemplateBody:         /example.template
+          Parameters:           ErrorType
+        """
+    path = tmpdir.join('config.yml')
+    path.write(mock_config)
+
+    with pytest.raises(TypeError):
+        load_stack_config(path.strpath)
+
+    path.remove()
+
+    # Unknown parameter key
+    mock_config = \
+        """
+        Stack:
+          StackName:            ExampleStack
+          Region:               ap-northeast-1
+          TemplateBody:         /example.template
+          Unknown:              nobody
+        """
+    path = tmpdir.join('config.yml')
     path.write(mock_config)
 
     with pytest.raises(KeyError):

@@ -41,12 +41,14 @@ class StackConfig(object):
         self._props = kwargs
 
     def validate(self):
+        # Should have either 'TemplateBody' or 'TemplateURL'
         if not any(k in self._props for k in ('TemplateBody', 'TemplateURL')):
             raise KeyError('Should specify either TemplateBody or TemplateURL.')
 
         if all(k in self._props for k in ('TemplateBody', 'TemplateURL')):
             raise KeyError('Should not have both TemplateBody and TemplateURL.')
 
+        # Check type and requirement
         for k, (t, r) in self.STACK_CONFIG_DEF.items():
             v = self._props.get(k)
 
@@ -58,11 +60,17 @@ class StackConfig(object):
                 # if the value type does not match
                 raise TypeError('Type of "%s" should be "%s"' % (k, str(t)))
 
+        # Check unknown properties
+        for k in self._props:
+            if k not in self.STACK_CONFIG_DEF:
+                raise KeyError('Unknown property name "%s"' % k)
+
     def to_dict(self):
         self.validate()
 
         config = dict(self._props)
 
+        # Normalize parameter config
         params = []
         if 'Parameters' in config:
             params = list(
@@ -74,6 +82,7 @@ class StackConfig(object):
 
         config['Parameters'] = params
 
+        # Normalize tag config
         tags = []
         if 'Tags' in config:
             tags = list(
