@@ -71,7 +71,6 @@ class StackConfig(object):
         config = dict(self._props)
 
         # Normalize parameter config
-        params = []
         if 'Parameters' in config:
             params = list(
                 {'ParameterKey': k, 'ParameterValue': normalize(v)}
@@ -80,10 +79,9 @@ class StackConfig(object):
                     sorted(six.iteritems(config['Parameters']))))
             )
 
-        config['Parameters'] = params
+            config['Parameters'] = params
 
         # Normalize tag config
-        tags = []
         if 'Tags' in config:
             tags = list(
                 {'Key': k, 'Value': v}
@@ -92,7 +90,7 @@ class StackConfig(object):
                     sorted(six.iteritems(config['Tags']))))
             )
 
-        config['Tags'] = tags
+            config['Tags'] = tags
 
         return config
 
