@@ -54,7 +54,7 @@ def tail_stack_events(stack,
         try:
             events = list(stack.events.all())
         except botocore.exceptions.ClientError as e:
-            click.echo(e.message)
+            click.echo(str(e))
             break
         else:
             events.reverse()

@@ -29,7 +29,7 @@ def boto3_exception_handler(f):
         except (botocore.exceptions.ClientError,
                 botocore.exceptions.WaiterError) as e:
             click.echo(click.style('ERROR: ', fg='red', bold=True), nl=False)
-            click.echo(click.style('%s' % e.message, fg='red'))
+            click.echo(click.style(str(e), fg='red'))
         except KeyboardInterrupt as e:
             click.echo(click.style('Aborted.', fg='red'))
 
