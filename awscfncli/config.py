@@ -29,10 +29,11 @@ class StackConfig(object):
         self._props = kwargs
 
     def validate(self):
-        if ('TemplateBody' in self._props and 'TemplateURL' in self._props) or (
-                        'TemplateBody' not in self._props and 'TemplateURL' not in self._props):
-            # should have either TemplateBody or TemplateURL
+        if not any(k in self._props for k in ('TemplateBody', 'TemplateURL')):
             raise KeyError('Should specify either TemplateBody or TemplateURL.')
+
+        if all(k in self._props for k in ('TemplateBody', 'TemplateURL')):
+            raise KeyError('Should not have both TemplateBody and TemplateURL.')
 
         for k, (t, r) in self.STACK_CONFIG_DEF.items():
             v = self._props.get(k)
