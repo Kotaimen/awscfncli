@@ -3,13 +3,25 @@
 import six
 import yaml
 
+from collections import OrderedDict
+
 __author__ = 'kotaimen'
 __date__ = '09/01/2017'
+
+
+def normalize(v):
+    if isinstance(v, bool):
+        return 'true' if v else 'false'
+    elif isinstance(v, int):
+        return str(v)
+    else:
+        return v
 
 
 class StackConfig(object):
     STACK_CONFIG_DEF = {
         'StackName': (six.string_types, True),
+        'Region': (six.string_types, True),
         'TemplateBody': (six.string_types, False),
         'TemplateURL': (six.string_types, False),
         'Parameters': (dict, False),
@@ -22,7 +34,7 @@ class StackConfig(object):
         'OnFailure': (six.string_types, False),
         'StackPolicyBody': (six.string_types, False),
         'StackPolicyURL': (six.string_types, False),
-        'Tags': (dict, False)
+        'Tags': (dict, False),
     }
 
     def __init__(self, **kwargs):
@@ -40,15 +52,40 @@ class StackConfig(object):
 
             if r and not v:
                 # if the required key is missing
-                raise KeyError('Missing required property %s' % k)
+                raise KeyError('Missing required property "%s"' % k)
 
             if v and not isinstance(v, t):
                 # if the value type does not match
-                raise TypeError('Type of %s should be %s' % (k, str(t)))
+                raise TypeError('Type of "%s" should be "%s"' % (k, str(t)))
 
     def to_dict(self):
         self.validate()
-        return self._props
+
+        config = dict(self._props)
+
+        params = []
+        if 'Parameters' in config:
+            params = list(
+                {'ParameterKey': k, 'ParameterValue': normalize(v)}
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(config['Parameters']))))
+            )
+
+        config['Parameters'] = params
+
+        tags = []
+        if 'Tags' in config:
+            tags = list(
+                {'Key': k, 'Value': v}
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(config['Tags']))))
+            )
+
+        config['Tags'] = tags
+
+        return config
 
     @staticmethod
     def load_from_yaml(stack_config):

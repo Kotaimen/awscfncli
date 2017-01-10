@@ -12,7 +12,8 @@ def test_load_stack_config(tmpdir):
         """
         Stack:
           StackName:            ExampleStack
-          TemplateURL:         s3://example/example.template
+          Region:               ap-northeast-1
+          TemplateURL:          http://s3.amazonaws.com/example/example.template
           Parameters:
             ParameterKey1:      ParameterValue1
             ParameterKey2:      ParameterValue2
@@ -26,15 +27,28 @@ def test_load_stack_config(tmpdir):
 
     expected_value = {
         'StackName': 'ExampleStack',
-        'TemplateURL': 's3://example/example.template',
-        'Parameters': {
-            'ParameterKey1': 'ParameterValue1',
-            'ParameterKey2': 'ParameterValue2',
-        },
-        'Tags': {
-            'TagKey1': 'TagValue1',
-            'TagKey2': 'TagValue2'
-        }
+        'Region': 'ap-northeast-1',
+        'TemplateURL': 'http://s3.amazonaws.com/example/example.template',
+        'Parameters': [
+            {
+                'ParameterKey': 'ParameterKey1',
+                'ParameterValue': 'ParameterValue1',
+            },
+            {
+                'ParameterKey': 'ParameterKey2',
+                'ParameterValue': 'ParameterValue2',
+            }
+        ],
+        'Tags': [
+            {
+                'Key': 'TagKey1',
+                'Value': 'TagValue1'
+            },
+            {
+                'Key': 'TagKey2',
+                'Value': 'TagValue2'
+            }
+        ]
     }
 
     assert load_stack_config(path.strpath) == expected_value
@@ -47,7 +61,7 @@ def test_load_stack_config_with_error(tmpdir):
     mock_config = \
         """
         Stack:
-          TemplateURL:         s3://example/example.template
+          TemplateURL:          http://s3.amazonaws.com/example/example.template
           Parameters:
             ParameterKey1:      ParameterValue1
             ParameterKey2:      ParameterValue2
@@ -89,7 +103,7 @@ def test_load_stack_config_with_error(tmpdir):
         Stack:
           StackName:            ExampleStack
           TemplateBody:         /example.template
-          TemplateURL:          s3://example/example.template
+          TemplateURL:          http://s3.amazonaws.com/example/example.template
           Parameters:
             ParameterKey1:      ParameterValue1
             ParameterKey2:      ParameterValue2
