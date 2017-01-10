@@ -28,7 +28,6 @@ def boto3_exception_handler(f):
             return f(*args, **kwargs)
         except (botocore.exceptions.ClientError,
                 botocore.exceptions.WaiterError) as e:
-            click.echo(click.style('ERROR: ', fg='red', bold=True), nl=False)
             click.echo(click.style(str(e), fg='red'))
         except KeyboardInterrupt as e:
             click.echo(click.style('Aborted.', fg='red'))
@@ -36,21 +35,46 @@ def boto3_exception_handler(f):
     return wrapper
 
 
+def echo_pair(k, v=None, indent=0):
+    click.echo(click.style(' ' * indent + k, bold=True), nl=False)
+    if v is not None:
+        click.echo(v)
+    else:
+        click.echo('')
+
+
 def pretty_print_config(config):
-    click.echo(click.style('Region: ', bold=True), nl=False)
-    click.echo(config['Region'])
-    click.echo(click.style('StackName: ', bold=True), nl=False)
+    echo_pair('Region: ', config['Region'])
+    echo_pair('Stack Name: ', config['StackName'])
     click.echo(config['StackName'])
-    click.echo(click.style('Template: ', bold=True), nl=False)
     if 'TemplateBody' in config:
-        click.echo(os.path.abspath(config['TemplateBody']))
+        template = os.path.abspath(config['TemplateBody'])
     elif 'TemplateURL' in config:
-        click.echo(config['TemplateURL'])
+        template = config['TemplateURL']
+    else:
+        template = ''
+    echo_pair('Template: ', template)
 
 
-def pretty_print_stack(stack):
-    click.echo(click.style('StackId: ', bold=True), nl=False)
-    click.echo(stack.stack_id)
+def pretty_print_stack(stack, detail=0):
+    echo_pair('Stack ID: ', stack.stack_id)
+    if detail == 0:
+        return
+    echo_pair('Name: ', stack.stack_name)
+    echo_pair('Description: ', stack.description)
+    echo_pair('Status: ', stack.stack_status)
+    echo_pair('Status Reason: ', stack.stack_status_reason)
+    echo_pair('Created: ', stack.creation_time)
+    echo_pair('Capabilities: ', stack.capabilities)
+    echo_pair('Parameters:')
+    for p in stack.parameters:
+        echo_pair('%s: ' % p['ParameterKey'], p['ParameterValue'], indent=2)
+    echo_pair('Outputs:')
+    for o in stack.outputs:
+        echo_pair('%s: ' % o['OutputKey'], o['OutputValue'], indent=2)
+    echo_pair('Tags:')
+    for t in stack.tags:
+        echo_pair('%s: ' % t['Key'], t['Value'], indent=2)
 
 
 #
@@ -103,7 +127,7 @@ def deploy(ctx, config_file, no_wait, on_failure):
         'stack_create_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo('Stack deployment complete.')
+    click.echo(click.style('Stack deployment complete.', fg='green'))
 
 
 @cli.command()
@@ -130,29 +154,22 @@ def delete(ctx, config_file, no_wait):
     if no_wait:
         return
 
-    start_tail_stack_events_daemon(stack, latest_events=3)
+    start_tail_stack_events_daemon(stack, latest_events=2)
 
     waiter = boto3.client('cloudformation', region_name=region).get_waiter(
         'stack_delete_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo('Stack delete complete.')
+    click.echo(click.style('Stack delete complete.', fg='green'))
 
 
 @cli.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait/--wait', default=False,
               help='Wait and print stack events until stack delete is complete.')
-@click.option('--on-failure',
-              type=click.Choice(['DO_NOTHING', 'ROLLBACK', 'DELETE']),
-              default=None,
-              help='Determines what action will be taken if stack creation '
-                   'fails. This must be one of: DO_NOTHING, ROLLBACK, or '
-                   'DELETE. NOTE set this option overwrites "OnFailure" '
-                   'in the stack configuration file.')
 @click.pass_context
 @boto3_exception_handler
-def update(ctx, config_file, no_wait, on_failure):
+def update(ctx, config_file, no_wait):
     """Update the stack specified in the configuration file"""
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
@@ -162,11 +179,9 @@ def update(ctx, config_file, no_wait, on_failure):
     cfn = boto3.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
 
-    if on_failure is not None:
-        stack_config['OnFailure'] = on_failure
-
-    # delete this since stack.update() don't have this parameter
+    # remove unused parameters
     stack_config.pop('DisableRollback', None)
+    stack_config.pop('OnFailure', None)
 
     stack_id = stack.stack_id
     pretty_print_stack(stack)
@@ -176,13 +191,13 @@ def update(ctx, config_file, no_wait, on_failure):
     if no_wait:
         return
 
-    start_tail_stack_events_daemon(stack, latest_events=3)
+    start_tail_stack_events_daemon(stack, latest_events=2)
 
     waiter = boto3.client('cloudformation', region_name=region).get_waiter(
         'stack_update_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo('Stack update complete.')
+    click.echo(click.style('Stack update complete.', fg='greeen'))
 
 
 @cli.command()
@@ -229,3 +244,18 @@ def tail(ctx, config_file, timeout, events):
     stack = cfn.Stack(stack_config['StackName'])
 
     tail_stack_events(stack, latest_events=events, time_limit=timeout)
+
+
+@cli.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.pass_context
+@boto3_exception_handler
+def describe(ctx, config_file):
+    """Describe stack status, parmeter and output"""
+
+    stack_config = load_stack_config(config_file)
+
+    cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
+    stack = cfn.Stack(stack_config['StackName'])
+
+    pretty_print_stack(stack, detail=100)
