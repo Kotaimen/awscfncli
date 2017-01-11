@@ -133,14 +133,22 @@ CANNED_STACK_POLICIES = {
 #
 # Click CLI
 #
-@click.group(chain=False)
+@click.group()
 @click.pass_context
+@click.version_option()
 def cli(ctx):
-    """Simple CloudFormation Stack Management Tool"""
+    """Welcome to the CloudFormation Stack Management Command Line Interface."""
     ctx.obj = dict()
 
 
-@cli.command()
+@cli.group()
+@click.pass_context
+def stack(ctx):
+    """Stack commands"""
+    click.echo('CloudFormation Stack')
+
+
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait', is_flag=True, default=False,
               help='Wait and print stack events until stack delete is complete.')
@@ -206,7 +214,7 @@ def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
     click.echo(click.style('Stack deployment complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait', is_flag=True, default=False,
               help='Wait and print stack events until stack delete is complete.')
@@ -245,7 +253,7 @@ def delete(ctx, config_file, no_wait):
     click.echo(click.style('Stack delete complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait', is_flag=True, default=False,
               help='Wait and print stack events until stack delete is complete.')
@@ -330,7 +338,7 @@ def update(ctx, config_file, no_wait, use_previous_template,
     click.echo(click.style('Stack update complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.pass_context
 @boto3_exception_handler
@@ -355,7 +363,7 @@ def validate(ctx, config_file):
     click.echo('Template validation complete.')
 
 
-@cli.command()
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--timeout', '-t', type=click.IntRange(min=0, max=3600),
               default=300, help='wait time in seconds before exit')
@@ -376,7 +384,7 @@ def tail(ctx, config_file, timeout, events):
     tail_stack_events(stack, latest_events=events, time_limit=timeout)
 
 
-@cli.command()
+@stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.pass_context
 @boto3_exception_handler
