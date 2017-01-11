@@ -5,383 +5,395 @@ from __future__ import with_statement
 
 """Simple CloudFormation Stack Management Tool"""
 
+from functools import wraps
 import os
-import yaml
+
 import click
-import boto3
 import botocore.exceptions
-import time
-import threading
-import colorama
-import six
-import requests
+import boto3
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from .events import tail_stack_events, start_tail_stack_events_daemon
+from .config import load_stack_config
 
-__author__ = 'kotaimen'
-__date__ = '31/12/2016'
 
 #
 # Helpers
 #
+def boto3_exception_handler(f):
+    """Pretty print boto exceptions."""
 
-STATUS_TO_COLOR = {
-    'CREATE_IN_PROGRESS': colorama.Fore.YELLOW,
-    'CREATE_FAILED': colorama.Fore.RED,
-    'CREATE_COMPLETE': colorama.Fore.GREEN,
-    'ROLLBACK_IN_PROGRESS': colorama.Fore.YELLOW,
-    'ROLLBACK_FAILED': colorama.Fore.RED,
-    'ROLLBACK_COMPLETE': colorama.Fore.GREEN,
-    'DELETE_IN_PROGRESS': colorama.Fore.YELLOW,
-    'DELETE_FAILED': colorama.Fore.RED,
-    'DELETE_SKIPPED': colorama.Fore.YELLOW,
-    'DELETE_COMPLETE': colorama.Fore.GREEN,
-    'UPDATE_IN_PROGRESS': colorama.Fore.YELLOW,
-    'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': colorama.Fore.YELLOW,
-    'UPDATE_COMPLETE': colorama.Fore.GREEN,
-    'UPDATE_ROLLBACK_IN_PROGRESS': colorama.Fore.YELLOW,
-    'UPDATE_ROLLBACK_FAILED': colorama.Fore.RED,
-    'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': colorama.Fore.YELLOW,
-    'UPDATE_ROLLBACK_COMPLETE': colorama.Fore.GREEN,
-    'UPDATE_FAILED': colorama.Fore.RED,
-    'REVIEW_IN_PROGRESS': colorama.Fore.BLUE,
-}
-
-
-def tail_stack_events(client, stack_id, refresh_interval=5):
-    seen_events = set()
-
-    while True:
+    @wraps(f)
+    def wrapper(*args, **kwargs):
         try:
-            # XXX: Handle "next_token"
-            response = client.describe_stack_events(StackName=stack_id)
-        except botocore.exceptions.ClientError as e:
-            click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-            break
+            return f(*args, **kwargs)
+        except (botocore.exceptions.ClientError,
+                botocore.exceptions.WaiterError) as e:
+            click.echo(click.style(str(e), fg='red'))
+        except KeyboardInterrupt as e:
+            click.echo(click.style('Aborted.', fg='red'))
 
-        for e in reversed(response['StackEvents']):
-            if e['EventId'] in seen_events:
-                continue
-            seen_events.add(e['EventId'])
-
-            # datetime
-            timestamp = e['Timestamp'].strftime('%x %X')
-            click.echo('%s - ' % timestamp, nl=False)
-
-            # resource status
-            status = e['ResourceStatus']
-            click.echo(STATUS_TO_COLOR[status] +
-                       status + colorama.Fore.RESET, nl=False)
-
-            # resource id
-            click.echo(' - %(LogicalResourceId)s (%(ResourceType)s)' % e,
-                       nl=False)
-
-            # description
-            if 'ResourceStatusReason' in e:
-                click.echo(' - %(ResourceStatusReason)s' % e)
-            elif e['PhysicalResourceId']:
-                click.echo(' - %(PhysicalResourceId)s' % e)
-            else:
-                click.echo('')
-
-        time.sleep(refresh_interval)
+    return wrapper
 
 
-def tail_stack_events_daemon(client, stack_id):
-    thread = threading.Thread(target=tail_stack_events, args=(client, stack_id))
-    thread.daemon = True
-    thread.start()
-
-
-def echo_pair(key, msg=None, style=colorama.Style.BRIGHT):
-    click.echo(style + key + colorama.Style.RESET_ALL, nl=False)
-    if msg:
-        click.echo(msg)
+def echo_pair(k, v=None, indent=0):
+    click.echo(click.style(' ' * indent + k, bold=True), nl=False)
+    if v is not None:
+        click.echo(v)
     else:
         click.echo('')
 
 
-def normalize(v):
-    if isinstance(v, bool):
-        return 'true' if v else 'false'
-    elif isinstance(v, int):
-        return str(v)
+def pretty_print_config(config):
+    echo_pair('Region: ', config['Region'])
+    echo_pair('Stack Name: ', config['StackName'])
+    click.echo(config['StackName'])
+    if 'TemplateBody' in config:
+        template = os.path.abspath(config['TemplateBody'])
+    elif 'TemplateURL' in config:
+        template = config['TemplateURL']
     else:
-        return v
+        template = ''
+    echo_pair('Template: ', template)
 
 
-_s3_client = boto3.client('s3')
+def pretty_print_stack(stack, detail=0):
+    echo_pair('Stack ID: ', stack.stack_id)
+    if detail == 0:
+        return
+    echo_pair('Name: ', stack.stack_name)
+    echo_pair('Description: ', stack.description)
+    echo_pair('Status: ', stack.stack_status)
+    echo_pair('Status Reason: ', stack.stack_status_reason)
+    echo_pair('Created: ', stack.creation_time)
+    echo_pair('Capabilities: ', stack.capabilities)
+    echo_pair('Parameters:')
+    for p in stack.parameters:
+        echo_pair('%s: ' % p['ParameterKey'], p['ParameterValue'], indent=2)
+    echo_pair('Outputs:')
+    for o in stack.outputs:
+        echo_pair('%s: ' % o['OutputKey'], o['OutputValue'], indent=2)
+    echo_pair('Tags:')
+    for t in stack.tags:
+        echo_pair('%s: ' % t['Key'], t['Value'], indent=2)
 
 
-class S3TemplateLoader(object):
-    def __init__(self, bucket, key):
-        self._bucket = bucket
-        self._key = key
+CANNED_STACK_POLICIES = {
+    'ALLOW_ALL': '''
+{
+  "Statement" : [
+    {
+      "Effect" : "Allow",
+      "Action" : "Update:*",
+      "Principal": "*",
+      "Resource" : "*"
+    }
+  ]
+}
+''',
+    'ALLOW_MODIFY': '''
+{
+  "Statement" : [
+    {
+      "Effect" : "Deny",
+      "Action" : ["Update:Replace", "Update:Delete"]
+      "Principal": "*",
+      "Resource" : "*"
+    }
+  ]
+}
+''',
+    'DENY_DELETE': '''
+{
+  "Statement" : [
+    {
+      "Effect" : "Deny",
+      "Action" : "Update:Delete",
+      "Principal": "*",
+      "Resource" : "*"
+    }
+  ]
+}
+''',
+    'DENY_ALL': '''
+{
+  "Statement" : [
+    {
+      "Effect" : "Deny",
+      "Action" : "Update:*",
+      "Principal": "*",
+      "Resource" : "*"
+    }
+  ]
+}
+''',
 
-    def load(self):
-        response = _s3_client.get_object(Bucket=self._bucket, Key=self._key)
-        if response:
-            return response['Body']
-
-
-class LocalTemplateLoader(object):
-    def __init__(self, filename):
-        self._filename = filename
-
-    def load(self):
-        with open(self._filename, 'r') as fp:
-            return fp.read()
-
-
-class URLTemplateLoader(object):
-    def __init__(self, url):
-        self._url = url
-
-    def load(self):
-        response = requests.get(self._url)
-        return response.content
-
-
-def load_template(template_uri):
-    o = urlparse(template_uri)
-
-    scheme = o.scheme
-    if scheme == 's3':
-        bucket = o.netloc
-        key = o.path.lstrip('/')
-
-        loader = S3TemplateLoader(bucket=bucket, key=key)
-
-    elif scheme == '':
-        filename = os.path.normpath(o.path)
-
-        loader = LocalTemplateLoader(filename=filename)
-
-    elif scheme in ['http', 'https']:
-        loader = URLTemplateLoader(url=template_uri)
-
-    else:
-        raise ValueError("Unknown Template URI '%s'." % template_uri)
-
-    return loader.load()
+}
 
 
 #
 # Click CLI
 #
-@click.group(chain=False)
-@click.argument('config', type=click.File('r'))
+@click.group()
 @click.pass_context
-def cli(ctx, config):
-    """Simple CloudFormation Stack Management Tool
-
-    CONFIG - YAML stack configuration file:
-
-    \b
-        Stack:
-          template:     template/Ubuntu.template
-          region:       region
-          name:         stack_name
-        Tags:
-          tag_key1:      tag_value
-          tag_key2:      tag_value
-        Parameters:
-          param_key1:    param_value1
-          param_key2:    param_value2
-
-    """
+@click.version_option()
+def cli(ctx):
+    """Welcome to the CloudFormation Stack Management Command Line Interface."""
     ctx.obj = dict()
 
-    config = yaml.safe_load(config)
 
-    # load template
-    # XXX: Add support for S3 template and automatic upload
-    try:
-        uri = config['Stack']['template']
-        template_body = load_template(uri)
-    except Exception as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-        raise
-
-    # generate parameters
-
-    if 'Parameters' in config:
-        template_parameters = list(
-            {'ParameterKey': k, 'ParameterValue': normalize(v)}
-            for k, v in six.iteritems(config['Parameters'])
-        )
-    else:
-        template_parameters = []
-
-    # generate tags
-    if 'Tags' in config:
-        tags = list(
-            {'Key': k, 'Value': v}
-            for k, v in six.iteritems(config['Tags'])
-        )
-    else:
-        tags = []
-
-    # set context object
-    ctx.obj['region'] = config['Stack']['region']
-    ctx.obj['stack_name'] = config['Stack']['name']
-    ctx.obj['template_body'] = template_body
-    ctx.obj['template_parameters'] = template_parameters
-    ctx.obj['tags'] = tags
-
-    echo_pair('Stack Name: ', config['Stack']['name'])
-    echo_pair('Template Location: ', config['Stack']['template'])
-
-
-@cli.command()
+@cli.group()
 @click.pass_context
-def validate(ctx):
-    """Validate template specified in the config"""
-    click.echo('Validating stack...')
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-    try:
-        response = client.validate_template(
-            TemplateBody=ctx.obj['template_body'],
-        )
-    except botocore.exceptions.ClientError as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-    else:
-        click.echo('Validation complete.')
+def stack(ctx):
+    """Stack commands"""
+    click.echo('CloudFormation Stack')
 
 
-@cli.command()
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.option('--no-wait', is_flag=True, default=False,
+              help='Wait and print stack events until stack delete is complete.')
+@click.option('--on-failure',
+              type=click.Choice(['DO_NOTHING', 'ROLLBACK', 'DELETE']),
+              default=None,
+              help='Determines what action will be taken if stack creation '
+                   'fails. This must be one of: DO_NOTHING, ROLLBACK, or '
+                   'DELETE. Note setting this option overwrites "OnFailure" '
+                   'and "DisableRollback" in the stack configuration file.')
+@click.option('--canned-policy',
+              type=click.Choice(['ALLOW_MODIFY',
+                                 'DENY_DELETE', 'DENY_ALL', ]),
+              default=None,
+              help='Attach a predefined Stack Policy as StackPolicyBody when '
+                   'deploying the stack.  A Stack Policy controls whether '
+                   'change to stack resources are allowed during stack update.  '
+                   'Valid canned policy are: \b\n'
+                   'DENY_DELETE: Allows modify and replace, denys delete\n'
+                   'ALLOW_MODIFY: Allows modify, denys replace and delete\n'
+                   'DENY_ALL: Denys all updates\n'
+                   'Note setting this option overwrites "PolicyBody" and '
+                   '"PolicyURL" in the stack configuration file.')
 @click.pass_context
-def deploy(ctx):
-    """Deploy a new stack"""
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-
+@boto3_exception_handler
+def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
+    """Deploy a new stack using specified stack configuration file"""
+    # load config
+    stack_config = load_stack_config(config_file)
+    pretty_print_config(stack_config)
     click.echo('Deploying stack...')
-    try:
-        response = client.create_stack(
-            StackName=ctx.obj['stack_name'],
-            TemplateBody=ctx.obj['template_body'],
-            Parameters=ctx.obj['template_parameters'],
-            Capabilities=['CAPABILITY_IAM'],
-            OnFailure='DO_NOTHING',
-            Tags=ctx.obj['tags']
-        )
 
-        stack_id = response['StackId']
-        tail_stack_events_daemon(client, stack_id)
+    # option handling
+    if on_failure is not None:
+        stack_config.pop('DisableRollback', None)
+        stack_config['OnFailure'] = on_failure
 
-        waiter = client.get_waiter('stack_create_complete')
-        waiter.wait(StackName=ctx.obj['stack_name'])
-    except (botocore.exceptions.ClientError,
-            botocore.exceptions.WaiterError)  as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-    else:
-        click.echo('Stack creation complete.')
+    if canned_policy is not None:
+        stack_config.pop('StackPolicyURL', None)
+        stack_config['StackPolicyBody'] = CANNED_STACK_POLICIES[canned_policy]
+
+    # connect to cfn
+    region = stack_config.pop('Region')
+    cfn = boto3.resource('cloudformation', region_name=region)
+
+    # create stack
+    stack = cfn.create_stack(**stack_config)
+    stack_id = stack.stack_id
+    pretty_print_stack(stack)
+
+    # exit immediately
+    if no_wait:
+        return
+
+    # start event tailing
+    start_tail_stack_events_daemon(stack, latest_events=0)
+
+    # wait until update complete
+    waiter = boto3.client('cloudformation', region_name=region).get_waiter(
+        'stack_create_complete')
+    waiter.wait(StackName=stack_id)
+
+    click.echo(click.style('Stack deployment complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.option('--no-wait', is_flag=True, default=False,
+              help='Wait and print stack events until stack delete is complete.')
 @click.pass_context
-def update(ctx):
-    """Update existing stack"""
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-
-    click.echo('Updating stack...')
-    try:
-        response = client.update_stack(
-            StackName=ctx.obj['stack_name'],
-            TemplateBody=ctx.obj['template_body'],
-            Parameters=ctx.obj['template_parameters'],
-            Capabilities=['CAPABILITY_IAM'],
-            Tags=ctx.obj['tags']
-        )
-
-        stack_id = response['StackId']
-        tail_stack_events_daemon(client, stack_id)
-
-        waiter = client.get_waiter('stack_update_complete')
-        waiter.wait(StackName=ctx.obj['stack_name'])
-
-    except (botocore.exceptions.ClientError,
-            botocore.exceptions.WaiterError)  as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-    else:
-        click.echo('Stack update complete.')
-
-
-@cli.command()
-@click.pass_context
-def delete(ctx):
-    """Delete existing stack"""
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-
+@boto3_exception_handler
+def delete(ctx, config_file, no_wait):
+    """Delete the stack specified in the configuration file"""
+    # load config
+    stack_config = load_stack_config(config_file)
+    pretty_print_config(stack_config)
     click.echo('Deleting stack...')
-    try:
-        client.delete_stack(StackName=ctx.obj['stack_name'])
 
-        tail_stack_events_daemon(client, ctx.obj['stack_name'])
+    # connect co cfn
+    region = stack_config.pop('Region')
+    cfn = boto3.resource('cloudformation', region_name=region)
+    stack = cfn.Stack(stack_config['StackName'])
+    stack_id = stack.stack_id
 
-        waiter = client.get_waiter('stack_delete_complete')
-        waiter.wait(StackName=ctx.obj['stack_name'])
-    except (botocore.exceptions.ClientError,
-            botocore.exceptions.WaiterError)  as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-    else:
-        click.echo('Stack deletion complete.')
+    pretty_print_stack(stack)
+
+    # delte the stack
+    stack.delete()
+
+    # exit immediately
+    if no_wait:
+        return
+
+    # start event tailing
+    start_tail_stack_events_daemon(stack, latest_events=2)
+
+    # wait until delete complete
+    waiter = boto3.client('cloudformation', region_name=region).get_waiter(
+        'stack_delete_complete')
+    waiter.wait(StackName=stack_id)
+
+    click.echo(click.style('Stack delete complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.option('--no-wait', is_flag=True, default=False,
+              help='Wait and print stack events until stack delete is complete.')
+@click.option('--use-previous-template', is_flag=True, default=False,
+              help='Reuse the existing template that is associated with the '
+                   'stack that you are updating.')
+@click.option('--canned-policy',
+              type=click.Choice(['ALLOW_ALL', 'ALLOW_MODIFY',
+                                 'DENY_DELETE', 'DENY_ALL', ]),
+              default=None,
+              help='A predefined Stack Policy as StackPolicyBody when '
+                   'updating the stack.  A Stack Policy controls whether '
+                   'change to stack resources are allowed during stack update.  '
+                   'Valid canned policy are: \b\n'
+                   'ALLOW_ALL: Allows all updates\n'
+                   'DENY_DELETE: Allows modify and replace, denys delete\n'
+                   'ALLOW_MODIFY: Allows modify, denys replace and delete\n'
+                   'DENY_ALL: Denys all updates\n'
+                   'Note setting this option overwrites "PolicyBody" and '
+                   '"PolicyURL" in the stack configuration file.')
+@click.option('--override-policy',
+              type=click.Choice(['ALLOW_ALL', 'ALLOW_MODIFY',
+                                 'DENY_DELETE']),
+              default=None,
+              help='Temporary overriding stack policy during this update.'
+                   'Valid canned policy are: \b\n'
+                   'ALLOW_ALL: Allows all updates\n'
+                   'DENY_DELETE: Allows modify and replace, denys delete\n'
+                   'ALLOW_MODIFY: Allows modify, denys replace and delete\n')
 @click.pass_context
-def describe(ctx):
-    """Describe stack status, parameter and output"""
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-    try:
-        response = client.describe_stacks(StackName=ctx.obj['stack_name'])
-    except botocore.exceptions.ClientError as e:
-        click.echo(colorama.Fore.RED + e.message + colorama.Fore.RESET)
-    else:
-        for stack in response['Stacks']:
-            echo_pair('Stack ID: ', stack['StackId'])
-            echo_pair('Description: ', stack['Description'])
-            echo_pair('Status: ',
-                      STATUS_TO_COLOR[stack['StackStatus']] + \
-                      stack['StackStatus'] + colorama.Fore.RESET)
-            if 'Reason' in stack:
-                echo_pair('Reason: ', stack['StackStatusReason'])
-            if 'Parameters' in stack:
-                echo_pair('Parameters:')
-                for p in stack['Parameters']:
-                    echo_pair('  - %s: ' % p['ParameterKey'],
-                              p['ParameterValue'])
-            if 'Outputs' in stack:
-                echo_pair('Outputs:')
-                for o in stack['Outputs']:
-                    echo_pair('  - %s: ' % o['OutputKey'], o['OutputValue'])
+@boto3_exception_handler
+def update(ctx, config_file, no_wait, use_previous_template,
+           canned_policy, override_policy):
+    """Update the stack specified in the configuration file"""
+    # load config
+    stack_config = load_stack_config(config_file)
+    pretty_print_config(stack_config)
+    click.echo('Updating stack...')
+
+    # connect co cfn
+    region = stack_config.pop('Region')
+    cfn = boto3.resource('cloudformation', region_name=region)
+    stack = cfn.Stack(stack_config['StackName'])
+
+    # remove unused parameters
+    stack_config.pop('DisableRollback', None)
+    stack_config.pop('OnFailure', None)
+
+    # update parameters
+    if use_previous_template:
+        stack_config.pop('TemplateBody', None)
+        stack_config.pop('TemplateURL', None)
+        stack_config['UsePreviousTemplate'] = use_previous_template
+
+    if canned_policy is not None:
+        stack_config.pop('StackPolicyURL', None)
+        stack_config['StackPolicyBody'] = CANNED_STACK_POLICIES[canned_policy]
+
+    if override_policy is not None:
+        click.echo('Overriding stack policy during update...')
+        stack_config['StackPolicyDuringUpdateBody'] = \
+            CANNED_STACK_POLICIES[override_policy]
+
+    stack_id = stack.stack_id
+    pretty_print_stack(stack)
+
+    # update stack
+    stack.update(**stack_config)
+
+    # exit immediately
+    if no_wait:
+        return
+
+    # start event tailing
+    start_tail_stack_events_daemon(stack, latest_events=2)
+
+    # wait until update complete
+    waiter = boto3.client('cloudformation', region_name=region).get_waiter(
+        'stack_update_complete')
+    waiter.wait(StackName=stack_id)
+
+    click.echo(click.style('Stack update complete.', fg='green'))
 
 
-@cli.command()
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
 @click.pass_context
-def tail(ctx):
-    """Tail stack events (stop using CTRL+C) """
-    client = boto3.client(
-        'cloudformation',
-        region_name=ctx.obj['region']
-    )
-    tail_stack_events(client, ctx.obj['stack_name'], refresh_interval=15)
+@boto3_exception_handler
+def validate(ctx, config_file):
+    """Validate template specified in the config."""
+    click.echo('Validating template...')
+
+    stack_config = load_stack_config(config_file)
+
+    client = boto3.client('cloudformation')
+
+    if 'TemplateBody' in stack_config:
+        client.validate_template(
+            TemplateBody=stack_config['TemplateBody'],
+        )
+    elif 'TemplateURL' in stack_config:
+        client.validate_template(
+            TemplateURL=stack_config['TemplateURL'],
+        )
+    else:
+        assert False
+    click.echo('Template validation complete.')
+
+
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.option('--timeout', '-t', type=click.IntRange(min=0, max=3600),
+              default=300, help='wait time in seconds before exit')
+@click.option('--events', '-n', type=click.IntRange(min=0, max=100),
+              default=0,
+              help='number of latest stack events, 0 means fetch all'
+                   'stack events')
+@click.pass_context
+@boto3_exception_handler
+def tail(ctx, config_file, timeout, events):
+    """Print stack events and waiting for update (stop using CTRL+C) """
+
+    stack_config = load_stack_config(config_file)
+
+    cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
+    stack = cfn.Stack(stack_config['StackName'])
+
+    tail_stack_events(stack, latest_events=events, time_limit=timeout)
+
+
+@stack.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.pass_context
+@boto3_exception_handler
+def describe(ctx, config_file):
+    """Describe stack status, parmeter and output"""
+
+    stack_config = load_stack_config(config_file)
+
+    cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
+    stack = cfn.Stack(stack_config['StackName'])
+
+    pretty_print_stack(stack, detail=100)
