@@ -58,8 +58,8 @@ def pretty_print_config(config):
 
 def pretty_print_stack(stack, detail=0):
     echo_pair('Stack ID: ', stack.stack_id)
-    if detail == 0:
-        return
+
+    if detail == 0: return
     echo_pair('Name: ', stack.stack_name)
     echo_pair('Description: ', stack.description)
     echo_pair('Status: ', stack.stack_status)
@@ -79,6 +79,13 @@ def pretty_print_stack(stack, detail=0):
         for t in stack.tags:
             echo_pair('%s: ' % t['Key'], t['Value'], indent=2)
 
+    if detail <= 1: return
+    echo_pair('Resources:')
+    for r in stack.resource_summaries.all():
+        echo_pair('Logical ID: ', r.logical_resource_id, indent=2)
+        echo_pair('Type: ', r.resource_type, indent=4)
+        echo_pair('Physical ID: ', r.physical_resource_id, indent=4)
+        echo_pair('Last Updated: ', r.last_updated_timestamp, indent=4)
 
 CANNED_STACK_POLICIES = {
     'ALLOW_ALL': '''
@@ -399,4 +406,4 @@ def describe(ctx, config_file):
     cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
     stack = cfn.Stack(stack_config['StackName'])
 
-    pretty_print_stack(stack, detail=100)
+    pretty_print_stack(stack, detail=2)
