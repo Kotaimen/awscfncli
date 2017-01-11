@@ -98,7 +98,7 @@ CANNED_STACK_POLICIES = {
   "Statement" : [
     {
       "Effect" : "Deny",
-      "Action" : ["Update:Replace", "Update:Delete"]
+       "Action" : ["Update:Replace", "Update:Delete"],
       "Principal": "*",
       "Resource" : "*"
     }
