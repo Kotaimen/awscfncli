@@ -27,7 +27,7 @@ setup(
     name='awscfncli',
 
     # Version and description
-    version='0.1',
+    version='0.1.alpha',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -51,7 +51,7 @@ setup(
 
         'Operating System :: OS Independent',
 
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
 
         'Natural Language :: English',
 
