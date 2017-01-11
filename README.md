@@ -1,5 +1,7 @@
 # AWS CloudFormation CLI
 
+[![Build Status](https://travis-ci.org/Kotaimen/awscfncli.svg?branch=develop)](https://travis-ci.org/Kotaimen/awscfncli)
+
 Command Line Interface for AWS CloudFormation.
 
 ## Introduction
