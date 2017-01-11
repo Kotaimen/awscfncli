@@ -66,15 +66,18 @@ def pretty_print_stack(stack, detail=0):
     echo_pair('Status Reason: ', stack.stack_status_reason)
     echo_pair('Created: ', stack.creation_time)
     echo_pair('Capabilities: ', stack.capabilities)
-    echo_pair('Parameters:')
-    for p in stack.parameters:
-        echo_pair('%s: ' % p['ParameterKey'], p['ParameterValue'], indent=2)
-    echo_pair('Outputs:')
-    for o in stack.outputs:
-        echo_pair('%s: ' % o['OutputKey'], o['OutputValue'], indent=2)
-    echo_pair('Tags:')
-    for t in stack.tags:
-        echo_pair('%s: ' % t['Key'], t['Value'], indent=2)
+    if stack.parameters:
+        echo_pair('Parameters:')
+        for p in stack.parameters:
+            echo_pair('%s: ' % p['ParameterKey'], p['ParameterValue'], indent=2)
+    if stack.outputs:
+        echo_pair('Outputs:')
+        for o in stack.outputs:
+            echo_pair('%s: ' % o['OutputKey'], o['OutputValue'], indent=2)
+    if stack.tags:
+        echo_pair('Tags:')
+        for t in stack.tags:
+            echo_pair('%s: ' % t['Key'], t['Value'], indent=2)
 
 
 CANNED_STACK_POLICIES = {
