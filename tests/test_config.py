@@ -14,9 +14,12 @@ def test_load_stack_config(tmpdir):
           StackName:            ExampleStack
           Region:               ap-northeast-1
           TemplateURL:          http://s3.amazonaws.com/example/example.template
+          DisableRollback:      True
+          TimeoutInMinutes:     10
           Parameters:
             ParameterKey1:      ParameterValue1
-            ParameterKey2:      ParameterValue2
+            ParameterKey2:      True
+            ParameterKey3:      10
           Tags:
             TagKey1:            TagValue1
             TagKey2:            TagValue2
@@ -29,6 +32,8 @@ def test_load_stack_config(tmpdir):
         'StackName': 'ExampleStack',
         'Region': 'ap-northeast-1',
         'TemplateURL': 'http://s3.amazonaws.com/example/example.template',
+        'DisableRollback': True,
+        'TimeoutInMinutes': 10,
         'Parameters': [
             {
                 'ParameterKey': 'ParameterKey1',
@@ -36,7 +41,11 @@ def test_load_stack_config(tmpdir):
             },
             {
                 'ParameterKey': 'ParameterKey2',
-                'ParameterValue': 'ParameterValue2',
+                'ParameterValue': 'true',
+            },
+            {
+                'ParameterKey': 'ParameterKey3',
+                'ParameterValue': '10',
             }
         ],
         'Tags': [
