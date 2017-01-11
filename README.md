@@ -1,17 +1,46 @@
 # AWS CloudFormation CLI
+
 Command Line Interface for AWS CloudFormation.
 
 ## Introduction
-`cfn-cli` is a simple CLI tool that helps deploy and manage AWS CloudFormation stacks.
-If you want a flow and project management tool, try [`cfn-flow`](https://github.com/kickstarter/cfn-flow/blob/master/README.md).
+`awscfncli` is a simple CLI tool that helps you manage AWS CloudFormation 
+stacks.  
 
-To view a list of commands, type:
+Features:
+- `awscli` a-like CLI interface.
+- Simple `YAML` stack configuration file.
+- Tracking stack events in the CLI.
+
+<img width="981" alt="Sample Image" src="https://cdn.knrdesign.co/dist/awscfncli/Screen Shot 2017-01-11 at 13.53.32.png">
+
+Usage:
     
-    cfn --help
+    cfn COMMAND SUBCOMMAND STACK_CONFIG [ARGS]...
 
-To view help of a specific command, type:
+Currently the only supported `COMMAND` is `stack`.
 
-    cfn command --help
+To view a list of available subcommands, type:
+
+	cfn stack --help
+
+To view help of a particular subcommand, type:
+    
+	cfn stack SUBCOMMAND --help
+
+
+`STACK_CONFIG` is a simple `YAML` file descripbes stack deploy parameters:
+
+```yaml
+Stack:
+  Region:               us-east-1
+  StackName:            SampleIAMUsersGroupsAndPolicies
+  TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+  Capabilities:         [CAPABILITY_IAM]
+  Parameters:
+	Password:           bob180180180
+  Tags:
+	project:            Bob
+```
 
 ## Install
 
@@ -21,7 +50,7 @@ TODO (pip?)
 
 Check `boto3` configution document [here](https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration).
 
-## Stack Configuration
+## Stack Configuration Format
 
 The stack configuration is a YAML file that specifies the runtime parameters of
 a AWS CloudFormation template.
@@ -66,22 +95,7 @@ mapping:
 	    type: str
 	  "Tags":
 	    type: map
-
 ```
 
 For more information about parameter values, please refer to 
 [Boto3 CloudFormation CreateStack](http://boto3.readthedocs.io/en/latest/reference/services/cloudformation.html#CloudFormation.ServiceResource.create_stack). 
-
-Here is a sample configure that create a `ExampleBucket` Stack using amazon sample
-template:
-	
-```yaml
-Stack:
-  StackName:              ExampleBucket
-  Region:                 ap-northeast-1
-  TemplateURL:            "https://s3-ap-northeast-1.amazonaws.com/cloudformation-templates-ap-northeast-1/S3_Website_Bucket_With_Retain_On_Delete.template"
-
-  Tags:
-    project:              demo
-```
-	
