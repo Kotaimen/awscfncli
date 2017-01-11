@@ -19,15 +19,13 @@ Usage:
     
     cfn COMMAND SUBCOMMAND STACK_CONFIG [ARGS]...
 
-Currently the only supported `COMMAND` is `stack`.
-
 To view a list of available subcommands, type:
 
-	cfn stack --help
+	cfn COMMAND --help
 
 To view help of a particular subcommand, type:
     
-	cfn stack SUBCOMMAND --help
+	cfn COMMAND SUBCOMMAND --help
 
 
 `STACK_CONFIG` is a simple `YAML` file descripbes stack deploy parameters:
