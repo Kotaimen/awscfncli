@@ -8,8 +8,35 @@ __date__ = '03/01/2017'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(here, 'README.md')) as f:
-    long_description = f.read()
+long_description = """
+
+AWS CloudFormation CLI
+**********************
+
+Introduction
+============
+
+``awscfncli`` is a simple CLI tool that helps you manage AWS CloudFormation stacks.
+
+Features:
+
+* awscli a-like CLI interface.
+* Simple YAML stack configuration file.
+* Tracking stack events in the CLI.
+
+Usage::
+
+    cfn COMMAND SUBCOMMAND STACK_CONFIG [ARGS]...
+
+To view a list of available subcommands, type::
+
+    cfn COMMAND --help
+
+To view help of a particular subcommand, type::
+
+    cfn COMMAND SUBCOMMAND --help
+
+"""
 
 install_requires = [
     'six>=1.10.0',
@@ -27,7 +54,7 @@ setup(
     name='awscfncli',
 
     # Version and description
-    version='0.1.alpha',
+    version='0.1a0',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 

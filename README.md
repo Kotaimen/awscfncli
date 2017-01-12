@@ -21,25 +21,26 @@ Usage:
 
 To view a list of available subcommands, type:
 
-	cfn COMMAND --help
+    cfn COMMAND --help
 
 To view help of a particular subcommand, type:
     
-	cfn COMMAND SUBCOMMAND --help
+    cfn COMMAND SUBCOMMAND --help
 
 
 `STACK_CONFIG` is a simple `YAML` file descripbes stack deploy parameters:
 
 ```yaml
+
 Stack:
   Region:               us-east-1
   StackName:            SampleIAMUsersGroupsAndPolicies
   TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
   Capabilities:         [CAPABILITY_IAM]
   Parameters:
-	Password:           bob180180180
+    Password:           bob180180180
   Tags:
-	project:            Bob
+    project:            Bob
 ```
 
 ## Install
@@ -58,17 +59,18 @@ a AWS CloudFormation template.
 The definition of config scheme is as follows:
 
 ```yaml
+
 type: map
 mapping:
   "Stack":
     type: map
     mapping:
-	  "StackName":
-	    type: str
-	    required: yes
-	  "Region":
-	    type: str
-	    required: yes
+      "StackName":
+        type: str
+        required: yes
+      "Region":
+        type: str
+        required: yes
 	  "TemplateBody":
 	    type: str
 	  "TemplateURL":
@@ -86,15 +88,16 @@ mapping:
 	  "ResourceTypes":
 	    type: seq
 	  "RoleARN":
+        type: str
+      "OnFailure":
+        type: str
+      "StackPolicyBody":
 	    type: str
-	  "OnFailure":
-	    type: str
-	  "StackPolicyBody":
-	    type: str
-	  "StackPolicyURL":
-	    type: str
-	  "Tags":
+      "StackPolicyURL":
+        type: str
+      "Tags":
 	    type: map
+
 ```
 
 For more information about parameter values, please refer to 
