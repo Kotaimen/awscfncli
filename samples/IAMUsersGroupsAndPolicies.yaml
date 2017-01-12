@@ -1,0 +1,9 @@
+Stack:
+  Region:               us-east-1
+  StackName:            IAMUsersGroupsAndPolicies
+  TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+  Capabilities:         [CAPABILITY_IAM]
+  Parameters:
+    Password:           bob180180180@
+  Tags:
+    project:            Bob
