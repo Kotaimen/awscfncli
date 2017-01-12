@@ -3,8 +3,8 @@
 __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
-from functools import wraps
 import os
+from functools import wraps
 
 import click
 import botocore.exceptions
@@ -53,7 +53,10 @@ def pretty_print_stack(stack, detail=0):
     if detail == 0: return
     echo_pair('Name: ', stack.stack_name)
     echo_pair('Description: ', stack.description)
-    echo_pair('Status: ', stack.stack_status)
+
+    click.echo(click.style('Status: ', bold=True), nl=False)
+    click.echo(click.style(stack.stack_status, **STATUS_TO_COLOR[stack.stack_status]))
+
     echo_pair('Status Reason: ', stack.stack_status_reason)
     echo_pair('Created: ', stack.creation_time)
     echo_pair('Capabilities: ', stack.capabilities)
@@ -129,4 +132,26 @@ CANNED_STACK_POLICIES = {
 }
 ''',
 
+}
+
+STATUS_TO_COLOR = {
+    'CREATE_IN_PROGRESS': dict(fg='yellow'),
+    'CREATE_FAILED': dict(fg='red'),
+    'CREATE_COMPLETE': dict(fg='green'),
+    'ROLLBACK_IN_PROGRESS': dict(fg='yellow'),
+    'ROLLBACK_FAILED': dict(fg='red'),
+    'ROLLBACK_COMPLETE': dict(fg='red'),
+    'DELETE_IN_PROGRESS': dict(fg='yellow'),
+    'DELETE_FAILED': dict(fg='red'),
+    'DELETE_SKIPPED': dict(fg='white', dim=True),
+    'DELETE_COMPLETE': dict(fg='white', dim=True),
+    'UPDATE_IN_PROGRESS': dict(fg='yellow'),
+    'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='green'),
+    'UPDATE_COMPLETE': dict(fg='green'),
+    'UPDATE_ROLLBACK_IN_PROGRESS': dict(fg='red'),
+    'UPDATE_ROLLBACK_FAILED': dict(fg='red'),
+    'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='red'),
+    'UPDATE_ROLLBACK_COMPLETE': dict(fg='green'),
+    'UPDATE_FAILED': dict(fg='red'),
+    'REVIEW_IN_PROGRESS': dict(fg='yellow', dim=True),
 }

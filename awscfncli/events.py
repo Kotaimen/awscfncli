@@ -10,28 +10,7 @@ import click
 import botocore.exceptions
 import threading
 
-STATUS_TO_COLOR = {
-    'CREATE_IN_PROGRESS': dict(fg='yellow'),
-    'CREATE_FAILED': dict(fg='red'),
-    'CREATE_COMPLETE': dict(fg='green'),
-    'ROLLBACK_IN_PROGRESS': dict(fg='yellow'),
-    'ROLLBACK_FAILED': dict(fg='red'),
-    'ROLLBACK_COMPLETE': dict(fg='green'),
-    'DELETE_IN_PROGRESS': dict(fg='yellow'),
-    'DELETE_FAILED': dict(fg='red'),
-    'DELETE_SKIPPED': dict(fg='white', dim=True),
-    'DELETE_COMPLETE': dict(fg='white', dim=True),
-    'UPDATE_IN_PROGRESS': dict(fg='yellow'),
-    'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='green'),
-    'UPDATE_COMPLETE': dict(fg='green'),
-    'UPDATE_ROLLBACK_IN_PROGRESS': dict(fg='red'),
-    'UPDATE_ROLLBACK_FAILED': dict(fg='red'),
-    'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='red'),
-    'UPDATE_ROLLBACK_COMPLETE': dict(fg='green'),
-    'UPDATE_FAILED': dict(fg='red'),
-    'REVIEW_IN_PROGRESS': dict(fg='yellow', dim=True),
-}
-
+from .commands.utils import STATUS_TO_COLOR
 
 def tail_stack_events(stack,
                       latest_events=5,
