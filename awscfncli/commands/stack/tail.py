@@ -9,7 +9,7 @@ import click
 from ..utils import boto3_exception_handler
 from ...cli import stack
 from ...config import load_stack_config
-from ...events import tail_stack_events
+from .events import tail_stack_events
 
 
 @stack.command()
@@ -23,7 +23,10 @@ from ...events import tail_stack_events
 @click.pass_context
 @boto3_exception_handler
 def tail(ctx, config_file, timeout, events):
-    """Print stack events and waiting for update (stop using CTRL+C) """
+    """Print stack events and waiting for update (stop using CTRL+C)
+
+    CONFIG_FILE         Stack configuration file.
+    """
 
     stack_config = load_stack_config(config_file)
 

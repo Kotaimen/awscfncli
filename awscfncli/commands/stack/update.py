@@ -10,7 +10,7 @@ from ..utils import boto3_exception_handler, pretty_print_config, \
     pretty_print_stack, CANNED_STACK_POLICIES
 from ...cli import stack
 from ...config import load_stack_config
-from ...events import start_tail_stack_events_daemon
+from .events import start_tail_stack_events_daemon
 
 
 @stack.command()
@@ -47,7 +47,10 @@ from ...events import start_tail_stack_events_daemon
 @boto3_exception_handler
 def update(ctx, config_file, no_wait, use_previous_template,
            canned_policy, override_policy):
-    """Update the stack specified in the configuration file"""
+    """Update the stack specified in the configuration file
+
+    CONFIG_FILE         Stack configuration file.
+    """
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)

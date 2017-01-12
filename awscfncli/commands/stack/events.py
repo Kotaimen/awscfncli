@@ -10,7 +10,7 @@ import click
 import botocore.exceptions
 import threading
 
-from .commands.utils import STATUS_TO_COLOR
+from ..utils import STATUS_TO_COLOR
 
 def tail_stack_events(stack,
                       latest_events=5,
