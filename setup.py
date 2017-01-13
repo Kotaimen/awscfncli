@@ -99,6 +99,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        cfn=awscfncli:cli
+        cfn=awscfncli.__main__:main
     ''',
 )

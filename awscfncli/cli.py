@@ -6,11 +6,15 @@ from __future__ import with_statement
 """Simple CloudFormation Stack Management Tool"""
 
 import click
+import pkg_resources
+
+MODULE_NAME = 'awscfncli'
+VERSION = pkg_resources.require(MODULE_NAME)[0].version
 
 
 @click.group()
 @click.pass_context
-@click.version_option()
+@click.version_option(version=VERSION)
 def cli(ctx):
     """Welcome to the CloudFormation Stack Management Command Line Interface."""
     ctx.obj = dict()
@@ -35,4 +39,3 @@ def template(ctx):
 def changeset(ctx):
     """CloudFormation Changeset commands"""
     pass
-
