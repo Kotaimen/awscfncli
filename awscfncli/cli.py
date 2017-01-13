@@ -33,6 +33,6 @@ def template(ctx):
 @cli.group()
 @click.pass_context
 def changeset(ctx):
-    """CloudFormation Changeset commands"""
+    """CloudFormation ChangeSet commands"""
     pass
 
