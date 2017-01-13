@@ -19,7 +19,9 @@ from ...config import load_stack_config
 def describe(ctx, config_file, detail):
     """Describe stack status, parmeter and output
 
+    \b
     CONFIG_FILE         Stack configuration file.
+    CHANGESET_NAME      The name of the change set.
     """
 
     stack_config = load_stack_config(config_file)

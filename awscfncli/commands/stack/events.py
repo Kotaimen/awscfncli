@@ -10,7 +10,7 @@ import click
 import botocore.exceptions
 import threading
 
-from ..utils import STATUS_TO_COLOR
+from ..utils import STACK_STATUS_TO_COLOR
 
 def tail_stack_events(stack,
                       latest_events=5,
@@ -54,7 +54,7 @@ def tail_stack_events(stack,
             click.echo(e.timestamp.strftime('%x %X'), nl=False)
             click.echo(' - ', nl=False)
             click.echo(click.style(e.resource_status,
-                                   **STATUS_TO_COLOR[e.resource_status]),
+                                   **STACK_STATUS_TO_COLOR[e.resource_status]),
                        nl=False)
             click.echo(' - %s(%s)' % (e.logical_resource_id, e.resource_type),
                        nl=False)
