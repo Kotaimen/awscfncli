@@ -6,11 +6,11 @@ __date__ = '11/01/2017'
 import boto3
 import click
 
-from ..utils import boto3_exception_handler, pretty_print_config, \
-    pretty_print_stack
 from ...cli import stack
 from ...config import load_stack_config
-from ...events import start_tail_stack_events_daemon
+from ..utils import boto3_exception_handler, pretty_print_config, \
+    pretty_print_stack
+from .events import start_tail_stack_events_daemon
 
 
 @stack.command()
@@ -20,7 +20,10 @@ from ...events import start_tail_stack_events_daemon
 @click.pass_context
 @boto3_exception_handler
 def delete(ctx, config_file, no_wait):
-    """Delete the stack specified in the configuration file"""
+    """Delete the stack specified in the configuration file
+
+    CONFIG_FILE         Stack configuration file.
+    """
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)

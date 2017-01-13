@@ -12,3 +12,8 @@ from .commands.stack.update import update
 from .commands.stack.delete import delete
 from .commands.stack.describe import describe
 from .commands.stack.tail import tail
+
+from .commands.changeset.create import create
+from .commands.changeset.describe import describe
+from .commands.changeset.list_ import list_
+from .commands.changeset.execute import execute

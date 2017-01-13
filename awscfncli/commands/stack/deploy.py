@@ -7,10 +7,10 @@ import boto3
 import click
 
 from ...cli import stack
-from ...events import tail_stack_events, start_tail_stack_events_daemon
 from ...config import load_stack_config
 from ..utils import boto3_exception_handler, pretty_print_config, \
     pretty_print_stack, CANNED_STACK_POLICIES
+from .events import tail_stack_events, start_tail_stack_events_daemon
 
 
 @stack.command()
@@ -40,7 +40,10 @@ from ..utils import boto3_exception_handler, pretty_print_config, \
 @click.pass_context
 @boto3_exception_handler
 def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
-    """Deploy a new stack using specified stack configuration file"""
+    """Deploy a new stack using specified stack configuration file
+
+    CONFIG_FILE         Stack configuration file.
+    """
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)

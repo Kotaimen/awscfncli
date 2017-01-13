@@ -13,14 +13,20 @@ from ...config import load_stack_config
 
 @stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
+@click.option('--detail', default=1, type=click.IntRange(min=0,max=2))
 @click.pass_context
 @boto3_exception_handler
-def describe(ctx, config_file):
-    """Describe stack status, parmeter and output"""
+def describe(ctx, config_file, detail):
+    """Describe stack status, parmeter and output
+
+    \b
+    CONFIG_FILE         Stack configuration file.
+    CHANGESET_NAME      The name of the change set.
+    """
 
     stack_config = load_stack_config(config_file)
 
     cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
     stack = cfn.Stack(stack_config['StackName'])
 
-    pretty_print_stack(stack, detail=2)
+    pretty_print_stack(stack, detail=detail)

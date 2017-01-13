@@ -16,7 +16,10 @@ from ..utils import boto3_exception_handler
 @click.pass_context
 @boto3_exception_handler
 def validate(ctx, config_file):
-    """Validate template specified in the config."""
+    """Validate template specified in the config.
+
+    CONFIG_FILE         Stack configuration file.
+    """
     click.echo('Validating template...')
 
     stack_config = load_stack_config(config_file)
