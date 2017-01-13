@@ -24,17 +24,7 @@ Features:
 * Simple YAML stack configuration file.
 * Tracking stack events in the CLI.
 
-Usage::
-
-    cfn COMMAND SUBCOMMAND STACK_CONFIG [ARGS]...
-
-To view a list of available subcommands, type::
-
-    cfn COMMAND --help
-
-To view help of a particular subcommand, type::
-
-    cfn COMMAND SUBCOMMAND --help
+For more information, please refer to: `GitHub Kotaimen/awscfncli<https://github.com/Kotaimen/awscfncli>`_
 
 """
 
@@ -99,6 +89,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        cfn=awscfncli:cli
+        cfn=awscfncli.__main__:main
     ''',
 )
