@@ -17,7 +17,7 @@ from ...config import load_stack_config
 @click.pass_context
 @boto3_exception_handler
 def describe(ctx, config_file, detail):
-    """Describe stack status, parmeter and output
+    """Describe stack status, parameter and output
 
     \b
     CONFIG_FILE         Stack configuration file.

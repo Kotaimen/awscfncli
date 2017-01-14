@@ -24,7 +24,7 @@ Features:
 * Simple YAML stack configuration file.
 * Tracking stack events in the CLI.
 
-For more information, please refer to: `GitHub Kotaimen/awscfncli<https://github.com/Kotaimen/awscfncli>`_
+For more information, please refer to: `GitHub: https://github.com/Kotaimen/awscfncli <https://github.com/Kotaimen/awscfncli>`_
 
 """
 
