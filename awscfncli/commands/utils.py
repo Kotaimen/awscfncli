@@ -46,7 +46,6 @@ def echo_pair(key, value=None, indent=0, value_style=None, key_style=None,
             click.echo(click.style(value, **value_style))
 
 
-
 def pretty_print_config(config):
     echo_pair('Region', config['Region'])
     echo_pair('Stack Name', config['StackName'])

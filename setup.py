@@ -35,7 +35,7 @@ install_requires = [
     'PyYAML>=3.11',
 ]
 
-test_requires = ['pytest', 'pytest-cov']
+test_requires = ['pytest', 'pytest-cov', 'mock']
 
 dev_requires = test_requires
 

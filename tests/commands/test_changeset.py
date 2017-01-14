@@ -1,6 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-
 import mock
 
 from awscfncli import cfn
