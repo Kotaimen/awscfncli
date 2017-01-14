@@ -13,7 +13,7 @@ Features:
 - Simple `YAML` stack configuration file.
 - Tracking stack events.
 
-<img width="981" alt="Sample Image" src="https://cdn.knrdesign.co/dist/awscfncli/Screen Shot 2017-01-11 at 13.53.32.png">
+<img alt="Sample" src="https://s3.amazonaws.com/stonemason/cdn/dist/awscfncli/changeset-execute-demo-01.gif">
 
 Usage:
     
@@ -45,9 +45,13 @@ Stack:
 
 ## Install
 
-Install from pip:
+Install `awscfncli` using [pip](https://pip.pypa.io/):
 
     pip install awscfncli
+
+The package itself is runnable as a module: 
+
+    python -m awscfncli 
 
 ## Tutorial
 
