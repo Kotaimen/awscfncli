@@ -15,26 +15,26 @@ VERSION = pkg_resources.require(MODULE_NAME)[0].version
 @click.group()
 @click.pass_context
 @click.version_option(version=VERSION)
-def cli(ctx):
+def cfn(ctx):
     """Welcome to the CloudFormation Stack Management Command Line Interface."""
     ctx.obj = dict()
 
 
-@cli.group()
+@cfn.group()
 @click.pass_context
 def stack(ctx):
     """CloudFormation Stack commands"""
     pass
 
 
-@cli.group()
+@cfn.group()
 @click.pass_context
 def template(ctx):
     """CloudFormation Template commands"""
     pass
 
 
-@cli.group()
+@cfn.group()
 @click.pass_context
 def changeset(ctx):
     """CloudFormation ChangeSet commands"""
