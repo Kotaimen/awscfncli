@@ -5,6 +5,8 @@ import mock
 from awscfncli import cfn
 from click.testing import CliRunner
 
+from .boto_mock import MOCK_CONFIG, MOCK_CONFIG_WITH_BODY, mock_config, mock_config_with_body, mock_cfn_client
+
 __author__ = 'ray'
 __date__ = '1/14/17'
 
@@ -21,40 +23,20 @@ Error: Missing argument "config_file".
     assert str(result.output) == message
 
 
-def test_cfn_template_validate(tmpdir):
-    with mock.patch('boto3.client', return_value=mock.Mock()) as mock_client:
-        mock_config = \
-            """
-            Stack:
-              Region:               us-east-1
-              StackName:            ExampleStack
-              TemplateURL:          https://s3.amazonaws.com/example.template
-            """
-
-        path = tmpdir.join('config.yml')
-        path.write(mock_config)
+def test_cfn_template_validate(mock_config, mock_config_with_body, mock_cfn_client):
+    with mock.patch('boto3.client') as mock_client:
+        mock_client.return_value = mock_cfn_client
 
         runner = CliRunner()
-        runner.invoke(cfn, ['template', 'validate', path.strpath])
+        runner.invoke(cfn, ['template', 'validate', mock_config])
 
-        mock_client.return_value.validate_template.assert_called_with(
-            TemplateURL='https://s3.amazonaws.com/example.template'
+        mock_cfn_client.validate_template.assert_called_with(
+            TemplateURL=MOCK_CONFIG['TemplateURL']
         )
 
-        mock_config = \
-            """
-            Stack:
-              Region:               us-east-1
-              StackName:            ExampleStack
-              TemplateBody:         /example.template
-            """
-
-        path = tmpdir.join('config.yml')
-        path.write(mock_config)
-
         runner = CliRunner()
-        runner.invoke(cfn, ['template', 'validate', path.strpath])
+        runner.invoke(cfn, ['template', 'validate', mock_config_with_body])
 
-        mock_client.return_value.validate_template.assert_called_with(
-            TemplateBody='/example.template'
+        mock_cfn_client.validate_template.assert_called_with(
+            TemplateBody=MOCK_CONFIG_WITH_BODY['TemplateBody']
         )
