@@ -1,9 +1,9 @@
 # Changelog
 
-## Version 0.1 (release date here)
+## Version 0.1 (2017-01-16)
 
-In development
-
+Features:
 - Stack commands
 - Template commands
 - ChangeSet commands
+- Test and coverage
