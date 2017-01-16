@@ -16,7 +16,7 @@ from .events import tail_stack_events, start_tail_stack_events_daemon
 @stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait', is_flag=True, default=False,
-              help='Wait and print stack events until stack delete is complete.')
+              help='Exit immediately after operation is started.')
 @click.option('--on-failure',
               type=click.Choice(['DO_NOTHING', 'ROLLBACK', 'DELETE']),
               default=None,

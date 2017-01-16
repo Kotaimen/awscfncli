@@ -18,7 +18,7 @@ from ...config import load_stack_config
 @click.argument('config_file', type=click.Path(exists=True))
 @click.argument('changeset_name', required=False, default=None)
 @click.option('--no-wait', is_flag=True, default=False,
-              help='Wait until changeset creation is complete.')
+              help='Exit immediately after operation is started.')
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')
