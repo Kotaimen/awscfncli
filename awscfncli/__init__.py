@@ -3,7 +3,7 @@
 __author__ = 'kotaimen'
 __date__ = '03/01/2017'
 
-from .cli import cli, template, changeset
+from .cli import cfn, template, changeset
 
 from .commands.template.validate import validate
 

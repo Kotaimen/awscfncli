@@ -24,7 +24,7 @@ Features:
 * Simple YAML stack configuration file.
 * Tracking stack events in the CLI.
 
-For more information, please refer to: `GitHub Kotaimen/awscfncli<https://github.com/Kotaimen/awscfncli>`_
+For more information, please refer to: `GitHub: https://github.com/Kotaimen/awscfncli <https://github.com/Kotaimen/awscfncli>`_
 
 """
 
@@ -35,7 +35,7 @@ install_requires = [
     'PyYAML>=3.11',
 ]
 
-test_requires = ['pytest', 'pytest-cov']
+test_requires = ['pytest', 'pytest-cov', 'mock']
 
 dev_requires = test_requires
 
@@ -44,7 +44,7 @@ setup(
     name='awscfncli',
 
     # Version and description
-    version='0.1a1',
+    version='0.1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -68,7 +68,7 @@ setup(
 
         'Operating System :: OS Independent',
 
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
 
         'Natural Language :: English',
 
