@@ -16,7 +16,7 @@ from .events import start_tail_stack_events_daemon
 @stack.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.option('--no-wait', is_flag=True, default=False,
-              help='Wait and print stack events until stack delete is complete.')
+              help='Exit immediately after operation is started.')
 @click.pass_context
 @boto3_exception_handler
 def delete(ctx, config_file, no_wait):

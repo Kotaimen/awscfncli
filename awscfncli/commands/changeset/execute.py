@@ -15,9 +15,11 @@ from ...config import load_stack_config
 @changeset.command()
 @click.argument('config_file', type=click.Path(exists=True))
 @click.argument('changeset_name')
+@click.option('--no-wait', is_flag=True, default=False,
+              help='Exit immediately after operation is started.')
 @click.pass_context
 @boto3_exception_handler
-def execute(ctx, config_file, changeset_name):
+def execute(ctx, config_file, changeset_name, no_wait):
     """Updates a stack using the input information that was provided when
     the specified change set was created.
 
@@ -37,8 +39,8 @@ def execute(ctx, config_file, changeset_name):
     cfn = boto3.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
 
-    # HACK:
     if stack.stack_status == 'REVIEW_IN_PROGRESS':
+        # HACK: stack created with a "create" type changeset (not deployed yet)
         waiter_model = 'stack_create_complete'
     else:
         waiter_model = 'stack_update_complete'
@@ -47,6 +49,10 @@ def execute(ctx, config_file, changeset_name):
         ChangeSetName=changeset_name,
         StackName=stack_config['StackName'],
     )
+
+    # exit immediately
+    if no_wait:
+        return
 
     # start event tailing
     start_tail_stack_events_daemon(stack, latest_events=5)
