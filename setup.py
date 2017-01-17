@@ -24,7 +24,7 @@ Features:
 * Simple YAML stack configuration file.
 * Tracking stack events in the CLI.
 
-For more information, please refer to: `GitHub: https://github.com/Kotaimen/awscfncli <https://github.com/Kotaimen/awscfncli>`_
+See also: `awscfncli <https://kotaimen.github.io/awscfncli>`_
 
 """
 
@@ -78,7 +78,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
     ],
-    keywords='awscfncli aws cloudformation development',
+    keywords='awscfncli aws cfn cli cloudformation stack '
+             'template changeset commandline development',
 
     packages=find_packages(exclude=('tests',)),
     install_requires=install_requires,
