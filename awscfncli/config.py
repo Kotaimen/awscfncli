@@ -17,8 +17,10 @@ def normalize(v):
     else:
         return v
 
+
 class ConfigError(RuntimeError):
     pass
+
 
 class StackConfig(object):
     STACK_CONFIG_DEF = {
@@ -45,18 +47,11 @@ class StackConfig(object):
     def validate(self):
         # Should have either 'TemplateBody' or 'TemplateURL'
         if not any(k in self._props for k in ('TemplateBody', 'TemplateURL')):
-            raise ConfigError('Should specify either TemplateBody or TemplateURL.')
+            raise ConfigError(
+                'Should specify either TemplateBody or TemplateURL.')
         if all(k in self._props for k in ('TemplateBody', 'TemplateURL')):
-            raise ConfigError('Should not have both TemplateBody and TemplateURL.')
-
-        # Load template body from local file
-        if 'TemplateBody' in self._props:
-            try:
-                with open(self._props['TemplateBody']) as fp:
-                    self._props['TemplateBody'] = fp.read()
-            except Exception as e:
-                raise ConfigError(str(e))
-
+            raise ConfigError(
+                'Should not have both TemplateBody and TemplateURL.')
 
         # Check type and requirement
         for k, (t, r) in self.STACK_CONFIG_DEF.items():

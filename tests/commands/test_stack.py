@@ -37,7 +37,7 @@ def test_cfn_stack_describe(mock_config, mock_cfn):
         mock_resource.return_value = mock_cfn
 
         runner = CliRunner()
-        runner.invoke(cfn, ['stack', 'describe', mock_config, '--detail', '2'])
+        runner.invoke(cfn, ['stack', 'describe', mock_config, '--stack-resources'])
 
         mock_resource.assert_called_once_with(
             'cloudformation', region_name=MOCK_CONFIG['Region'])

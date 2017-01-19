@@ -9,7 +9,7 @@ import click
 from ...cli import stack
 from ...config import load_stack_config
 from ..utils import boto3_exception_handler, pretty_print_config, \
-    pretty_print_stack, CANNED_STACK_POLICIES
+    pretty_print_stack, load_template_body, CANNED_STACK_POLICIES
 from .events import tail_stack_events, start_tail_stack_events_daemon
 
 
@@ -46,8 +46,10 @@ def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
     """
     # load config
     stack_config = load_stack_config(config_file)
-    pretty_print_config(stack_config)
     click.echo('Deploying stack...')
+    pretty_print_config(stack_config)
+
+    load_template_body(stack_config)
 
     # option handling
     if on_failure is not None:

@@ -10,6 +10,7 @@ import click
 import botocore.exceptions
 from ..config import ConfigError
 
+
 def boto3_exception_handler(f):
     """Pretty print boto exceptions."""
 
@@ -26,6 +27,15 @@ def boto3_exception_handler(f):
             click.echo(click.style('Aborted.', fg='red'))
 
     return wrapper
+
+
+def load_template_body(config):
+    if 'TemplateBody' in config:
+        try:
+            with open(config['TemplateBody']) as fp:
+                config['TemplateBody'] = fp.read()
+        except Exception as e:
+            raise ConfigError(str(e))
 
 
 def echo_pair(key, value=None, indent=0, value_style=None, key_style=None,
@@ -67,11 +77,12 @@ def pretty_print_stack(stack, detail=False):
 
     echo_pair('Name', stack.stack_name)
     echo_pair('Description', stack.description)
+
     echo_pair('Status', stack.stack_status,
               value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
-
-    echo_pair('Status Reason', stack.stack_status_reason)
     echo_pair('Created', stack.creation_time)
+    if stack.last_updated_time:
+        echo_pair('Last Updated', stack.last_updated_time)
     echo_pair('Capabilities', stack.capabilities)
 
     if stack.parameters:
@@ -89,6 +100,7 @@ def pretty_print_stack(stack, detail=False):
 
 
 CANNED_STACK_POLICIES = {
+
     'ALLOW_ALL': '''
 {
   "Statement" : [
