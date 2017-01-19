@@ -12,7 +12,7 @@ from ..config import ConfigError
 
 
 def boto3_exception_handler(f):
-    """Pretty print boto exceptions."""
+    """Capture and pretty print exceptions"""
 
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -30,6 +30,7 @@ def boto3_exception_handler(f):
 
 
 def load_template_body(config):
+    """Load local template file as TemplateBody"""
     if 'TemplateBody' in config:
         try:
             with open(config['TemplateBody']) as fp:
@@ -38,8 +39,43 @@ def load_template_body(config):
             raise ConfigError(str(e))
 
 
-def echo_pair(key, value=None, indent=0, value_style=None, key_style=None,
+def custom_paginator(f, l, **kwargs):
+    """Simple custom paginator for those can_pageniate() returns false
+    :param f: API function
+    :param l: name of the list object to paginate
+    :param kwargs: Args passes to the API function
+    :return: iterator of result object
+    """
+    next_token = None
+    while True:
+
+        if next_token is None:
+            # boto3 does not accept f(NextToken=None)
+            r = f(**kwargs)
+        else:
+            r = f(NextToken=next_token, **kwargs)
+
+        for i in r[l]:
+            yield i
+
+        try:
+            next_token = r['NextToken']
+        except KeyError:
+            break
+
+
+def echo_pair(key, value=None, indent=0,
+              value_style=None, key_style=None,
               sep=': '):
+    """Pretty print a key value pair
+
+    :param key: The key
+    :param value: The value
+    :param indent: Number of leading spaces
+    :param value_style: click.style parameters of value as a dict, default is none
+    :param key_style:  click.style parameters of value as a dict, default is bold text
+    :param sep: separator between key and value
+    """
     assert key
     key = ' ' * indent + key + sep
     if key_style is None:
@@ -58,6 +94,7 @@ def echo_pair(key, value=None, indent=0, value_style=None, key_style=None,
 
 
 def pretty_print_config(config):
+    """Pretty print stack config"""
     echo_pair('Region', config['Region'])
     echo_pair('Stack Name', config['StackName'])
     if 'TemplateBody' in config:
@@ -70,6 +107,7 @@ def pretty_print_config(config):
 
 
 def pretty_print_stack(stack, detail=False):
+    """Pretty print stack status"""
     echo_pair('Stack ID', stack.stack_id)
 
     if not detail:
@@ -98,7 +136,9 @@ def pretty_print_stack(stack, detail=False):
         for t in stack.tags:
             echo_pair(t['Key'], t['Value'], indent=2)
 
-
+#
+# Canned stack policies (used in stack commands)
+#
 CANNED_STACK_POLICIES = {
 
     'ALLOW_ALL': '''
@@ -152,6 +192,9 @@ CANNED_STACK_POLICIES = {
 
 }
 
+#
+# Status string to click.style parameters
+#
 STACK_STATUS_TO_COLOR = {
     'CREATE_IN_PROGRESS': dict(fg='yellow'),
     'CREATE_FAILED': dict(fg='red'),
