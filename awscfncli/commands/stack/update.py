@@ -7,7 +7,7 @@ import boto3
 import click
 
 from ..utils import boto3_exception_handler, pretty_print_config, \
-    pretty_print_stack, CANNED_STACK_POLICIES
+    pretty_print_stack, load_template_body, CANNED_STACK_POLICIES
 from ...cli import stack
 from ...config import load_stack_config
 from .events import start_tail_stack_events_daemon
@@ -54,6 +54,8 @@ def update(ctx, config_file, no_wait, use_previous_template,
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
+    load_template_body(stack_config)
+
     click.echo('Updating stack...')
 
     # connect co cfn

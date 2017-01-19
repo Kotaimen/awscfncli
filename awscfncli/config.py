@@ -18,6 +18,10 @@ def normalize(v):
         return v
 
 
+class ConfigError(RuntimeError):
+    pass
+
+
 class StackConfig(object):
     STACK_CONFIG_DEF = {
         'StackName': (six.string_types, True),
@@ -43,10 +47,11 @@ class StackConfig(object):
     def validate(self):
         # Should have either 'TemplateBody' or 'TemplateURL'
         if not any(k in self._props for k in ('TemplateBody', 'TemplateURL')):
-            raise KeyError('Should specify either TemplateBody or TemplateURL.')
-
+            raise ConfigError(
+                'Should specify either TemplateBody or TemplateURL.')
         if all(k in self._props for k in ('TemplateBody', 'TemplateURL')):
-            raise KeyError('Should not have both TemplateBody and TemplateURL.')
+            raise ConfigError(
+                'Should not have both TemplateBody and TemplateURL.')
 
         # Check type and requirement
         for k, (t, r) in self.STACK_CONFIG_DEF.items():
@@ -54,16 +59,16 @@ class StackConfig(object):
 
             if r and not v:
                 # if the required key is missing
-                raise KeyError('Missing required property "%s"' % k)
+                raise ConfigError('Missing required property "%s"' % k)
 
             if v and not isinstance(v, t):
                 # if the value type does not match
-                raise TypeError('Type of "%s" should be "%s"' % (k, str(t)))
+                raise ConfigError('Type of "%s" should be "%s"' % (k, str(t)))
 
         # Check unknown properties
         for k in self._props:
             if k not in self.STACK_CONFIG_DEF:
-                raise KeyError('Unknown property name "%s"' % k)
+                raise ConfigError('Unknown property name "%s"' % k)
 
     def to_dict(self):
         self.validate()

@@ -7,20 +7,28 @@ __date__ = '04/01/2017'
 
 import time
 import click
+import boto3
 import botocore.exceptions
 import threading
 
 from ..utils import STACK_STATUS_TO_COLOR
 
+
 def tail_stack_events(stack,
                       latest_events=5,
                       event_limit=10000,
                       time_limit=3600,
-                      check_interval=5):
+                      check_interval=5,
+                      indent=0,
+                      prefix='XX'):
     """Tail stack events and print them"""
     then = time.time()
 
     visited_events = set()
+
+    visited_stacks = set()
+    visited_stacks.add(stack.stack_id)
+
     first_run = True
 
     # loop until time limit
@@ -29,16 +37,18 @@ def tail_stack_events(stack,
         if len(visited_events) > event_limit:
             break
 
-        # get all stack events, latest at latest_events
+        # get all stack events
         try:
             events = list(stack.events.all())
         except botocore.exceptions.ClientError as e:
             click.echo(str(e))
             break
         else:
+            # put latest events at first
             events.reverse()
             event_count = len(events)
 
+        # https://boto3.readthedocs.io/en/latest/reference/services/cloudformation.html#event
         for n, e in enumerate(events):
             # skip visited events
             if e.event_id in visited_events:
@@ -46,10 +56,31 @@ def tail_stack_events(stack,
             else:
                 visited_events.add(e.event_id)
 
+            # tail only latest events
             if first_run:
                 if latest_events > 0:
                     if n < event_count - latest_events:
                         continue
+
+            # tail sub stack events
+            if e.resource_type == 'AWS::CloudFormation::Stack' and \
+                    e.physical_resource_id and \
+                            e.physical_resource_id not in visited_stacks:
+                visited_stacks.add(e.physical_resource_id)
+
+                cfn = boto3.resource('cloudformation',
+                                     region_name=stack.meta.client.meta.region_name)
+                sub_stack = cfn.Stack(e.physical_resource_id)
+
+                start_tail_stack_events_daemon(sub_stack,
+                                               latest_events=latest_events,
+                                               check_interval=check_interval,
+                                               indent=indent + 2,
+                                               prefix=e.logical_resource_id)
+            # print the event
+            if indent > 0:
+                click.echo(' ' * indent, nl=False)
+                click.echo(click.style('[%s] ' % prefix, bold=True), nl=False)
 
             click.echo(e.timestamp.strftime('%x %X'), nl=False)
             click.echo(' - ', nl=False)
@@ -58,6 +89,7 @@ def tail_stack_events(stack,
                        nl=False)
             click.echo(' - %s(%s)' % (e.logical_resource_id, e.resource_type),
                        nl=False)
+
             if e.resource_status_reason:
                 click.echo(' - %s' % e.resource_status_reason)
             elif e.physical_resource_id:
@@ -75,9 +107,12 @@ def start_tail_stack_events_daemon(stack,
                                    latest_events=5,
                                    event_limit=10000,
                                    time_limit=3600,
-                                   check_interval=5):
+                                   check_interval=5,
+                                   indent=0,
+                                   prefix=None):
     thread = threading.Thread(target=tail_stack_events,
                               args=(stack, latest_events, event_limit,
-                                    time_limit, check_interval))
+                                    time_limit, check_interval,
+                                    indent, prefix))
     thread.daemon = True
     thread.start()

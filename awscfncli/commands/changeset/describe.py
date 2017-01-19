@@ -54,21 +54,21 @@ def describe(ctx, config_file, changeset_name):
 
     echo_pair('Resource Changes')
     for change in result['Changes']:
+        echo_pair(change['ResourceChange']['LogicalResourceId'],
+                  '(%s)' % change['ResourceChange']['ResourceType'],
+                  indent=2, sep=' ')
+
         echo_pair('Action', change['ResourceChange']['Action'],
                   value_style=ACTION_TO_COLOR[
                       change['ResourceChange']['Action']],
-                  indent=2)
-        echo_pair('Logical Resource',
-                  '%s (%s)' % (
-                      change['ResourceChange']['LogicalResourceId'],
-                      change['ResourceChange']['ResourceType']),
-                  indent=2)
+                  indent=4)
         echo_pair_if_exists(change['ResourceChange'],
                             'Physical Resource',
-                            'PhysicalResourceId', indent=2)
+                            'PhysicalResourceId', indent=4)
         echo_pair_if_exists(change['ResourceChange'],
                             'Replacement',
-                            'Replacement', indent=2)
+                            'Replacement', indent=4)
         echo_pair_if_exists(change['ResourceChange'],
                             'Scope',
-                            'Scope', indent=2)
+                            'Scope', indent=4)
+

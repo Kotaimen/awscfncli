@@ -5,7 +5,8 @@ import mock
 from awscfncli import cfn
 from click.testing import CliRunner
 
-from .boto_mock import MOCK_CONFIG, MOCK_CONFIG_WITH_BODY, mock_config, mock_config_with_body, mock_cfn_client
+from .boto_mock import MOCK_CONFIG, MOCK_CONFIG_WITH_BODY, mock_config, \
+    mock_config_with_body, mock_cfn_client
 
 __author__ = 'ray'
 __date__ = '1/14/17'
@@ -23,7 +24,8 @@ Error: Missing argument "config_file".
     assert str(result.output) == message
 
 
-def test_cfn_template_validate(mock_config, mock_config_with_body, mock_cfn_client):
+def test_cfn_template_validate(mock_config, mock_config_with_body,
+                               mock_cfn_client):
     with mock.patch('boto3.client') as mock_client:
         mock_client.return_value = mock_cfn_client
 

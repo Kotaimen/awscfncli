@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import pytest
-from awscfncli.config import load_stack_config
+from awscfncli.config import load_stack_config, ConfigError
 
 __author__ = 'ray'
 __date__ = '1/9/17'
@@ -76,7 +76,7 @@ def test_load_stack_config_with_error(tmpdir):
     path = tmpdir.join('config.yml')
     path.write(mock_config)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ConfigError):
         load_stack_config(path.strpath)
 
     path.remove()
@@ -91,7 +91,7 @@ def test_load_stack_config_with_error(tmpdir):
     path = tmpdir.join('config.yml')
     path.write(mock_config)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ConfigError):
         load_stack_config(path.strpath)
 
     path.remove()
@@ -108,7 +108,7 @@ def test_load_stack_config_with_error(tmpdir):
     path = tmpdir.join('config.yml')
     path.write(mock_config)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ConfigError):
         load_stack_config(path.strpath)
 
     path.remove()
@@ -125,7 +125,7 @@ def test_load_stack_config_with_error(tmpdir):
     path = tmpdir.join('config.yml')
     path.write(mock_config)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ConfigError):
         load_stack_config(path.strpath)
 
     path.remove()
@@ -142,7 +142,7 @@ def test_load_stack_config_with_error(tmpdir):
     path = tmpdir.join('config.yml')
     path.write(mock_config)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ConfigError):
         load_stack_config(path.strpath)
 
     path.remove()

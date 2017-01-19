@@ -9,7 +9,8 @@ import click
 from ...cli import stack
 from ...config import load_stack_config
 from ..utils import boto3_exception_handler, pretty_print_config, \
-    pretty_print_stack
+    pretty_print_stack, load_template_body
+
 from .events import start_tail_stack_events_daemon
 
 
@@ -27,6 +28,7 @@ def delete(ctx, config_file, no_wait):
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
+    load_template_body(stack_config)
     click.echo('Deleting stack...')
 
     # connect co cfn

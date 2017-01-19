@@ -6,7 +6,8 @@ __date__ = '13/01/2017'
 import boto3
 import click
 
-from ..utils import boto3_exception_handler, pretty_print_config
+from ..utils import boto3_exception_handler, pretty_print_config, \
+    load_template_body
 from ..stack.events import start_tail_stack_events_daemon
 from ...cli import changeset
 from ...config import load_stack_config
@@ -30,6 +31,7 @@ def execute(ctx, config_file, changeset_name, no_wait):
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
+    load_template_body(stack_config)
 
     # connect to cfn
     region = stack_config.pop('Region')

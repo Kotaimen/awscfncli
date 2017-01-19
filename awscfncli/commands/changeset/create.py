@@ -9,7 +9,7 @@ import boto3
 import click
 
 from ..utils import boto3_exception_handler, pretty_print_config, \
-    pretty_print_stack, CANNED_STACK_POLICIES, echo_pair
+    load_template_body, echo_pair
 from ...cli import changeset
 from ...config import load_stack_config
 
@@ -43,6 +43,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
+    load_template_body(stack_config)
     click.echo('Creating change set...')
 
     # connect co cfn
