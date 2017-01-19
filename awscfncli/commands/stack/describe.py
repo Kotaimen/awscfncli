@@ -4,6 +4,7 @@ __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
 import boto3
+import botocore.exceptions
 import click
 
 from ..utils import boto3_exception_handler, pretty_print_stack, \
@@ -53,5 +54,15 @@ def describe(ctx, config_file, stack_resources, stack_exports):
                               region_name=stack_config['Region'])
         echo_pair('Exports')
         for export in custom_paginator(client.list_exports, 'Exports'):
+
             if export['ExportingStackId'] == stack.stack_id:
                 echo_pair(export['Name'], export['Value'], indent=2)
+                try:
+                    for import_ in custom_paginator(client.list_imports, 'Imports',
+                                                ExportName=export['Name']):
+                        echo_pair('Imported By', import_,
+                                  value_style=dict(fg='red'), indent=4)
+                except botocore.exceptions.ClientError as e:
+                    echo_pair('Export not used by any stack.',
+                              key_style=dict(fg='green'), indent=4, sep='')
+
