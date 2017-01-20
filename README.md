@@ -34,18 +34,18 @@ To view help of a particular subcommand, type:
 Supported commands:
 
   - `template`
-    - `validate` - Validate template specified in the config
+    - `validate` - Validate template
   - `stack`
-    - `deploy` - Deploy a new stack  
+    - `deploy` - Deploy new stack  
     - `update` - Update stack
     - `describe` - Describe stack status
     - `tail` - Print stack events
-    - `delete` - Delete the stack
+    - `delete` - Delete stack
   - `changeset`
-    - `create` - Create a new changeset
+    - `create` - Create new ChangeSet
     - `list` - List ChangeSet of stack
     - `describe` - Describe changes
-    - `execute` - Update stack using ShangeSet
+    - `execute` - Update stack using ChangeSet
 
 `STACK_CONFIG` is a simple `YAML` file describes stack deploy parameters:
 

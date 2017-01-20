@@ -47,7 +47,7 @@ from .events import start_tail_stack_events_daemon
 @boto3_exception_handler
 def update(ctx, config_file, no_wait, use_previous_template,
            canned_policy, override_policy):
-    """Update the stack specified in the configuration file
+    """Update the stack specified in the configuration file.
 
     CONFIG_FILE         Stack configuration file.
     """

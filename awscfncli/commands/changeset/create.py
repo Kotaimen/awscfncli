@@ -31,13 +31,20 @@ from ...config import load_stack_config
 @boto3_exception_handler
 def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
            changeset_type):
-    """Creates a list of changes for a stack
+    """Creates a list of changes for a stack.
+
+    AWS CloudFormation generates the change set by comparing the template's
+    information with the information that you submit. A change set can help
+    you understand which resources AWS CloudFormation will change, and how
+    it will change them, before you update your stack. Change sets allow
+    you to check before making a change to avoid deleting or replacing
+    critical resources.
 
     \b
     CONFIG_FILE         Stack configuration file.
     CHANGESET_NAME      The name of the change set. must be unique among all
                         change sets that are associated with the specified
-                        stack. cfncli will automaticlly generate a unique
+                        stack. cfncli will automatically generate a unique
                         name if one not given.
     """
     # load config

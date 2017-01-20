@@ -23,7 +23,10 @@ def echo_pair_if_exists(d, k, v, indent=2):
 @click.pass_context
 @boto3_exception_handler
 def describe(ctx, config_file, changeset_name):
-    """Describe a changes in specified ChangeSet
+    """Print changes in specified change set.
+
+    Returns the inputs for the change set and a list of changes that AWS
+    CloudFormation will make if you execute the change set.
 
     \b
     CONFIG_FILE         Stack configuration file.
