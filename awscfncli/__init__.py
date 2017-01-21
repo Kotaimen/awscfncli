@@ -6,6 +6,7 @@ __date__ = '03/01/2017'
 from .cli import cfn, template, changeset
 
 from .commands.template.validate import validate
+from .commands.template.reflect import reflect
 
 from .commands.stack.deploy import deploy
 from .commands.stack.update import update

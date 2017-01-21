@@ -79,6 +79,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
+  reflect   Generate awscfncli configuration file from an...
   validate  Validate template specified in the stack...
 """
 
