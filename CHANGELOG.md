@@ -1,13 +1,23 @@
 # Changelog
 
+## Develop
+
+Features:
+- Improve subcommand help.
+- Add `template reflect` sub command which generated
+
+Bug Fixes:
+- `template validate` fails when `TemplateBody` is used.
+
 ## Version 0.2 (2017-01-19)
 
 Features:
 - Improve stack and ChangeSet description command output format.
 - Add the ability to display stack export/import values.
-- Remove --detail option from stack describe subcommand.
-- Add --stack-resources option to stack describe subcommand.
-- Add --stack-exports option to stack describe subcommand.
+- Remove `--detail` option from stack describe subcommand.
+- Add `--stack-resources` option to stack describe subcommand.
+- Add `--stack-exports` option to stack describe subcommand.
+
 Issues:
 - Fix bug that TemplateBody failed to load template file.
 

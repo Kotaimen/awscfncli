@@ -35,6 +35,7 @@ Supported commands:
 
   - `template`
     - `validate` - Validate template
+    - `reflect` - Generate config from existing stack
   - `stack`
     - `deploy` - Deploy new stack  
     - `update` - Update stack
