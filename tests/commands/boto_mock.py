@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 
+import json
 import mock
 import pytest
 import datetime
@@ -7,22 +8,16 @@ import datetime
 __author__ = 'ray'
 __date__ = '1/15/17'
 
-MOCK_CONFIG = {
-    'StackName': 'ExampleStack',
-    'Region': 'us-east-1',
-    'TemplateURL': 'https://s3.amazonaws.com/example.template'
-}
-
 
 @pytest.fixture(scope='function')
-def mock_config(tmpdir):
+def mock_config_with_templateurl(tmpdir):
     config = \
         """
         Stack:
-          Region:               %(Region)s
-          StackName:            %(StackName)s
-          TemplateURL:          %(TemplateURL)s
-        """ % MOCK_CONFIG
+          Region:               us-east-1
+          StackName:            ExampleStack
+          TemplateURL:          https://s3.amazonaws.com/example.template
+        """
 
     path = tmpdir.join('config1.yml')
     path.write(config)
@@ -30,22 +25,20 @@ def mock_config(tmpdir):
     return path.strpath
 
 
-MOCK_CONFIG_WITH_BODY = {
-    'StackName': 'ExampleStack',
-    'Region': 'us-east-1',
-    'TemplateBody': '/example.template'
-}
-
-
 @pytest.fixture(scope='function')
-def mock_config_with_body(tmpdir):
+def mock_config_with_templatebody(tmpdir):
+    path = tmpdir.join('example.template')
+    path.write(json.dumps({
+        'Resource': {}
+    }))
+
     config = \
         """
         Stack:
-          Region:               %(Region)s
-          StackName:            %(StackName)s
-          TemplateBody:          %(TemplateBody)s
-        """ % MOCK_CONFIG_WITH_BODY
+          Region:               us-east-1
+          StackName:            ExampleStack
+          TemplateBody:         %s
+        """ % path.strpath
 
     path = tmpdir.join('config2.yml')
     path.write(config)
@@ -82,7 +75,7 @@ def mock_cfn():
 
     mock_stack = mock.Mock(
         stack_id='MockStackId',
-        stack_name=MOCK_CONFIG['StackName'],
+        stack_name='ExampleStack',
         description='A Mock Description',
         stack_status='REVIEW_IN_PROGRESS',
         stack_status_reason='A Mock Status Reason',
