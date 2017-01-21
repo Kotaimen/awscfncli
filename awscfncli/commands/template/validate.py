@@ -8,7 +8,7 @@ import click
 
 from ...config import load_stack_config
 from ...cli import template
-from ..utils import boto3_exception_handler
+from ..utils import boto3_exception_handler, load_template_body
 
 
 @template.command()
@@ -25,8 +25,8 @@ def validate(ctx, config_file):
     CONFIG_FILE         Stack configuration file.
     """
     click.echo('Validating template...')
-
     stack_config = load_stack_config(config_file)
+    load_template_body(stack_config)
 
     client = boto3.client('cloudformation')
 
