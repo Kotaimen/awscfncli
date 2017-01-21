@@ -92,4 +92,4 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
         'change_set_create_complete')
     waiter.wait(ChangeSetName=result['Id'])
 
-    click.echo(click.style('ChangeSet creation complete.', fg='green'))
+    click.secho('ChangeSet creation complete.', fg='green')

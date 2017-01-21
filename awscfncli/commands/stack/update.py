@@ -100,4 +100,4 @@ def update(ctx, config_file, no_wait, use_previous_template,
         'stack_update_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo(click.style('Stack update complete.', fg='green'))
+    click.secho('Stack update complete.', fg='green')

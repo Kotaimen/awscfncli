@@ -22,9 +22,11 @@ def boto3_exception_handler(f):
                 botocore.exceptions.WaiterError,
                 botocore.exceptions.ParamValidationError,
                 ConfigError) as e:
-            click.echo(click.style(str(e), fg='red'))
+
+            click.secho(str(e), fg='red')
+            raise
         except KeyboardInterrupt as e:
-            click.echo(click.style('Aborted.', fg='red'))
+            click.secho('Aborted.', fg='red')
 
     return wrapper
 
@@ -79,9 +81,9 @@ def echo_pair(key, value=None, indent=0,
     assert key
     key = ' ' * indent + key + sep
     if key_style is None:
-        click.echo(click.style(key, bold=True), nl=False)
+        click.secho(key, bold=True, nl=False)
     else:
-        click.echo(click.style(key, **key_style), nl=False)
+        click.secho(key, nl=False, **key_style)
 
     if value is None:
         click.echo('')
@@ -90,7 +92,7 @@ def echo_pair(key, value=None, indent=0,
         if value_style is None:
             click.echo(value)
         else:
-            click.echo(click.style(value, **value_style))
+            click.secho(value, **value_style)
 
 
 def pretty_print_config(config):
@@ -135,6 +137,7 @@ def pretty_print_stack(stack, detail=False):
         echo_pair('Tags')
         for t in stack.tags:
             echo_pair(t['Key'], t['Value'], indent=2)
+
 
 #
 # Canned stack policies (used in stack commands)

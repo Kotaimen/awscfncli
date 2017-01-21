@@ -54,4 +54,4 @@ def delete(ctx, config_file, no_wait):
         'stack_delete_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo(click.style('Stack delete complete.', fg='green'))
+    click.secho('Stack delete complete.', fg='green')

@@ -72,5 +72,4 @@ def execute(ctx, config_file, changeset_name, no_wait):
     waiter = client.get_waiter(waiter_model)
     waiter.wait(StackName=stack.stack_id)
 
-    click.echo(click.style('ChangSet execution complete.',
-                           fg='green'))
+    click.secho('ChangSet execution complete.',fg='green')
