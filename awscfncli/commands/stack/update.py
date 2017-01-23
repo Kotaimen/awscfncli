@@ -47,7 +47,7 @@ from .events import start_tail_stack_events_daemon
 @boto3_exception_handler
 def update(ctx, config_file, no_wait, use_previous_template,
            canned_policy, override_policy):
-    """Update the stack specified in the configuration file
+    """Update the stack specified in the configuration file.
 
     CONFIG_FILE         Stack configuration file.
     """
@@ -100,4 +100,4 @@ def update(ctx, config_file, no_wait, use_previous_template,
         'stack_update_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo(click.style('Stack update complete.', fg='green'))
+    click.secho('Stack update complete.', fg='green')

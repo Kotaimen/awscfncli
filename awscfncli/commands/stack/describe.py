@@ -23,11 +23,11 @@ from ..utils import echo_pair
 @click.pass_context
 @boto3_exception_handler
 def describe(ctx, config_file, stack_resources, stack_exports):
-    """Describe stack status, parameter and output
+    """Print status, parameters, outputs, stack resources and export values
+    of the stack specified in the configuration file.
 
     \b
     CONFIG_FILE         Stack configuration file.
-    CHANGESET_NAME      The name of the change set.
     """
 
     stack_config = load_stack_config(config_file)

@@ -81,4 +81,4 @@ def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
         'stack_create_complete')
     waiter.wait(StackName=stack_id)
 
-    click.echo(click.style('Stack deployment complete.', fg='green'))
+    click.secho('Stack deployment complete.', fg='green')

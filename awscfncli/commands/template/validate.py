@@ -8,7 +8,7 @@ import click
 
 from ...config import load_stack_config
 from ...cli import template
-from ..utils import boto3_exception_handler
+from ..utils import boto3_exception_handler, load_template_body
 
 
 @template.command()
@@ -16,13 +16,17 @@ from ..utils import boto3_exception_handler
 @click.pass_context
 @boto3_exception_handler
 def validate(ctx, config_file):
-    """Validate template specified in the config.
+    """Validate template specified in the stack configuration file.
+
+    AWS CloudFormation first checks if the template is valid JSON. If it isn't,
+    AWS CloudFormation checks if the template is valid YAML. If both these
+    checks fail, AWS CloudFormation returns a template validation error.
 
     CONFIG_FILE         Stack configuration file.
     """
     click.echo('Validating template...')
-
     stack_config = load_stack_config(config_file)
+    load_template_body(stack_config)
 
     client = boto3.client('cloudformation')
 

@@ -80,13 +80,12 @@ def tail_stack_events(stack,
             # print the event
             if indent > 0:
                 click.echo(' ' * indent, nl=False)
-                click.echo(click.style('[%s] ' % prefix, bold=True), nl=False)
+                click.secho('[%s] ' % prefix, bold=True, nl=False)
 
             click.echo(e.timestamp.strftime('%x %X'), nl=False)
             click.echo(' - ', nl=False)
-            click.echo(click.style(e.resource_status,
-                                   **STACK_STATUS_TO_COLOR[e.resource_status]),
-                       nl=False)
+            click.secho(e.resource_status, nl=False,
+                        **STACK_STATUS_TO_COLOR[e.resource_status])
             click.echo(' - %s(%s)' % (e.logical_resource_id, e.resource_type),
                        nl=False)
 

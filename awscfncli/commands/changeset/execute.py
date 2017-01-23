@@ -21,8 +21,17 @@ from ...config import load_stack_config
 @click.pass_context
 @boto3_exception_handler
 def execute(ctx, config_file, changeset_name, no_wait):
-    """Updates a stack using the input information that was provided when
-    the specified change set was created.
+    """Updates stack using the change set.
+
+    Updates a stack using the input information that was provided when the
+    specified change set was created. After the call successfully completes,
+    When you execute a change set, AWS CloudFormation deletes all other
+    change sets associated with the stack because they aren't valid for
+    the updated stack.
+
+    If a stack policy is associated with the stack, AWS CloudFormation
+    enforces the policy during the update. You can't specify a temporary
+    stack policy that overrides the current policy.
 
     \b
     CONFIG_FILE         Stack configuration file.
@@ -63,5 +72,4 @@ def execute(ctx, config_file, changeset_name, no_wait):
     waiter = client.get_waiter(waiter_model)
     waiter.wait(StackName=stack.stack_id)
 
-    click.echo(click.style('ChangSet execution complete.',
-                           fg='green'))
+    click.secho('ChangSet execution complete.',fg='green')

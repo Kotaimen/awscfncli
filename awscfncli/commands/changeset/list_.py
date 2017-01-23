@@ -17,7 +17,7 @@ from ...config import load_stack_config
 @click.pass_context
 @boto3_exception_handler
 def list_(ctx, config_file):
-    """List all ChangeSets of specified stack
+    """List all active change set for a stack.
 
     \b
     CONFIG_FILE         Stack configuration file.
