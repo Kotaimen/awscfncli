@@ -1,13 +1,13 @@
 # Changelog
 
-## Develop
+## Version 0.3 (2017-01-23)
 
 Features:
 - Improve subcommand help.
 - Add `template reflect` sub command which generated
 
-Bug Fixes:
-- `template validate` fails when `TemplateBody` is used.
+Issues:
+- Fix bug that `template validate` fails when `TemplateBody` is used.
 
 ## Version 0.2 (2017-01-19)
 
