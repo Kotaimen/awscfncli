@@ -236,5 +236,5 @@ CHANGESET_STATUS_TO_COLOR = {
 ACTION_TO_COLOR = {
     'Add': dict(fg='green', bold=True, reverse=True),
     'Modify': dict(fg='yellow', bold=True, reverse=True),
-    'Delete': dict(fg='red', bold=True, reverse=True),
+    'Remove': dict(fg='red', bold=True, reverse=True),
 }
