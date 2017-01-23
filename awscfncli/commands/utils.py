@@ -22,9 +22,7 @@ def boto3_exception_handler(f):
                 botocore.exceptions.WaiterError,
                 botocore.exceptions.ParamValidationError,
                 ConfigError) as e:
-
             click.secho(str(e), fg='red')
-            raise
         except KeyboardInterrupt as e:
             click.secho('Aborted.', fg='red')
 
