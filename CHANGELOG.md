@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.3.1 (2017-01-24)
+
+Issues:
+- Fix Exception when describe a change set with resource change type is "Remove".
+
+
 ## Version 0.3 (2017-01-23)
 
 Features:
