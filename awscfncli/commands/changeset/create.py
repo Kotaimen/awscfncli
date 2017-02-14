@@ -10,6 +10,7 @@ import click
 
 from ..utils import boto3_exception_handler, pretty_print_config, \
     load_template_body, echo_pair
+from ..stack.events import start_tail_stack_events_daemon
 from ...cli import changeset
 from ...config import load_stack_config
 
@@ -27,10 +28,13 @@ from ...config import load_stack_config
               help='The type of change set operation. To create a change set '
                    'for a new stack, specify CREATE. To create a change set '
                    'for an existing stack, specify UPDATE.')
+@click.option('--execute', is_flag=True, default=False,
+              help='Execute the ChangeSet immediately after its created. '
+                   'Specify this disables "--no-wait" option. ')
 @click.pass_context
 @boto3_exception_handler
 def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
-           changeset_type):
+           changeset_type, execute):
     """Creates a list of changes for a stack.
 
     AWS CloudFormation generates the change set by comparing the template's
@@ -84,7 +88,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     echo_pair('ChangeSet ARN', result['Id'])
 
     # exit immediately
-    if no_wait:
+    if not execute and no_wait:
         return
 
     # wait until update complete
@@ -93,3 +97,33 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     waiter.wait(ChangeSetName=result['Id'])
 
     click.secho('ChangeSet creation complete.', fg='green')
+
+    if not execute:
+        return
+
+    if changeset_type == 'CREATE':
+        waiter_model = 'stack_create_complete'
+    else:
+        waiter_model = 'stack_update_complete'
+
+    client.execute_change_set(
+        ChangeSetName=changeset_name,
+        StackName=stack_config['StackName'],
+    )
+
+    # exit immediately
+    if no_wait:
+        return
+
+    # execute changeset
+    cfn = boto3.resource('cloudformation', region_name=region)
+    stack = cfn.Stack(stack_config['StackName'])
+
+    # start event tailing
+    start_tail_stack_events_daemon(stack, latest_events=5)
+
+    # wait until update complete
+    waiter = client.get_waiter(waiter_model)
+    waiter.wait(StackName=stack.stack_id)
+
+    click.secho('ChangSet execution complete.',fg='green')
