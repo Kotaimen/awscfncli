@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.3.2 (2017-04-25)
+
+Features:
+- Add "--execute" option to changeset create subcommand.
+
 ## Version 0.3.1 (2017-01-24)
 
 Issues:
