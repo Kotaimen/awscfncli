@@ -75,8 +75,8 @@ def test_cfn_stack_update(mock_config_with_templateurl, mock_cfn, mock_cfn_clien
 {
   "Statement" : [
     {
-      "Effect" : "Deny",
-      "Action" : "Update:Delete",
+      "Effect" : "Allow",
+      "NotAction" : "Update:Delete",
       "Principal": "*",
       "Resource" : "*"
     }
