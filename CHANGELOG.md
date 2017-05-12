@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.3.4 (2017-05-12)
+
+Issues:
+- Fix unittest error.
+
+
 ## Version 0.3.3 (2017-05-12)
 
 Issues:
@@ -10,6 +16,7 @@ Issues:
 
 Features:
 - Add "--execute" option to changeset create subcommand.
+
 
 ## Version 0.3.1 (2017-01-24)
 
