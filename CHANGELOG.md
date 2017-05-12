@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.3.3 (2017-05-12)
+
+Issues:
+- Fix incorrect canned stack policies.
+
+
 ## Version 0.3.2 (2017-04-25)
 
 Features:
