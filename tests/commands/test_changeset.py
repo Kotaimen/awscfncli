@@ -12,8 +12,9 @@ __date__ = '1/14/17'
 
 
 def test_cfn_changeset_create(mock_config_with_templateurl, mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client:
-        mock_client.return_value = mock_cfn_client
+    with mock.patch('boto3.session.Session') as session:
+        # Mocks
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, [
@@ -26,12 +27,13 @@ def test_cfn_changeset_create(mock_config_with_templateurl, mock_cfn_client):
             ChangeSetType='UPDATE'
         )
 
-        mock_client.return_value.get_waiter.assert_called_once()
+        mock_cfn_client.get_waiter.assert_called_once()
 
 
 def test_cfn_changeset_describe(mock_config_with_templateurl, mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client:
-        mock_client.return_value = mock_cfn_client
+    with mock.patch('boto3.session.Session') as session:
+        # Mocks
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, [
@@ -46,10 +48,10 @@ def test_cfn_changeset_describe(mock_config_with_templateurl, mock_cfn_client):
 
 def test_cfn_changeset_execute(mock_config_with_templateurl, mock_cfn,
                                mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client, \
-            mock.patch('boto3.resource') as mock_resource:
-        mock_resource.return_value = mock_cfn
-        mock_client.return_value = mock_cfn_client
+    with mock.patch('boto3.session.Session') as session:
+        # Mocks
+        session.return_value.resource.return_value = mock_cfn
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, [
@@ -66,10 +68,10 @@ def test_cfn_changeset_execute(mock_config_with_templateurl, mock_cfn,
 
 def test_cfn_changeset_list(mock_config_with_templateurl, mock_cfn,
                             mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client, \
-            mock.patch('boto3.resource') as mock_resource:
-        mock_resource.return_value = mock_cfn
-        mock_client.return_value = mock_cfn_client
+    with mock.patch('boto3.session.Session') as session:
+        # Mocks
+        session.return_value.resource.return_value = mock_cfn
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, ['changeset', 'list', mock_config_with_templateurl])
