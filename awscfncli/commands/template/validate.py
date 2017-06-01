@@ -3,7 +3,6 @@
 __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
-import boto3
 import click
 
 from ...config import load_stack_config
@@ -24,11 +23,13 @@ def validate(ctx, config_file):
 
     CONFIG_FILE         Stack configuration file.
     """
+    session = ctx.obj['session']
+
     click.echo('Validating template...')
     stack_config = load_stack_config(config_file)
     load_template_body(stack_config)
 
-    client = boto3.client('cloudformation')
+    client = session.client('cloudformation')
 
     if 'TemplateBody' in stack_config:
         client.validate_template(

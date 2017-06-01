@@ -3,7 +3,6 @@
 __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
-import boto3
 import click
 
 from ..utils import boto3_exception_handler
@@ -27,10 +26,11 @@ def tail(ctx, config_file, timeout, events):
 
     CONFIG_FILE         Stack configuration file.
     """
+    session = ctx.obj['session']
 
     stack_config = load_stack_config(config_file)
 
-    cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
+    cfn = session.resource('cloudformation', region_name=stack_config['Region'])
     stack = cfn.Stack(stack_config['StackName'])
 
     tail_stack_events(stack, latest_events=events, time_limit=timeout)

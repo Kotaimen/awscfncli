@@ -3,7 +3,6 @@
 __author__ = 'kotaimen'
 __date__ = '13/01/2017'
 
-import boto3
 import click
 
 from ..utils import boto3_exception_handler, pretty_print_config, \
@@ -22,19 +21,21 @@ def list_(ctx, config_file):
     \b
     CONFIG_FILE         Stack configuration file.
     """
+    session = ctx.obj['session']
+
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
 
     # connect co cfn
     region = stack_config.pop('Region')
-    cfn = boto3.resource('cloudformation', region_name=region)
+    cfn = session.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
 
     stack_id = stack.stack_id
     pretty_print_stack(stack)
 
-    client = boto3.client('cloudformation', region_name=region)
+    client = session.client('cloudformation', region_name=region)
     result = client.list_change_sets(StackName=stack_id)
 
     echo_pair('ChangeSets')
