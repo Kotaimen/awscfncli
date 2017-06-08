@@ -14,7 +14,8 @@ import threading
 from ..utils import STACK_STATUS_TO_COLOR
 
 
-def tail_stack_events(stack,
+def tail_stack_events(session,
+                      stack,
                       latest_events=5,
                       event_limit=10000,
                       time_limit=3600,
@@ -68,11 +69,12 @@ def tail_stack_events(stack,
                             e.physical_resource_id not in visited_stacks:
                 visited_stacks.add(e.physical_resource_id)
 
-                cfn = boto3.resource('cloudformation',
-                                     region_name=stack.meta.client.meta.region_name)
+                cfn = session.resource('cloudformation',
+                                       region_name=stack.meta.client.meta.region_name)
                 sub_stack = cfn.Stack(e.physical_resource_id)
 
-                start_tail_stack_events_daemon(sub_stack,
+                start_tail_stack_events_daemon(session,
+                                               sub_stack,
                                                latest_events=latest_events,
                                                check_interval=check_interval,
                                                indent=indent + 2,
@@ -102,7 +104,8 @@ def tail_stack_events(stack,
         time.sleep(check_interval)
 
 
-def start_tail_stack_events_daemon(stack,
+def start_tail_stack_events_daemon(session,
+                                   stack,
                                    latest_events=5,
                                    event_limit=10000,
                                    time_limit=3600,
@@ -110,7 +113,8 @@ def start_tail_stack_events_daemon(stack,
                                    indent=0,
                                    prefix=None):
     thread = threading.Thread(target=tail_stack_events,
-                              args=(stack, latest_events, event_limit,
+                              args=(session,
+                                    stack, latest_events, event_limit,
                                     time_limit, check_interval,
                                     indent, prefix))
     thread.daemon = True

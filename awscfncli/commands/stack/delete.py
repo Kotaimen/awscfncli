@@ -48,7 +48,7 @@ def delete(ctx, config_file, no_wait):
         return
 
     # start event tailing
-    start_tail_stack_events_daemon(stack, latest_events=2)
+    start_tail_stack_events_daemon(session, stack, latest_events=2)
 
     # wait until delete complete
     waiter = session.client('cloudformation', region_name=region).get_waiter(

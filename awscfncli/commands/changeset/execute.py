@@ -67,7 +67,7 @@ def execute(ctx, config_file, changeset_name, no_wait):
         return
 
     # start event tailing
-    start_tail_stack_events_daemon(stack, latest_events=5)
+    start_tail_stack_events_daemon(session, stack, latest_events=5)
 
     # wait until update complete
     waiter = client.get_waiter(waiter_model)

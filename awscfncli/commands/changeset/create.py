@@ -121,7 +121,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     stack = cfn.Stack(stack_config['StackName'])
 
     # start event tailing
-    start_tail_stack_events_daemon(stack, latest_events=5)
+    start_tail_stack_events_daemon(session, stack, latest_events=5)
 
     # wait until update complete
     waiter = client.get_waiter(waiter_model)

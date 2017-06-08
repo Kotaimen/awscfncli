@@ -33,4 +33,4 @@ def tail(ctx, config_file, timeout, events):
     cfn = session.resource('cloudformation', region_name=stack_config['Region'])
     stack = cfn.Stack(stack_config['StackName'])
 
-    tail_stack_events(stack, latest_events=events, time_limit=timeout)
+    tail_stack_events(session, stack, latest_events=events, time_limit=timeout)
