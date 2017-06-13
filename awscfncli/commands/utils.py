@@ -93,8 +93,6 @@ def load_template_body(session, config):
                         's3.cn-north-1.amazonaws.com.cn',
                     )
 
-                print(exported_template)
-
                 config['TemplateBody'] = exported_template
             else:
                 with open(config['TemplateBody']) as fp:
