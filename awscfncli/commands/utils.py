@@ -4,11 +4,16 @@ __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
 import os
+import json
 from functools import wraps
 
 import click
 import botocore.exceptions
 from ..config import ConfigError
+
+from botocore.exceptions import ClientError
+from awscli.customizations.cloudformation.s3uploader import S3Uploader
+from awscli.customizations.cloudformation.artifact_exporter import Template
 
 
 def boto3_exception_handler(f):
@@ -29,12 +34,72 @@ def boto3_exception_handler(f):
     return wrapper
 
 
-def load_template_body(config):
+def load_template_body(session, config):
     """Load local template file as TemplateBody"""
     if 'TemplateBody' in config:
         try:
-            with open(config['TemplateBody']) as fp:
-                config['TemplateBody'] = fp.read()
+            package = bool(config.get('Package', False))
+            if package:
+                # Get account id to compose a template bucket name.
+                sts = session.client('sts')
+                accountid = sts.get_caller_identity()["Account"]
+
+                bucket_name = 'awscfncli-%s-%s' % (accountid, config['Region'])
+                s3 = session.client('s3')
+
+                try:
+                    s3.head_bucket(Bucket=bucket_name)
+                except ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        if config['Region'] != 'us-east-1':
+                            s3.create_bucket(
+                                Bucket=bucket_name,
+                                CreateBucketConfiguration={
+                                    'LocationConstraint': config['Region']
+                                }
+                            )
+                        else:
+                            s3.create_bucket(
+                                Bucket=bucket_name
+                            )
+
+                        click.echo(
+                            'Created bucket %s !' % bucket_name)
+
+                    else:
+                        raise e
+
+                uploader = S3Uploader(
+                    s3_client=session.client('s3'),
+                    bucket_name=bucket_name,
+                    region=config['Region'],
+                    prefix=config['StackName']
+                )
+                click.echo(
+                    'Set bucket "%s" for storing temporary templates' % bucket_name)
+
+                template = Template(
+                    os.path.basename(config['TemplateBody']),
+                    os.path.dirname(os.path.realpath(config['TemplateBody'])),
+                    uploader)
+
+                exported_template = json.dumps(template.export(), indent=2)
+
+                # Patch s3 endpoint in china region
+                if config['Region'].startswith('cn-'):
+                    click.echo('Patching s3 endpoint in china region')
+                    exported_template = exported_template.replace(
+                        's3-cn-north-1.amazonaws.com',
+                        's3.cn-north-1.amazonaws.com.cn',
+                    )
+
+                print(exported_template)
+
+                config['TemplateBody'] = exported_template
+            else:
+                with open(config['TemplateBody']) as fp:
+                    config['TemplateBody'] = fp.read()
+
         except Exception as e:
             raise ConfigError(str(e))
 

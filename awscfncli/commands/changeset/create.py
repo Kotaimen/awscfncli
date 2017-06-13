@@ -55,7 +55,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
     click.echo('Creating change set...')
 
     # connect co cfn
@@ -64,6 +64,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     # remove unused parameters
     stack_config.pop('DisableRollback', None)
     stack_config.pop('OnFailure', None)
+    stack_config.pop('Package', None)
 
     # update parameters
     if changeset_name is None:

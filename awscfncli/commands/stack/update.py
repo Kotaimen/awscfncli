@@ -55,12 +55,16 @@ def update(ctx, config_file, no_wait, use_previous_template,
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
 
     click.echo('Updating stack...')
 
     # connect co cfn
     region = stack_config.pop('Region')
+
+    # remove unused parameters
+    stack_config.pop('Package', None)
+
     cfn = session.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
 

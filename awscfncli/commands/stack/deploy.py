@@ -51,7 +51,7 @@ def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
     click.echo('Deploying stack...')
     pretty_print_config(stack_config)
 
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
 
     # option handling
     if on_failure is not None:
@@ -64,6 +64,10 @@ def deploy(ctx, config_file, no_wait, on_failure, canned_policy):
 
     # connect to cfn
     region = stack_config.pop('Region')
+
+    # remove unused parameters
+    stack_config.pop('Package', None)
+
     cfn = session.resource('cloudformation', region_name=region)
 
     # create stack

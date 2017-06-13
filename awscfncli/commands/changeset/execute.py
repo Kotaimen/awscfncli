@@ -41,10 +41,13 @@ def execute(ctx, config_file, changeset_name, no_wait):
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
 
     # connect to cfn
     region = stack_config.pop('Region')
+
+    # remove unused parameters
+    stack_config.pop('Package', None)
 
     # execute change set
     client = session.client('cloudformation', region_name=region)

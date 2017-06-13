@@ -29,7 +29,7 @@ def delete(ctx, config_file, no_wait):
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
     click.echo('Deleting stack...')
 
     # connect co cfn

@@ -27,7 +27,7 @@ def validate(ctx, config_file):
 
     click.echo('Validating template...')
     stack_config = load_stack_config(config_file)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
 
     client = session.client('cloudformation')
 

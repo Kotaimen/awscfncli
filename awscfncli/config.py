@@ -28,6 +28,7 @@ class StackConfig(object):
         'Region': (six.string_types, True),
         'TemplateBody': (six.string_types, False),
         'TemplateURL': (six.string_types, False),
+        'Package': (bool, False),
         'Parameters': (dict, False),
         'DisableRollback': (bool, False),
         'TimeoutInMinutes': (int, False),
@@ -45,13 +46,13 @@ class StackConfig(object):
         self._props = kwargs
 
     def validate(self):
-        # Should have either 'TemplateBody' or 'TemplateURL'
+        # Should have either 'TemplateBody', 'TemplateURL'
         if not any(k in self._props for k in ('TemplateBody', 'TemplateURL')):
             raise ConfigError(
-                'Should specify either TemplateBody or TemplateURL.')
+                'Should specify either TemplateBody, TemplateURL.')
         if all(k in self._props for k in ('TemplateBody', 'TemplateURL')):
             raise ConfigError(
-                'Should not have both TemplateBody and TemplateURL.')
+                'Should have one of TemplateBody, TemplateURL.')
 
         # Check type and requirement
         for k, (t, r) in self.STACK_CONFIG_DEF.items():
