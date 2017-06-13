@@ -33,6 +33,7 @@ install_requires = [
     'boto3>=1.3',
     'click>=6.0',
     'PyYAML>=3.11',
+    'awscli>=1.10'
 ]
 
 test_requires = ['pytest', 'pytest-cov', 'mock']
