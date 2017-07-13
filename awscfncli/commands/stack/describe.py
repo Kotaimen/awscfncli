@@ -3,7 +3,6 @@
 __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
-import boto3
 import botocore.exceptions
 import click
 
@@ -30,9 +29,11 @@ def describe(ctx, config_file, stack_resources, stack_exports):
     CONFIG_FILE         Stack configuration file.
     """
 
+    session = ctx.obj['session']
+
     stack_config = load_stack_config(config_file)
 
-    cfn = boto3.resource('cloudformation', region_name=stack_config['Region'])
+    cfn = session.resource('cloudformation', region_name=stack_config['Region'])
     stack = cfn.Stack(stack_config['StackName'])
 
     pretty_print_stack(stack, detail=True)
@@ -50,7 +51,7 @@ def describe(ctx, config_file, stack_resources, stack_exports):
             echo_pair('Last Updated', r.last_updated_timestamp, indent=4)
 
     if stack_exports:
-        client = boto3.client('cloudformation',
+        client = session.client('cloudformation',
                               region_name=stack_config['Region'])
         echo_pair('Exports')
         for export in custom_paginator(client.list_exports, 'Exports'):

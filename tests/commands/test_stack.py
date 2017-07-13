@@ -13,48 +13,48 @@ __date__ = '1/14/17'
 
 def test_cfn_stack_deploy(
         mock_config_with_templateurl, mock_cfn, mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client, \
-            mock.patch('boto3.resource') as mock_resource:
+    with mock.patch('boto3.session.Session') as session:
         # Mocks
-        mock_resource.return_value = mock_cfn
-        mock_client.return_value = mock_cfn_client
+        session.return_value.resource.return_value = mock_cfn
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, [
             'stack', 'deploy', mock_config_with_templateurl, '--on-failure',
             'ROLLBACK', '--canned-policy', 'DENY_DELETE'])
 
-        mock_resource.assert_called_once_with(
+        session.return_value.resource.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn.create_stack.assert_called_once()
 
-        mock_client.assert_called_once_with(
+        session.return_value.client.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn_client.get_waiter.assert_called_once()
 
 
 def test_cfn_stack_describe(mock_config_with_templateurl, mock_cfn):
-    with mock.patch('boto3.resource') as mock_resource:
+    with mock.patch('boto3.session.Session') as session:
         # Mocks
-        mock_resource.return_value = mock_cfn
+        session.return_value.resource.return_value = mock_cfn
 
         runner = CliRunner()
         runner.invoke(cfn,
-                      ['stack', 'describe', mock_config_with_templateurl, '--stack-resources'])
+                      ['stack', 'describe', mock_config_with_templateurl,
+                       '--stack-resources'])
 
-        mock_resource.assert_called_once_with(
+        session.return_value.resource.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn.Stack.assert_called_once_with(
             'ExampleStack'
         )
 
 
-def test_cfn_stack_update(mock_config_with_templateurl, mock_cfn, mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client, \
-            mock.patch('boto3.resource') as mock_resource:
+def test_cfn_stack_update(mock_config_with_templateurl, mock_cfn,
+                          mock_cfn_client):
+    with mock.patch('boto3.session.Session') as session:
         # Mocks
-        mock_resource.return_value = mock_cfn
-        mock_client.return_value = mock_cfn_client
+        session.return_value.resource.return_value = mock_cfn
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, ['stack', 'update', mock_config_with_templateurl,
@@ -62,7 +62,7 @@ def test_cfn_stack_update(mock_config_with_templateurl, mock_cfn, mock_cfn_clien
                             '--canned-policy', 'DENY_DELETE',
                             '--override-policy', 'ALLOW_ALL'])
 
-        mock_resource.assert_called_once_with(
+        session.return_value.resource.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn.Stack.assert_called_once_with(
             'ExampleStack'
@@ -97,45 +97,41 @@ def test_cfn_stack_update(mock_config_with_templateurl, mock_cfn, mock_cfn_clien
 '''
         )
 
-        mock_client.assert_called_once_with(
+        session.return_value.client.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn_client.get_waiter.assert_called_once()
 
 
 def test_cfn_stack_delete(
         mock_config_with_templateurl, mock_cfn, mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client, \
-            mock.patch('boto3.resource') as mock_resource:
+    with mock.patch('boto3.session.Session') as session:
         # Mocks
-        mock_resource.return_value = mock_cfn
-        mock_client.return_value = mock_cfn_client
+        session.return_value.resource.return_value = mock_cfn
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, ['stack', 'delete', mock_config_with_templateurl])
 
-        mock_resource.assert_called_once_with(
+        session.return_value.resource.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
-        mock_cfn.Stack.assert_called_once_with(
-            'ExampleStack'
-        )
-
+        mock_cfn.Stack.assert_called_once_with('ExampleStack')
         mock_cfn.Stack.return_value.delete.assert_called_once()
 
-        mock_client.assert_called_once_with(
+        session.return_value.client.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn_client.get_waiter.assert_called_once()
 
 
 def test_cfn_stack_tail(mock_config_with_templateurl, mock_cfn):
-    with mock.patch('boto3.resource') as mock_resource:
+    with mock.patch('boto3.session.Session') as session:
         # Mocks
-        mock_resource.return_value = mock_cfn
+        session.return_value.resource.return_value = mock_cfn
 
         runner = CliRunner()
         runner.invoke(cfn, [
             'stack', 'tail', mock_config_with_templateurl, '--timeout', '1'])
 
-        mock_resource.assert_called_once_with(
+        session.return_value.resource.assert_called_once_with(
             'cloudformation', region_name='us-east-1')
         mock_cfn.Stack.assert_called_once_with(
             'ExampleStack'

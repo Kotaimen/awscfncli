@@ -3,7 +3,6 @@
 __author__ = 'kotaimen'
 __date__ = '11/01/2017'
 
-import boto3
 import click
 
 from ...cli import stack
@@ -25,15 +24,17 @@ def delete(ctx, config_file, no_wait):
 
     CONFIG_FILE         Stack configuration file.
     """
+    session = ctx.obj['session']
+
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
     click.echo('Deleting stack...')
 
     # connect co cfn
     region = stack_config.pop('Region')
-    cfn = boto3.resource('cloudformation', region_name=region)
+    cfn = session.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
     stack_id = stack.stack_id
 
@@ -47,10 +48,10 @@ def delete(ctx, config_file, no_wait):
         return
 
     # start event tailing
-    start_tail_stack_events_daemon(stack, latest_events=2)
+    start_tail_stack_events_daemon(session, stack, latest_events=2)
 
     # wait until delete complete
-    waiter = boto3.client('cloudformation', region_name=region).get_waiter(
+    waiter = session.client('cloudformation', region_name=region).get_waiter(
         'stack_delete_complete')
     waiter.wait(StackName=stack_id)
 

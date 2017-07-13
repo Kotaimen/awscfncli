@@ -4,7 +4,6 @@ __author__ = 'kotaimen'
 __date__ = '20/01/2017'
 
 import os
-import boto3
 import click
 import json
 import yaml
@@ -45,6 +44,8 @@ def reflect(ctx, stack_name, config_file, template_file,
     CONFIG_FILE         Generated tack configuration file.
     TEMPLATE_FILE       Generated stack template file.
     """
+    session = ctx.obj['session']
+
     click.echo('Inspecting stack...')
     echo_pair('Region', region)
     echo_pair('Stack', stack_name)
@@ -53,7 +54,7 @@ def reflect(ctx, stack_name, config_file, template_file,
     config['Region'] = region
     config['StackName'] = stack_name
 
-    client = boto3.client('cloudformation', region_name=region)
+    client = session.client('cloudformation', region_name=region)
     r = client.get_template(StackName=stack_name)
 
     # write template
@@ -77,7 +78,7 @@ def reflect(ctx, stack_name, config_file, template_file,
 
     config['TemplateBody'] = template_file
 
-    cfn = boto3.resource('cloudformation', region_name=region)
+    cfn = session.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_name)
 
     if stack.capabilities:

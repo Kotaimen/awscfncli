@@ -33,6 +33,7 @@ install_requires = [
     'boto3>=1.3',
     'click>=6.0',
     'PyYAML>=3.11',
+    'awscli>=1.10'
 ]
 
 test_requires = ['pytest', 'pytest-cov', 'mock']
@@ -44,7 +45,7 @@ setup(
     name='awscfncli',
 
     # Version and description
-    version='0.3.4',
+    version='0.4.0',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 

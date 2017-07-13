@@ -15,8 +15,9 @@ def test_cli():
   Welcome to the CloudFormation Stack Management Command Line Interface.
 
 Options:
-  --version  Show the version and exit.
-  --help     Show this message and exit.
+  --version       Show the version and exit.
+  --profile TEXT  Use a specific profile from your credential file.
+  --help          Show this message and exit.
 
 Commands:
   changeset  CloudFormation ChangeSet commands

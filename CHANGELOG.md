@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.4.0 (2017-07-13)
+
+Features:
+- Package referenced resources before deploying the template.
+- Support deploying template with specified service role.
+
+
 ## Version 0.3.4 (2017-05-12)
 
 Issues:

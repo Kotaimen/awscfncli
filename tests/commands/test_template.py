@@ -28,8 +28,8 @@ def test_cfn_template_validate(
         mock_config_with_templateurl,
         mock_config_with_templatebody,
         mock_cfn_client):
-    with mock.patch('boto3.client') as mock_client:
-        mock_client.return_value = mock_cfn_client
+    with mock.patch('boto3.session.Session') as session:
+        session.return_value.client.return_value = mock_cfn_client
 
         runner = CliRunner()
         runner.invoke(cfn, [

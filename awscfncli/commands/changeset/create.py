@@ -5,7 +5,6 @@ __date__ = '12/01/2017'
 
 import uuid
 
-import boto3
 import click
 
 from ..utils import boto3_exception_handler, pretty_print_config, \
@@ -51,10 +50,12 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
                         stack. cfncli will automatically generate a unique
                         name if one not given.
     """
+    session = ctx.obj['session']
+
     # load config
     stack_config = load_stack_config(config_file)
     pretty_print_config(stack_config)
-    load_template_body(stack_config)
+    load_template_body(session, stack_config)
     click.echo('Creating change set...')
 
     # connect co cfn
@@ -63,6 +64,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     # remove unused parameters
     stack_config.pop('DisableRollback', None)
     stack_config.pop('OnFailure', None)
+    stack_config.pop('Package', None)
 
     # update parameters
     if changeset_name is None:
@@ -83,7 +85,7 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
     stack_config.pop('StackPolicyURL', None)
 
     # create changeset
-    client = boto3.client('cloudformation', region_name=region)
+    client = session.client('cloudformation', region_name=region)
     result = client.create_change_set(**stack_config)
     echo_pair('ChangeSet ARN', result['Id'])
 
@@ -116,11 +118,11 @@ def create(ctx, config_file, no_wait, changeset_name, use_previous_template,
         return
 
     # execute changeset
-    cfn = boto3.resource('cloudformation', region_name=region)
+    cfn = session.resource('cloudformation', region_name=region)
     stack = cfn.Stack(stack_config['StackName'])
 
     # start event tailing
-    start_tail_stack_events_daemon(stack, latest_events=5)
+    start_tail_stack_events_daemon(session, stack, latest_events=5)
 
     # wait until update complete
     waiter = client.get_waiter(waiter_model)
