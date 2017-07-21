@@ -1,6 +1,12 @@
 # Changelog
 
-## Version 0.4.0 (2017-07-13)
+## Version 0.5 (2017-07-21)
+
+Features:
+- Add command for template packaging.
+
+
+## Version 0.4 (2017-07-13)
 
 Features:
 - Package referenced resources before deploying the template.
