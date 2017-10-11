@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Nested Stack Sample'
+
+Resources:
+  SampleInstance:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: https://s3-us-west-2.amazonaws.com/cloudformation-templates-us-west-2/EC2InstanceWithSecurityGroupSample.template
+      Parameters:
+        InstanceType:           m4.xlarge
+        KeyName:                test-key
+        SSHLocation:            0.0.0.0/0

@@ -12,13 +12,10 @@ Stack:
     PublicSubnet2CIDR:      172.26.144.0/20
     PrivateSubnet1CIDR:     172.26.0.0/19
     PrivateSubnet2CIDR:     172.26.32.0/19
-                            #
+
     RemoteAccessCIDR:       0.0.0.0/0
     KeyPairName:            test-key
-    Bastion1InstanceType:   t2.nano
-    Bastion1PrivateIP:      "172.26.128.5"
-    Bastion2InstanceType:   t2.nano
-    Bastion2PrivateIP:      "172.26.144.5"
+    BastionInstanceType:    t2.nano
     EnableBanner:           true
   Tags:
     project:                Bob

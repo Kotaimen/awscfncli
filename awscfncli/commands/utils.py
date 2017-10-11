@@ -12,8 +12,12 @@ import botocore.exceptions
 from ..config import ConfigError
 
 from botocore.exceptions import ClientError
-from awscli.customizations.cloudformation.s3uploader import S3Uploader
 from awscli.customizations.cloudformation.artifact_exporter import Template
+try:
+    from awscli.customizations.cloudformation.s3uploader import S3Uploader
+except ImportError:
+    # Fix import error for awscli version later than 1.11.161
+    from awscli.customizations.s3uploader import S3Uploader
 
 
 def boto3_exception_handler(f):
