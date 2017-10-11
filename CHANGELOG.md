@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.5.1 (2017-10-11)
+
+Features:
+- Add cost command to estimate cost of templates
+
+Issues:
+- Fix import error for awscli version later than 1.11.161
+
+
 ## Version 0.5 (2017-07-21)
 
 Features:

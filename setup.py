@@ -45,7 +45,7 @@ setup(
     name='awscfncli',
 
     # Version and description
-    version='0.5',
+    version='0.5.1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
