@@ -39,6 +39,7 @@ class StackConfig(object):
         'OnFailure': (six.string_types, False),
         'StackPolicyBody': (six.string_types, False),
         'StackPolicyURL': (six.string_types, False),
+        'EnableTerminationProtection': (six.string_types, False),
         'Tags': (dict, False),
     }
 
