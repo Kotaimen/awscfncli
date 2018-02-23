@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2 (2018-02-23)
+Reloading...
+
 ## Version 0.5.1 (2017-10-11)
 
 Features:

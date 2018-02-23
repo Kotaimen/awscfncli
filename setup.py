@@ -4,7 +4,7 @@ import os
 from setuptools import setup, find_packages
 
 __author__ = 'kotaimen'
-__date__ = '03/01/2017'
+__date__ = '22-Feb-2018'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -20,11 +20,9 @@ Introduction
 
 Features:
 
-* awscli a-like CLI interface.
+* aws cli a-like CLI interface.
 * Simple YAML stack configuration file.
 * Tracking stack events in the CLI.
-
-See also: `awscfncli <https://kotaimen.github.io/awscfncli>`_
 
 """
 
@@ -91,6 +89,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        cfn=awscfncli.__main__:main
+        cfn-cli=awscfncli.__main__:main
     ''',
 )
