@@ -3,10 +3,13 @@ Version: 2
 
 # Default values for all stacks in this configuration file, 
 # can be overwritten in environment stacks.
+#
+# You can also specify shell environment variables using:
+#   ${VARIABLE_NAME}
 Defaults:
   
-  # Stack configuration
-  Stack:
+  # Stack default configuration name
+  IslandVpc:
     
     # AWS CLI profile name.
     # Optional, use default profile if this is not specified
@@ -105,12 +108,34 @@ Defaults:
       EnableX11Forwarding:    false
 
 Environments:
-  
+
   # Environment name
   staging:
     
     # Stack name
-    IslandVpc:
+    IslandVpc1:
+      
+      # Base stack configuration, try to use stack with same name in 
+      # Defaults section if this is not specified.
+      From: Defaults.IslandVpc
+      
+      # Overwride stack parameters
+      profile: StagingAccount
+      region: us-east-1
+
+      tags:
+        environment: staging
+        
+      parameters:
+        AvailabilityZones:    us-east-1a,us-east-1c
+        KeyPairName:          key1
+
+    IslandVpc2:
+      
+      From: Defaults.IslandVpc
+      
+      # Stack will be create/depolyed after depended stack
+      DependsOn: IslandVpc1
       
       # Overwride stack parameters
       profile: StagingAccount
