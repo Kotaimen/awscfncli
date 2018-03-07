@@ -6,7 +6,7 @@ Version: 2
 #
 # You can also specify shell environment variables using:
 #   ${VARIABLE_NAME}
-Defaults:
+Blueprints:
   
   # Stack default configuration name
   IslandVpc:
