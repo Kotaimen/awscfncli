@@ -22,40 +22,39 @@ class CfnCliConfig(namedtuple('CfnCliConfig', 'version blueprints environments')
     BLUEPRINT_SECTION = 'Blueprints'
     ENVIRONMENT_SECTION = 'Environments'
 
-    @classmethod
-    def load(cls, config):
+    @staticmethod
+    def load(config):
         # load version
-        version = config.get(cls.VERSION_SECTION, cls.CFNFILE_V1)
+        version = config.get(CfnCliConfig.VERSION_SECTION, CfnCliConfig.CFNFILE_V1)
 
         # load blueprint into dict
-        blueprint_section = config.get(cls.BLUEPRINT_SECTION, {})
+        blueprint_section = config.get(CfnCliConfig.BLUEPRINT_SECTION, {})
         blueprints = {}
         for key, val in blueprint_section:
             blueprints[key] = Blueprint.load(val)
 
         # load environment into dict
-        environment_section = config.get(cls.ENVIRONMENT_SECTION, {})
+        environment_section = config.get(CfnCliConfig.ENVIRONMENT_SECTION, {})
         environments = {}
         for key, val in environment_section:
             environments[key] = Environment.load(val)
 
-        return cls(version, blueprints, environments)
+        return CfnCliConfig(version, blueprints, environments)
 
 
 class Stack(namedtuple('Stack', '')):
-    @classmethod
-    def load(cls, config):
-        return cls()
+    @staticmethod
+    def load(config):
+        return Stack()
 
 
 class Environment(namedtuple('Environment', '')):
-    @classmethod
-    def load(cls, config):
-        return cls()
+    @staticmethod
+    def load(config):
+        return Environment()
 
 
 class Blueprint(namedtuple('Blueprint', '')):
-    @classmethod
-    def load(cls, config):
-        return cls()
-
+    @staticmethod
+    def load(config):
+        return Blueprint()
