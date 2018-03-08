@@ -16,22 +16,23 @@ AWS CloudFormation CLI
 Introduction
 ============
 
-``awscfncli`` is a simple CLI tool that helps you manage AWS CloudFormation stacks.
+``awscfncli`` AWS CloudFormation stack management command line interface.
 
 Features:
 
-* aws cli a-like CLI interface.
-* Simple YAML stack configuration file.
+* awscli a-like CLI interface.
+* Simple YAML stacks configuration file.
 * Tracking stack events in the CLI.
+* Managing stacks across different stages and accounts.
 
 """
 
 install_requires = [
     'six>=1.10.0',
-    'boto3>=1.3',
+    'boto3>=1.6',
     'click>=6.0',
     'PyYAML>=3.11',
-    'awscli>=1.10'
+    'awscli>=1.14'
 ]
 
 test_requires = ['pytest', 'pytest-cov', 'mock']
