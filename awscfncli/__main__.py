@@ -24,7 +24,9 @@ from .cli import cfn_cli
 
 
 def main():
-    cfn_cli()
+    cfn_cli(
+        auto_envvar_prefix='CFN'
+    )
 
 
 if __name__ == '__main__':

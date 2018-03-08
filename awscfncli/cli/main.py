@@ -3,8 +3,18 @@
 import click
 import pkg_resources
 import boto3
+import collections
+
+from ..config import load_config
 
 VERSION = pkg_resources.require('awscfncli')[0].version
+
+
+class ContextObject(
+    collections.namedtuple('CfnCliContext',
+                           'session profile region config verbosity')):
+    pass
+
 
 @click.group()
 @click.pass_context
@@ -12,12 +22,23 @@ VERSION = pkg_resources.require('awscfncli')[0].version
 @click.option('-f', '--file',
               type=click.Path(exists=False),
               default='cfn-cli.yml',
-              help='Specify an alternate stack configuration file '
+              help='Alternate stack configuration file '
                    '(default: cfn-cli.yml)',
               )
-# @click.option('--verbose', type=click.,
-#               help='Show more output')
-def cfn_cli(ctx, file):
+@click.option('--profile',
+              type=click.STRING,
+              default=None,
+              help='Profile name from AWS credential file, overrides '
+                   'config/env setting.'
+              )
+@click.option('--region',
+              type=click.STRING,
+              default=None,
+              help='AWS region to use, overrides config/env setting.'
+              )
+@click.option('-v', '--verbose', count=True,
+              help='Be more verbose.')
+def cfn_cli(ctx, file, profile, region, verbose):
     """AWS CloudFormation stack management command line interface.
 
     Typical usage:
@@ -36,11 +57,20 @@ def cfn_cli(ctx, file):
       cfn-cli stack deploy --help
 
     """
-    # Context object as a dict
-    ctx.obj = dict()
 
-    # TODO: Process args
+    session = boto3.session.Session(
+        profile_name=profile,
+        region_name=region,
+    )
 
-    # TODO: Create boto3 session
-    session = boto3.session.Session()
-    ctx.obj['session'] = session
+    config = load_config(file)
+
+    ctx_obj = ContextObject(
+        session=session,
+        profile=profile,
+        region=region,
+        verbosity=verbose,
+        config=config
+    )
+
+    ctx.obj = ctx_obj

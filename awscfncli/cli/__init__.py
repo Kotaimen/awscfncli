@@ -1,4 +1,3 @@
-
 # Import all commands here so they get registered in Click
 
 from .main import cfn_cli
