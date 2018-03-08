@@ -7,7 +7,7 @@ from collections import namedtuple
 log = logging.getLogger(__name__)
 
 
-def load(filename):
+def load_config(filename):
     with open(filename) as fp:
         config = yaml.safe_load(fp)
 
