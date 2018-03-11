@@ -1,0 +1,27 @@
+version: 2
+blueprints:
+  vpc: &vpc
+    template-body: "default.template"
+    region: "us-east-1"
+    profile: "bob"
+    tags: &tags
+      key1: 'value1'
+      key2: 'value2'
+environments:
+  staging:
+    # reuse entire anchor
+    vpc1: *vpc
+    vpc2:
+      # reuse parameters in the anchor
+      <<: *vpc
+      # replace tags in the anchor
+      tags:
+        key3: 'value3'
+        key4: 'value4'
+    vpc3:
+      # reuse parameters in the anchor
+      <<: *vpc
+      # replace tags in the anchor
+      tags:
+        <<: *tags
+        key1: 'value1_overide'

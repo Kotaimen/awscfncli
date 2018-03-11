@@ -58,9 +58,8 @@ Stack:
 New syntax:
 
 ```
-Version: 2
-
-Environments:
+version: 2
+environments:
   Default:
     SampleIAMUsersGroupsAndPolicies:
       Region:               us-east-1
