@@ -2,59 +2,97 @@
 
 import logging
 import yaml
-from collections import namedtuple
+from jsonschema import validate
 
-log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+CFNCLICONFIG_SCHEMA = {
+    "$schema": "http://json-schema.org/schema#",
+    'type': 'object',
+    'properties': {
+        'version': {
+            'type': 'integer'
+        },
+        'blueprints': {
+            'type': 'object',
+            'additionalProperties': {
+                'type': 'object'
+            },
+        },
+        'environments': {
+            'type': 'object',
+            'additionalProperties': {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'object',
+                    'properties': {
+                        'from': {
+                            'type': 'string'
+                        },
+                        'extends': {
+                            'type': 'object'
+                        }
+                    },
+                    'required': ['from']
+                }
+            }
+        }
+    },
+    'required': ['blueprints', 'environments']
+
+}
 
 
 def load_config(filename):
+    logger.info('Loading config "%s"' % filename)
     with open(filename) as fp:
         config = yaml.safe_load(fp)
-
-    return CfnCliConfig.load(config)
-
-
-class CfnCliConfig(namedtuple('CfnCliConfig', 'version blueprints environments')):
-    CFNFILE_V1 = 1
-    CFNFILE_V2 = 2
-
-    VERSION_SECTION = 'Version'
-    BLUEPRINT_SECTION = 'Blueprints'
-    ENVIRONMENT_SECTION = 'Environments'
-
-    @staticmethod
-    def load(config):
-        # load version
-        version = config.get(CfnCliConfig.VERSION_SECTION, CfnCliConfig.CFNFILE_V1)
-
-        # load blueprint into dict
-        blueprint_section = config.get(CfnCliConfig.BLUEPRINT_SECTION, {})
-        blueprints = {}
-        for key, val in blueprint_section:
-            blueprints[key] = Blueprint.load(val)
-
-        # load environment into dict
-        environment_section = config.get(CfnCliConfig.ENVIRONMENT_SECTION, {})
-        environments = {}
-        for key, val in environment_section:
-            environments[key] = Environment.load(val)
-
-        return CfnCliConfig(version, blueprints, environments)
+    return CfnCliConfig(config)
 
 
-class Stack(namedtuple('Stack', '')):
-    @staticmethod
-    def load(config):
-        return Stack()
+class CfnCliConfig(object):
+    def __init__(self, config):
+        validate(config, CFNCLICONFIG_SCHEMA)
 
+        self._version = self._load_version(config)
+        self._environments = self._load_environments(config)
 
-class Environment(namedtuple('Environment', '')):
-    @staticmethod
-    def load(config):
-        return Environment()
+    @property
+    def version(self):
+        return self._version
 
+    def list_environments(self):
+        return self._environments.keys()
 
-class Blueprint(namedtuple('Blueprint', '')):
-    @staticmethod
-    def load(config):
-        return Blueprint()
+    def list_stacks(self, environment_name):
+        return self._environments[environment_name].keys()
+
+    def get_stack(self, environment_name, stack_name):
+        return self._environments[environment_name][stack_name]
+
+    def _load_version(self, config):
+        version = config.get('version', 1)
+        logger.debug('Loading version %s' % version)
+        return version
+
+    def _load_environments(self, config):
+        environments = dict()
+
+        blueprints = config['blueprints']
+        for environment_name, environment in config['environments'].items():
+            logger.debug('Loading environment "%s"' % environment_name)
+            stacks = dict()
+            for stack_name, stack in environment.items():
+                logger.debug('Loading environment "%s" stack "%s"' % (
+                    environment_name, stack_name))
+
+                # copy config from blueprints
+                stack_config = dict(blueprints[stack['from']])
+                stack_config.update(stack.get('extends'))
+
+                stacks[stack_name] = stack_config
+
+            environments[environment_name] = stacks
+
+        return environments
