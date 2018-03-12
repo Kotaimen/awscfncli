@@ -4,11 +4,8 @@ import logging
 import yaml
 from .schema import validate_config
 
-logging.basicConfig(level=logging.DEBUG)
-
-
 def load_config(filename):
-    logging.info('Loading config "%s"' % filename)
+    logging.debug('Loading config "%s"' % filename)
     with open(filename) as fp:
         config = yaml.safe_load(fp)
         if config is None:
