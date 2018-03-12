@@ -1,26 +1,22 @@
 #  -*- encoding: utf-8 -*-
 
+import os
+import logging
+
 import click
 import pkg_resources
-import boto3
-import collections
 
+from .utils.context import ContextObject
 from ..config import load_config
 
 VERSION = pkg_resources.require('awscfncli')[0].version
-
-
-class ContextObject(
-    collections.namedtuple('CfnCliContext',
-                           'session profile region config verbosity')):
-    pass
 
 
 @click.group()
 @click.pass_context
 @click.version_option(version=VERSION)
 @click.option('-f', '--file',
-              type=click.Path(exists=False),
+              type=click.Path(exists=False, dir_okay=True),
               default='cfn-cli.yml',
               help='Alternate stack configuration file '
                    '(default: cfn-cli.yml)',
@@ -41,36 +37,36 @@ class ContextObject(
 def cfn_cli(ctx, file, profile, region, verbose):
     """AWS CloudFormation stack management command line interface.
 
-    Typical usage:
+    By default, cfn-cli try to find "cfn-cli.yml" in
+    current directory and load environment and stack configurations.
+
+    Usage:
 
     \b
-      cfn-cli [OPTIONS] COMMAND SUBCOMMAND [ARGS...] ENVIRONMENT_NAME STACK_NAME
+      cfn-cli [-f config_file_or_dir] [OPTIONS...] COMMAND SUBCOMMAND [ARGS...] ENVIRONMENT_NAME STACK_NAME
+      cfn-cli --help
 
-    For example:
+    Some examples:
 
     \b
       cfn-cli stack deploy Production Networking
-
-    To retrieve help, use '--help':
+      cfn-cli -f foobar/MyGreatProject.yml stack deploy 'Prod*' 'Net*'
 
     \b
       cfn-cli stack deploy --help
 
     """
 
-    session = boto3.session.Session(
-        profile_name=profile,
-        region_name=region,
-    )
-
     config = load_config(file)
 
     ctx_obj = ContextObject(
-        session=session,
+        config=config,
         profile=profile,
         region=region,
         verbosity=verbose,
-        config=config
     )
+
+    if verbose > 1:
+        logging.basicConfig(level=logging.DEBUG)
 
     ctx.obj = ctx_obj
