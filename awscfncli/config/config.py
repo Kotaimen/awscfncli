@@ -2,7 +2,9 @@
 
 import logging
 import yaml
+from collections import namedtuple
 from .schema import validate_config
+
 
 def load_config(filename):
     logging.debug('Loading config "%s"' % filename)
@@ -49,8 +51,70 @@ class CfnCliConfig(object):
                 logging.debug('Loading environment "%s" stack "%s"' % (
                     env_name, stack_name))
 
-                stacks[stack_name] = stack_config
+                stack_config = dict(stack_config)
+                if 'StackName' not in stack_config:
+                    stack_config['StackName'] = stack_name
+
+                stacks[stack_name] = StackConfig(**stack_config)
 
             environments[env_name] = stacks
 
         return environments
+
+
+class StackConfig(
+    namedtuple('StackConfig', 'StackName Profile Region Package '
+                              'ArtifactStorage '
+                              'TemplateBody TemplateURL Parameters '
+                              'DisableRollback RollbackConfiguration '
+                              'TimeoutInMinutes NotificationARNs Capabilities '
+                              'ResourceTypes RoleARN OnFailure StackPolicyBody '
+                              'StackPolicyURL Tags ClientRequestToken '
+                              'EnableTerminationProtection')):
+    def __new__(cls,
+                StackName=None,
+                Profile=None,
+                Region=None,
+                Package=None,
+                ArtifactStorage=None,
+                TemplateBody=None,
+                TemplateURL=None,
+                Parameters=None,
+                DisableRollback=None,
+                RollbackConfiguration=None,
+                TimeoutInMinutes=None,
+                NotificationARNs=None,
+                Capabilities=None,
+                ResourceTypes=None,
+                RoleARN=None,
+                OnFailure=None,
+                StackPolicyBody=None,
+                StackPolicyURL=None,
+                Tags=None,
+                ClientRequestToken=None,
+                EnableTerminationProtection=None
+                ):
+        return super(StackConfig, cls).__new__(
+            cls,
+            StackName=StackName,
+            Profile=Profile,
+            Region=Region,
+            Package=Package,
+            ArtifactStorage=ArtifactStorage,
+            TemplateBody=TemplateBody,
+            TemplateURL=TemplateURL,
+            Parameters=Parameters,
+            DisableRollback=DisableRollback,
+            RollbackConfiguration=RollbackConfiguration,
+            TimeoutInMinutes=TimeoutInMinutes,
+            NotificationARNs=NotificationARNs,
+            Capabilities=Capabilities,
+            ResourceTypes=ResourceTypes,
+            RoleARN=RoleARN,
+            OnFailure=OnFailure,
+            StackPolicyBody=StackPolicyBody,
+            StackPolicyURL=StackPolicyURL,
+            Tags=Tags,
+            ClientRequestToken=ClientRequestToken,
+            EnableTerminationProtection=EnableTerminationProtection
+        )
