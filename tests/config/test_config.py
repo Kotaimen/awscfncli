@@ -37,22 +37,22 @@ class TestConfig(object):
 
         environments = c.list_environments()
         assert len(environments) == 1
-        assert 'staging' in environments
+        assert 'Staging' in environments
 
-        stacks = c.list_stacks('staging')
+        stacks = c.list_stacks('Staging')
         assert len(stacks) == 2
-        assert 'vpc1' in stacks
-        assert 'vpc2' in stacks
+        assert 'Vpc1' in stacks
+        assert 'Vpc2' in stacks
 
-        stack = c.get_stack('staging', 'vpc1')
-        assert stack['template-body'] == 'default.template'
-        assert stack['tags']['key1'] == 'value1'
-        assert stack['tags']['key2'] == 'value2'
+        stack = c.get_stack('Staging', 'Vpc1')
+        assert stack['TemplateBody'] == 'default.template'
+        assert stack['Tags']['key1'] == 'value1'
+        assert stack['Tags']['key2'] == 'value2'
 
-        stack = c.get_stack('staging', 'vpc2')
-        assert stack['template-body'] == 'default.template'
-        assert stack['tags']['key3'] == 'value3'
-        assert stack['tags']['key4'] == 'value4'
+        stack = c.get_stack('Staging', 'Vpc2')
+        assert stack['TemplateBody'] == 'default.template'
+        assert stack['Tags']['key3'] == 'value3'
+        assert stack['Tags']['key4'] == 'value4'
 
     def test_load_config_with_reused_parameters(self, data_dir):
         configfile = data_dir.join('tests/config_with_reused_parameters.yaml')
@@ -64,27 +64,27 @@ class TestConfig(object):
 
         environments = c.list_environments()
         assert len(environments) == 1
-        assert 'staging' in environments
+        assert 'Staging' in environments
 
-        stacks = c.list_stacks('staging')
+        stacks = c.list_stacks('Staging')
         assert len(stacks) == 3
-        assert 'vpc1' in stacks
-        assert 'vpc2' in stacks
-        assert 'vpc3' in stacks
+        assert 'Vpc1' in stacks
+        assert 'Vpc2' in stacks
+        assert 'Vpc3' in stacks
 
-        stack = c.get_stack('staging', 'vpc1')
-        assert stack['template-body'] == 'default.template'
-        assert stack['tags']['key1'] == 'value1'
-        assert stack['tags']['key2'] == 'value2'
+        stack = c.get_stack('Staging', 'Vpc1')
+        assert stack['TemplateBody'] == 'default.template'
+        assert stack['Tags']['key1'] == 'value1'
+        assert stack['Tags']['key2'] == 'value2'
 
-        stack = c.get_stack('staging', 'vpc2')
-        assert stack['template-body'] == 'default.template'
-        assert 'key1' not in stack['tags']
-        assert 'key2' not in stack['tags']
-        assert stack['tags']['key3'] == 'value3'
-        assert stack['tags']['key4'] == 'value4'
+        stack = c.get_stack('Staging', 'Vpc2')
+        assert stack['TemplateBody'] == 'default.template'
+        assert 'key1' not in stack['Tags']
+        assert 'key2' not in stack['Tags']
+        assert stack['Tags']['key3'] == 'value3'
+        assert stack['Tags']['key4'] == 'value4'
 
-        stack = c.get_stack('staging', 'vpc3')
-        assert stack['template-body'] == 'default.template'
-        assert stack['tags']['key1'] == 'value1_overide'
-        assert stack['tags']['key2'] == 'value2'
+        stack = c.get_stack('Staging', 'Vpc3')
+        assert stack['TemplateBody'] == 'default.template'
+        assert stack['Tags']['key1'] == 'value1_overide'
+        assert stack['Tags']['key2'] == 'value2'

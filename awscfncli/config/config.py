@@ -37,14 +37,14 @@ class CfnCliConfig(object):
         return self._environments[environment_name][stack_name]
 
     def _load_version(self, config):
-        version = config.get('version', 1)
+        version = config.get('Version', 1)
         logging.debug('Loading version %s' % version)
         return version
 
     def _load_environments(self, config):
         environments = dict()
 
-        for env_name, env_config in config['environments'].items():
+        for env_name, env_config in config['Environments'].items():
             logging.debug('Loading environment "%s"' % env_name)
 
             stacks = dict()

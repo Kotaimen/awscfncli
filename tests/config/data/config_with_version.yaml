@@ -1,11 +1,11 @@
-version: 2
-environments:
-  staging:
-    vpc:
-      template-body: "default.template"
-      region: "us-east-1"
-      profile: "bob"
-      tags:
+Version: 2
+Environments:
+  Staging:
+    Vpc:
+      TemplateBody: "default.template"
+      Region: "us-east-1"
+      Profile: "bob"
+      Tags:
         key1: 'value1'
         key2: 'value2'
 

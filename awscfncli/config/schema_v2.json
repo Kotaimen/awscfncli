@@ -2,10 +2,10 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "version": {
+    "Version": {
       "type": "integer"
     },
-    "environments": {
+    "Environments": {
       "type": "object",
       "additionalProperties": {
         "type": "object",
@@ -16,5 +16,5 @@
       "minProperties": 1
     }
   },
-  "required": ["environments"]
+  "required": ["Environments"]
 }
