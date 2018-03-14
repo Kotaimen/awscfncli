@@ -51,9 +51,10 @@ class CfnCliConfig(object):
                 logging.debug('Loading environment "%s" stack "%s"' % (
                     env_name, stack_name))
 
-                stack_config = dict(stack_config)
-                if 'StackName' not in stack_config:
-                    stack_config['StackName'] = stack_name
+                stack_config = stack_config.copy()
+
+                stack_config['StackName'] = stack_name
+                stack_config['EnvironmentName'] = env_name
 
                 stacks[stack_name] = StackConfig(**stack_config)
 
@@ -62,23 +63,33 @@ class CfnCliConfig(object):
         return environments
 
 
+CANNED_STACK_POLICIES = {
+    'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
+    'ALLOW_MODIFY': '{"Statement":[{"Effect":"Allow","Action":["Update:Modify"],"Principal":"*","Resource":"*"}]}',
+    'DENY_DELETE': '{"Statement":[{"Effect":"Allow","NotAction":"Update:Delete","Principal":"*","Resource":"*"}]}',
+    'DENY_ALL': '{"Statement":[{"Effect":"Deny","Action":"Update:*","Principal":"*","Resource":"*"}]}',
+}
+
+
 class StackConfig(
-    namedtuple('StackConfig', 'StackName Profile Region Package '
-                              'ArtifactStorage '
-                              'TemplateBody TemplateURL Parameters '
-                              'DisableRollback RollbackConfiguration '
-                              'TimeoutInMinutes NotificationARNs Capabilities '
-                              'ResourceTypes RoleARN OnFailure StackPolicyBody '
-                              'StackPolicyURL Tags ClientRequestToken '
-                              'EnableTerminationProtection')):
+    namedtuple('StackConfig',
+               '''StackName
+                  TemplateBody TemplateURL Parameters  
+                  DisableRollback RollbackConfiguration 
+                  TimeoutInMinutes NotificationARNs Capabilities 
+                  ResourceTypes RoleARN OnFailure 
+                  StackPolicyBody StackPolicyURL 
+                  Tags ClientRequestToken
+                  EnableTerminationProtection
+                  Metadata''')):
     def __new__(cls,
+                EnvironmentName=None,
                 StackName=None,
                 Profile=None,
                 Region=None,
                 Package=None,
                 ArtifactStorage=None,
-                TemplateBody=None,
-                TemplateURL=None,
+                Template=None,
                 Parameters=None,
                 DisableRollback=None,
                 RollbackConfiguration=None,
@@ -88,19 +99,35 @@ class StackConfig(
                 ResourceTypes=None,
                 RoleARN=None,
                 OnFailure=None,
-                StackPolicyBody=None,
-                StackPolicyURL=None,
+                StackPolicy=None,
                 Tags=None,
                 ClientRequestToken=None,
-                EnableTerminationProtection=None
+                EnableTerminationProtection=None,
                 ):
-        return super(StackConfig, cls).__new__(
-            cls,
-            StackName=StackName,
+        # move those are not part of create_stack() call to metadata
+        metadata = dict(
+            EnvironmentName=EnvironmentName,
             Profile=Profile,
             Region=Region,
             Package=Package,
             ArtifactStorage=ArtifactStorage,
+        )
+
+        # XXX: magically select template body or template url
+        if Template.startswith('https://s3'):
+            TemplateURL, TemplateBody = Template, None
+        else:
+            TemplateURL, TemplateBody = None, Template
+
+        # lookup canned policy
+        if StackPolicy is not None:
+            StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
+        else:
+            StackPolicyBody = None
+
+        return super(StackConfig, cls).__new__(
+            cls,
+            StackName=StackName,
             TemplateBody=TemplateBody,
             TemplateURL=TemplateURL,
             Parameters=Parameters,
@@ -113,8 +140,9 @@ class StackConfig(
             RoleARN=RoleARN,
             OnFailure=OnFailure,
             StackPolicyBody=StackPolicyBody,
-            StackPolicyURL=StackPolicyURL,
+            StackPolicyURL=None,
             Tags=Tags,
             ClientRequestToken=ClientRequestToken,
-            EnableTerminationProtection=EnableTerminationProtection
+            EnableTerminationProtection=EnableTerminationProtection,
+            Metadata=metadata
         )
