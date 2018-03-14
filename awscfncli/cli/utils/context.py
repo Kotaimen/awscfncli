@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import fnmatch
-import six
+import copy
 import boto3
 
 
@@ -22,36 +22,33 @@ class ContextObject(object):
 
         Assuming config is a dict of dict of namedtuples:
             config[env][stack] = stack_config
-
         """
         for env_name in self.config.list_environments():
             if fnmatch.fnmatchcase(env_name, env_pattern):
                 for stack_name in self.config.list_stacks(env_name):
                     if fnmatch.fnmatchcase(stack_name, stack_pattern):
-                        stack_config = self.config.get_stack(env_name, stack_name)
+                        stack_config = \
+                            self.config.get_stack(env_name, stack_name)._asdict()
 
-                        override = dict()
-
-                        # override stack parameters
+                        # override parameters
                         if self.profile is not None:
-                            override['profile'] = self.profile
+                            stack_config['Metadata']['Profile'] = self.profile
                         if self.region is not None:
-                            override['region'] = self.region
+                            stack_config['Metadata']['Region'] = self.region
 
-                        # clone a new config with new value
-                        yield stack_config._replace(**override)
+                        yield stack_config
 
     def find_one_stack_config(self, env_pattern, stack_pattern):
-        for stack_config in self.find_stack_config(env_pattern, stack_pattern):
-            return stack_config
+        for r in self.find_stack_config(env_pattern, stack_pattern):
+            return r
         else:
             raise RuntimeError('Stack not found.')
 
     def get_boto3_session(self, stack_config):
 
-        session = boto3.session(
-            profile_name=stack_config.profile,
-            region_name=stack_config.region
+        session = boto3.session.Session(
+            profile_name=stack_config['Metadata']['Profile'],
+            region_name=stack_config['Metadata']['Region'],
         )
 
         return session

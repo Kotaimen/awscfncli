@@ -1,7 +1,7 @@
 #  -*- encoding: utf-8 -*-
 
 import click
-import botocore
+import botocore.exceptions
 
 from . import stack
 from ..utils import boto3_exception_handler, pretty_print_stack, \
@@ -32,7 +32,7 @@ def describe(ctx, stack_resources, stack_exports, env_pattern, stack_pattern):
 
     cloudformation = session.resource(
         'cloudformation',
-        region_name=stack_config['Region']
+        region_name=stack_config['Metadata']['Region']
     )
 
     stack = cloudformation.Stack(stack_config['StackName'])
