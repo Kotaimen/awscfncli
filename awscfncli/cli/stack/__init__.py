@@ -7,5 +7,5 @@ from ..main import cfn_cli
 @click.pass_context
 def stack(ctx):
     """Commands operate on CloudFormation stacks"""
-    pass
+    ctx.obj.load()
 

@@ -4,18 +4,26 @@ import fnmatch
 import copy
 import boto3
 
+from ...config import load_config
+
 
 class ContextObject(object):
     """Click context object """
 
-    def __init__(self, config,
+    def __init__(self,
+                 config_file,
                  profile,
                  region,
                  verbosity):
-        self.config = config
+        self.config = None
+        self.config_file = config_file
         self.profile = profile
         self.region = region
         self.verbosity = verbosity
+
+    def load(self):
+        assert self.config is None
+        self.config = load_config(self.config_file)
 
     def find_stack_config(self, env_pattern, stack_pattern):
         """ Find matching stack configurations
@@ -28,7 +36,9 @@ class ContextObject(object):
                 for stack_name in self.config.list_stacks(env_name):
                     if fnmatch.fnmatchcase(stack_name, stack_pattern):
                         stack_config = \
-                            self.config.get_stack(env_name, stack_name)._asdict()
+                            self.config.get_stack(env_name, stack_name)\
+
+                        stack_config = stack_config._asdict()
 
                         # override parameters
                         if self.profile is not None:
