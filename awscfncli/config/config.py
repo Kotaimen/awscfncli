@@ -6,13 +6,15 @@ from collections import namedtuple
 from .schema import validate_config
 
 
+class ConfigError(RuntimeError):
+    pass
+
 def load_config(filename):
     logging.debug('Loading config "%s"' % filename)
     with open(filename) as fp:
         config = yaml.safe_load(fp)
         if config is None:
             config = dict()
-
     return CfnCliConfig(config)
 
 
