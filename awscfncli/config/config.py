@@ -1,13 +1,17 @@
 # -*- encoding: utf-8 -*-
 
+from collections import namedtuple, OrderedDict
+
 import logging
 import yaml
-from collections import namedtuple
+import six
+
 from .schema import validate_config
 
 
 class ConfigError(RuntimeError):
     pass
+
 
 def load_config(filename):
     logging.debug('Loading config "%s"' % filename)
@@ -148,3 +152,46 @@ class StackConfig(
             EnableTerminationProtection=EnableTerminationProtection,
             Metadata=metadata
         )
+
+    @staticmethod
+    def _normalize_value(v):
+        if isinstance(v, bool):
+            return 'true' if v else 'false'
+        elif isinstance(v, int):
+            return str(v)
+        else:
+            return v
+
+    def _asdict(self):
+        """Overwrite _asdict() to format returning dict same as boto3 api
+        expecting."""
+        config = super(StackConfig, self)._asdict()
+        # drop all None and empty list
+        config = dict((k, v) for k, v in six.iteritems(config) if v)
+        # Normalize parameter config
+        if 'Parameters' in config:
+            params = list(
+                {
+                    'ParameterKey': k,
+                    'ParameterValue': self._normalize_value(v)
+                }
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(config['Parameters'])))
+                )
+            )
+            config['Parameters'] = params
+
+        # Normalize tag config
+        if 'Tags' in config:
+            tags = list(
+                {'Key': k, 'Value': v}
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(config['Tags'])))
+                )
+            )
+
+            config['Tags'] = tags
+
+        return config
