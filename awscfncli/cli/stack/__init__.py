@@ -2,10 +2,15 @@
 
 import click
 from ..main import cfn_cli
+from ...config import ConfigError
 
 @cfn_cli.group()
 @click.pass_context
 def stack(ctx):
     """Commands operate on CloudFormation stacks"""
-    ctx.obj.load()
+    try:
+        ctx.obj.load()
+    except ConfigError as e:
+        click.secho(str(e), fg='red')
+        raise SystemExit
 

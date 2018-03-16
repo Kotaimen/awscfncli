@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 
 import fnmatch
-import copy
+import os.path
 import boto3
 
-from ...config import load_config
+from ...config import load_config, ConfigError
 
 
 class ContextObject(object):
@@ -23,6 +23,10 @@ class ContextObject(object):
 
     def load(self):
         assert self.config is None
+        if not os.path.exists(self.config_file):
+            raise ConfigError(
+                'Stack configuration file not found: {}, specify a non-default '
+                'filename using -f '.format(self.config_file))
         self.config = load_config(self.config_file)
 
     def find_stack_config(self, env_pattern, stack_pattern):
@@ -36,7 +40,7 @@ class ContextObject(object):
                 for stack_name in self.config.list_stacks(env_name):
                     if fnmatch.fnmatchcase(stack_name, stack_pattern):
                         stack_config = \
-                            self.config.get_stack(env_name, stack_name)\
+                            self.config.get_stack(env_name, stack_name)
 
                         stack_config = stack_config._asdict()
 

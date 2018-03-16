@@ -7,7 +7,6 @@ import click
 import pkg_resources
 
 from .utils.context import ContextObject
-from ..config import load_config
 
 VERSION = pkg_resources.require('awscfncli')[0].version
 
@@ -57,10 +56,8 @@ def cfn_cli(ctx, file, profile, region, verbose):
 
     """
 
-    config = load_config(file)
-
     ctx_obj = ContextObject(
-        config=config,
+        config_file=file,
         profile=profile,
         region=region,
         verbosity=verbose,
