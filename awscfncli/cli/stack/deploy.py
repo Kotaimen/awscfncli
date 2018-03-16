@@ -23,12 +23,12 @@ from ..utils import start_tail_stack_events_daemon
 @boto3_exception_handler
 @click.pass_context
 def deploy(ctx, env_pattern, stack_pattern, no_wait, on_failure):
-    """Deploy a new stack using specified stack configuration file"""
+    """Deploy a new stack"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config \
-        = ctx.obj.find_one_stack_config(env_pattern=env_pattern,
-                                        stack_pattern=stack_pattern)
+    stack_config = ctx.obj.find_one_stack_config(
+        env_pattern=env_pattern,
+        stack_pattern=stack_pattern)
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']

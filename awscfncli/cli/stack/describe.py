@@ -4,8 +4,9 @@ import click
 import botocore.exceptions
 
 from . import stack
-from ..utils import boto3_exception_handler, pretty_print_stack, \
-    STACK_STATUS_TO_COLOR, custom_paginator, echo_pair, ContextObject
+from ..utils import boto3_exception_handler, stack_subcommand_warpper, \
+    pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
+    STACK_STATUS_TO_COLOR
 
 
 @stack.command()
@@ -19,9 +20,7 @@ from ..utils import boto3_exception_handler, pretty_print_stack, \
 @click.pass_context
 @boto3_exception_handler
 def describe(ctx, env_pattern, stack_pattern, stack_resources, stack_exports):
-    """Print status, parameters, outputs, stack resources and export values
-    of the stack specified in the configuration file.
-    """
+    """Describe stack status and information"""
     assert isinstance(ctx.obj, ContextObject)
 
     stack_config \
@@ -30,6 +29,7 @@ def describe(ctx, env_pattern, stack_pattern, stack_resources, stack_exports):
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
+
     cloudformation = session.resource(
         'cloudformation',
         region_name=region
