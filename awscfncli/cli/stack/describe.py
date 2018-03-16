@@ -18,7 +18,7 @@ from ..utils import boto3_exception_handler, pretty_print_stack, \
               help='Display stack exports.')
 @click.pass_context
 @boto3_exception_handler
-def describe(ctx, stack_resources, stack_exports, env_pattern, stack_pattern):
+def describe(ctx, env_pattern, stack_pattern, stack_resources, stack_exports):
     """Print status, parameters, outputs, stack resources and export values
     of the stack specified in the configuration file.
     """
@@ -29,10 +29,10 @@ def describe(ctx, stack_resources, stack_exports, env_pattern, stack_pattern):
                                         stack_pattern=stack_pattern)
 
     session = ctx.obj.get_boto3_session(stack_config)
-
+    region = stack_config['Metadata']['Region']
     cloudformation = session.resource(
         'cloudformation',
-        region_name=stack_config['Metadata']['Region']
+        region_name=region
     )
 
     stack = cloudformation.Stack(stack_config['StackName'])
@@ -53,7 +53,7 @@ def describe(ctx, stack_resources, stack_exports, env_pattern, stack_pattern):
 
     if stack_exports:
         client = session.client('cloudformation',
-                                region_name=stack_config['Region'])
+                                region_name=region)
         echo_pair('Exports')
         for export in custom_paginator(client.list_exports, 'Exports'):
 

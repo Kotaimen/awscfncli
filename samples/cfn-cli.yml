@@ -40,7 +40,7 @@ Blueprints:
     # ARN of an IAM role that CloudFormation assumes when operating the stack.
     # If no value is specified, CloudFormatino uses a temporary session which 
     # generated form caller's credentials
-    RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole' 
+#    RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
     
     # A list of template resources which is allowed for stack creation:
     #   - AWS::* : all AWS resource
@@ -52,7 +52,7 @@ Blueprints:
 #    ResourceTypes:
     
     # List of SNS ARNs to publish stack related events.
-    NotificationARNs: ['arn:aws:sns::xxxxx']
+#    NotificationARNs: ['arn:aws:sns::xxxxx']
     
     # XXX: new feature, tbd...
     # RollbackConfiguration:
@@ -75,7 +75,7 @@ Blueprints:
     #   - PolicyDocument property for IAM resources
     #   - DefinitionString property for AWS::StepFunctions::StateMachine resource
     #   - Sql property for IoT, Kinesis analytics and Glue resource
-    Package: true
+    Package:  false
     
     # S3 bucket name for packaging artifacts.
     # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION}.
@@ -87,7 +87,7 @@ Blueprints:
     
     # Tags to associate with this stack
     Tags:
-      Project: Booba
+      Project:  Booba
       CostUnit: 1B0
 
     # Input parameters for the stack.
