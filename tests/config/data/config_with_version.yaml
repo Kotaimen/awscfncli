@@ -2,7 +2,7 @@ Version: 2
 Environments:
   Staging:
     Vpc:
-      TemplateBody: "default.template"
+      Template: "default.template"
       Region: "us-east-1"
       Profile: "bob"
       Tags:

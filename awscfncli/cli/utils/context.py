@@ -42,8 +42,6 @@ class ContextObject(object):
                         stack_config = \
                             self.config.get_stack(env_name, stack_name)
 
-                        stack_config = stack_config._asdict()
-
                         # override parameters
                         if self.profile is not None:
                             stack_config['Metadata']['Profile'] = self.profile

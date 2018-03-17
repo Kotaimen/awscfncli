@@ -62,7 +62,7 @@ class CfnCliConfig(object):
                 stack_config['StackName'] = stack_name
                 stack_config['EnvironmentName'] = env_name
 
-                stacks[stack_name] = StackConfig(**stack_config)
+                stacks[stack_name] = create_stack_config(**stack_config)
 
             environments[env_name] = stacks
 
@@ -77,121 +77,103 @@ CANNED_STACK_POLICIES = {
 }
 
 
-class StackConfig(
-    namedtuple('StackConfig',
-               '''StackName
-                  TemplateBody TemplateURL Parameters  
-                  DisableRollback RollbackConfiguration 
-                  TimeoutInMinutes NotificationARNs Capabilities 
-                  ResourceTypes RoleARN OnFailure 
-                  StackPolicyBody StackPolicyURL 
-                  Tags ClientRequestToken
-                  EnableTerminationProtection
-                  Metadata''')):
-    def __new__(cls,
-                EnvironmentName=None,
-                StackName=None,
-                Profile=None,
-                Region=None,
-                Package=None,
-                ArtifactStorage=None,
-                Template=None,
-                Parameters=None,
-                DisableRollback=None,
-                RollbackConfiguration=None,
-                TimeoutInMinutes=None,
-                NotificationARNs=None,
-                Capabilities=None,
-                ResourceTypes=None,
-                RoleARN=None,
-                OnFailure=None,
-                StackPolicy=None,
-                Tags=None,
-                ClientRequestToken=None,
-                EnableTerminationProtection=None,
-                ):
-        # move those are not part of create_stack() call to metadata
-        metadata = dict(
-            EnvironmentName=EnvironmentName,
-            Profile=Profile,
-            Region=Region,
-            Package=Package,
-            ArtifactStorage=ArtifactStorage,
+def _normalize_value(v):
+    if isinstance(v, bool):
+        return 'true' if v else 'false'
+    elif isinstance(v, int):
+        return str(v)
+    else:
+        return v
+
+
+def create_stack_config(EnvironmentName=None,
+                        StackName=None,
+                        Profile=None,
+                        Region=None,
+                        Package=None,
+                        ArtifactStorage=None,
+                        Template=None,
+                        Parameters=None,
+                        DisableRollback=None,
+                        RollbackConfiguration=None,
+                        TimeoutInMinutes=None,
+                        NotificationARNs=None,
+                        Capabilities=None,
+                        ResourceTypes=None,
+                        RoleARN=None,
+                        OnFailure=None,
+                        StackPolicy=None,
+                        Tags=None,
+                        ClientRequestToken=None,
+                        EnableTerminationProtection=None,
+                        ):
+    # move those are not part of create_stack() call to metadata
+    metadata = dict(
+        EnvironmentName=EnvironmentName,
+        Profile=Profile,
+        Region=Region,
+        Package=Package,
+        ArtifactStorage=ArtifactStorage,
+    )
+
+    # XXX: magically select template body or template url
+    if Template.startswith('https://s3'):
+        TemplateURL, TemplateBody = Template, None
+    else:
+        TemplateURL, TemplateBody = None, Template
+
+    # lookup canned policy
+    if StackPolicy is not None:
+        StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
+    else:
+        StackPolicyBody = None
+
+    # Normalize parameter config
+    normalized_params = list()
+    if Parameters and isinstance(Parameters, dict):
+        normalized_params = list(
+            {
+                'ParameterKey': k,
+                'ParameterValue': _normalize_value(v)
+            }
+            for k, v in
+            six.iteritems(OrderedDict(
+                sorted(six.iteritems(Parameters)))
+            )
         )
 
-        # XXX: magically select template body or template url
-        if Template.startswith('https://s3'):
-            TemplateURL, TemplateBody = Template, None
-        else:
-            TemplateURL, TemplateBody = None, Template
-
-        # lookup canned policy
-        if StackPolicy is not None:
-            StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
-        else:
-            StackPolicyBody = None
-
-        return super(StackConfig, cls).__new__(
-            cls,
-            StackName=StackName,
-            TemplateBody=TemplateBody,
-            TemplateURL=TemplateURL,
-            Parameters=Parameters,
-            DisableRollback=DisableRollback,
-            RollbackConfiguration=RollbackConfiguration,
-            TimeoutInMinutes=TimeoutInMinutes,
-            NotificationARNs=NotificationARNs,
-            Capabilities=Capabilities,
-            ResourceTypes=ResourceTypes,
-            RoleARN=RoleARN,
-            OnFailure=OnFailure,
-            StackPolicyBody=StackPolicyBody,
-            StackPolicyURL=None,
-            Tags=Tags,
-            ClientRequestToken=ClientRequestToken,
-            EnableTerminationProtection=EnableTerminationProtection,
-            Metadata=metadata
+    # Normalize tag config
+    normalized_tags = list()
+    if Tags and isinstance(Tags, dict):
+        normalized_tags = list(
+            {'Key': k, 'Value': v}
+            for k, v in
+            six.iteritems(OrderedDict(
+                sorted(six.iteritems(Tags)))
+            )
         )
 
-    @staticmethod
-    def _normalize_value(v):
-        if isinstance(v, bool):
-            return 'true' if v else 'false'
-        elif isinstance(v, int):
-            return str(v)
-        else:
-            return v
+    config = dict(
+        Metadata=metadata,
+        StackName=StackName,
+        TemplateURL=TemplateURL,
+        TemplateBody=TemplateBody,
+        DisableRollback=DisableRollback,
+        RollbackConfiguration=RollbackConfiguration,
+        TimeoutInMinutes=TimeoutInMinutes,
+        NotificationARNs=NotificationARNs,
+        Capabilities=Capabilities,
+        ResourceTypes=ResourceTypes,
+        RoleARN=RoleARN,
+        OnFailure=OnFailure,
+        StackPolicyBody=StackPolicyBody,
+        Parameters=normalized_params,
+        Tags=normalized_tags,
+        ClientRequestToken=ClientRequestToken,
+        EnableTerminationProtection=EnableTerminationProtection,
+    )
 
-    def _asdict(self):
-        """Overwrite _asdict() to format returning dict same as boto3 api
-        expecting."""
-        config = super(StackConfig, self)._asdict()
-        # drop all None and empty list
-        config = dict((k, v) for k, v in six.iteritems(config) if v)
-        # Normalize parameter config
-        if 'Parameters' in config:
-            params = list(
-                {
-                    'ParameterKey': k,
-                    'ParameterValue': self._normalize_value(v)
-                }
-                for k, v in
-                six.iteritems(OrderedDict(
-                    sorted(six.iteritems(config['Parameters'])))
-                )
-            )
-            config['Parameters'] = params
+    # drop all None and empty list
+    config = dict((k, v) for k, v in six.iteritems(config) if v)
 
-        # Normalize tag config
-        if 'Tags' in config:
-            tags = list(
-                {'Key': k, 'Value': v}
-                for k, v in
-                six.iteritems(OrderedDict(
-                    sorted(six.iteritems(config['Tags'])))
-                )
-            )
-
-            config['Tags'] = tags
-
-        return config
+    return config

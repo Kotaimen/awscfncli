@@ -2,14 +2,14 @@ Version: 2
 Environments:
   Staging:
     Vpc1:
-      TemplateBody: "default.template"
+      Template: "default.template"
       Region: "us-east-1"
       Profile: "bob"
       Tags:
         key1: 'value1'
         key2: 'value2'
     Vpc2:
-      TemplateBody: "default.template"
+      Template: "default.template"
       Region: "us-east-2"
       Profile: "ray"
       Tags:
