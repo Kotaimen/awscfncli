@@ -4,7 +4,7 @@ import click
 import botocore.exceptions
 
 from . import stack
-from ..utils import boto3_exception_handler, stack_subcommand_warpper, \
+from ..utils import boto3_exception_handler, \
     pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
     STACK_STATUS_TO_COLOR
 
