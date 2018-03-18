@@ -32,7 +32,7 @@ install_requires = [
     'boto3>=1.6',
     'click>=6.0',
     'PyYAML>=3.11',
-    'jsonschema>=2.6.0'
+    'jsonschema>=2.6.0',
     'awscli>=1.14'
 ]
 
