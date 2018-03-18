@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 import fnmatch
+import copy
 import os.path
+
 import boto3
 
 from ...config import load_config, ConfigError
@@ -41,6 +43,8 @@ class ContextObject(object):
                     if fnmatch.fnmatchcase(stack_name, stack_pattern):
                         stack_config = \
                             self.config.get_stack(env_name, stack_name)
+                        # make a deep copy as config may be modified in commands
+                        stack_config = copy.deepcopy(stack_config)
 
                         # override parameters
                         if self.profile is not None:
@@ -54,7 +58,8 @@ class ContextObject(object):
         for r in self.find_stack_config(env_pattern, stack_pattern):
             return r
         else:
-            raise RuntimeError('Stack not found.')
+            raise ConfigError('Cannot find stack with name "{}" '
+                              'in environment "{}".'.format(stack_pattern, env_pattern))
 
     def get_boto3_session(self, stack_config):
 

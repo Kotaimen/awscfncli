@@ -57,7 +57,6 @@ def pretty_print_stack(stack, detail=False):
         echo_pair('Tags')
         for t in stack.tags:
             echo_pair(t['Key'], t['Value'], indent=2)
-
 #
 # Status string to click.style mapping
 #
@@ -99,8 +98,9 @@ CHANGESET_STATUS_TO_COLOR = {
 }
 
 ACTION_TO_COLOR = {
-    'Add': dict(fg='green', bold=True, reverse=True),
-    'Modify': dict(fg='yellow', bold=True, reverse=True),
-    'Remove': dict(fg='red', bold=True, reverse=True),
+    'Add': dict(fg='green'),
+    'Modify': dict(fg='yellow', dim=True),
+    'Remove': dict(fg='red'),
 }
+
 
