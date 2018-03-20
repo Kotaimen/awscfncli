@@ -1,0 +1,35 @@
+Version: 2
+
+Blueprints:
+  
+  # Stack default configuration name
+  SimpleService: &SimpleService
+    Template: template.yml
+    StackPolicy: DENY_ALL
+    Capabilities: [CAPABILITY_IAM]
+    Package:  true
+    EnableTerminationProtection: false
+    Parameters:
+      ReadCapacityUnits: 5
+      WriteCapacityUnits: 5
+
+Environments:
+
+  Staging:
+    SimpleService-Staging:
+      <<: *SimpleService
+      Profile: default
+      Region: us-west-2
+      Tags:
+        Environment: staging
+
+  Production:
+    SimpleService-Production:
+      <<: *SimpleService
+      Profile: default
+      Region: us-west-2
+      Tags:
+        Environment: prod
+      Parameters:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10

@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple CRUD webservice. State is stored in a SimpleTable (DynamoDB) resource.
+
+Parameters:
+
+  ReadCapacityUnits:
+    Description: Provisioned read throughput
+    Type: Number
+    Default: 5
+    MinValue: 5
+    MaxValue: 10000
+    ConstraintDescription: must be between 5 and 10000
+
+  WriteCapacityUnits:
+    Description: Provisioned write throughput
+    Type: Number
+    Default: 5
+    MinValue: 5
+    MaxValue: 10000
+    ConstraintDescription: must be between 5 and 10000
+
+Resources:
+
+  Table:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref ReadCapacityUnits
+        WriteCapacityUnits: !Ref WriteCapacityUnits
+
+  GetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.get
+      Runtime: nodejs6.10
+      CodeUri: ./index.js
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref Table
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: get
+
+  PutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.put
+      Runtime: nodejs6.10
+      CodeUri: ./index.js
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: put
+
+  DeleteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.delete
+      Runtime: nodejs6.10
+      CodeUri: ./index.js
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: delete
