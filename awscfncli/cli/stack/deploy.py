@@ -6,6 +6,7 @@ from ..utils import ContextObject
 from ..utils import boto3_exception_handler
 from ..utils import pretty_print_stack
 from ..utils import start_tail_stack_events_daemon
+from ..utils import package_template, is_local_path
 
 
 @stack.command()
@@ -32,6 +33,8 @@ def deploy(ctx, env_pattern, stack_pattern, no_wait, on_failure):
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
+    package = stack_config['Metadata']['Package']
+    artifact_store = stack_config['Metadata']['ArtifactStorage']
 
     # option handling
     if on_failure is not None:
@@ -44,7 +47,20 @@ def deploy(ctx, env_pattern, stack_pattern, no_wait, on_failure):
         region_name=region)
 
     # pop metadata form stack config
-    metadata = stack_config.pop('Metadata')
+    stack_config.pop('Metadata')
+
+    # package the template
+    if package and 'TemplateURL' in stack_config:
+        template_path = stack_config.get('TemplateURL')
+        if not is_local_path(template_path):
+            packaged_template = package_template(
+                session,
+                template_path,
+                bucket_region=region,
+                bucket_name=artifact_store,
+                prefix=stack_config['StackName'])
+            stack_config['TemplateBody'] = packaged_template
+            stack_config.pop('TemplateURL')
 
     # create stack
     stack = cloudformation.create_stack(**stack_config)

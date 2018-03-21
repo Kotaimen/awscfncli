@@ -3,6 +3,7 @@
 import os
 import yaml
 import click
+import logging
 
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     EXPORT_DICT
@@ -14,6 +15,11 @@ except ImportError:
     from awscli.customizations.s3uploader import S3Uploader
 
 from ...config import ConfigError
+
+
+def is_local_path(path):
+    if path.startswith('http') or path.startswith('https'):
+        return True
 
 
 def package_template(session, template_path, bucket_region,
@@ -28,8 +34,9 @@ def package_template(session, template_path, bucket_region,
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         bucket_name = 'awscfncli-%s-%s' % (account_id, bucket_region)
+        logging.info('Using defualt artifact storage %s' % bucket_name)
 
-    s3_client = session.create_client('s3')
+    s3_client = session.client('s3')
     s3_uploader = S3Uploader(
         s3_client,
         bucket_name,
