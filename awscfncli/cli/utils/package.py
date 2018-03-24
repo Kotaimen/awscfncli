@@ -5,8 +5,9 @@ import yaml
 import click
 import logging
 
+from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
-    EXPORT_DICT
+    Resource, EXPORT_DICT, make_abs_path
 
 try:
     from awscli.customizations.cloudformation.s3uploader import S3Uploader
@@ -56,3 +57,64 @@ def package_template(session, template_path, bucket_region,
         template_path=template_path, bucket_name=bucket_name))
 
     return exported_str
+
+
+# XXX: Hack
+class ResourceWithInlineCode(Resource):
+    def __init__(self, uploader):
+        super(ResourceWithInlineCode, self).__init__(None)
+
+    def export(self, resource_id, resource_dict, parent_dir):
+        if resource_dict is None:
+            return
+
+        property_value = resource_dict.get(self.PROPERTY_NAME, None)
+
+        if not property_value and not self.PACKAGE_NULL_PROPERTY:
+            return
+
+        if isinstance(property_value, dict):
+            logging.debug("Property {0} of {1} resource is not a file path"
+                          .format(self.PROPERTY_NAME, resource_id))
+            return
+
+        try:
+            self.do_export(resource_id, resource_dict, parent_dir)
+
+        except Exception as ex:
+            logging.debug("Unable to export", exc_info=ex)
+            raise exceptions.ExportFailedError(
+                resource_id=resource_id,
+                property_name=self.PROPERTY_NAME,
+                property_value=property_value,
+                ex=ex)
+
+    def do_export(self, resource_id, resource_dict, parent_dir):
+        """
+        Upload to S3 and set property to an dict representing the S3 url
+        of the uploaded object
+        """
+
+        local_path = resource_dict.get(self.PROPERTY_NAME, None)
+        local_path = make_abs_path(parent_dir, local_path)
+
+        with open(local_path, 'r') as fp:
+            data = fp.read()
+
+        resource_dict[self.PROPERTY_NAME] = data
+
+
+class KinesisAnalysisApplicationCode(ResourceWithInlineCode):
+    PROPERTY_NAME = 'ApplicationCode'
+
+
+class StepFunctionsDefinitionString(ResourceWithInlineCode):
+    PROPERTY_NAME = 'DefinitionString'
+
+
+ADDITIONAL_EXPORT = {
+    'AWS::KinesisAnalytics::Application': KinesisAnalysisApplicationCode,
+    'AWS::StepFunctions::StateMachine': StepFunctionsDefinitionString
+}
+
+EXPORT_DICT.update(ADDITIONAL_EXPORT)
