@@ -10,6 +10,7 @@ from ..utils import boto3_exception_handler, \
     echo_pair, ContextObject, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
 from ..utils import start_tail_stack_events_daemon
+from ..utils import package_template, is_local_path
 
 
 def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
@@ -38,6 +39,8 @@ def sync(ctx, env_pattern, stack_pattern,
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
+    package = stack_config['Metadata']['Package']
+    artifact_store = stack_config['Metadata']['ArtifactStorage']
 
     client = session.client(
         'cloudformation',
@@ -58,6 +61,18 @@ def sync(ctx, env_pattern, stack_pattern,
         stack_config.pop('TemplateBody', None)
         stack_config.pop('TemplateURL', None)
         stack_config['UsePreviousTemplate'] = use_previous_template
+    else:
+        if package and 'TemplateURL' in stack_config:
+            template_path = stack_config.get('TemplateURL')
+            if not is_local_path(template_path):
+                packaged_template = package_template(
+                    session,
+                    template_path,
+                    bucket_region=region,
+                    bucket_name=artifact_store,
+                    prefix=stack_config['StackName'])
+                stack_config['TemplateBody'] = packaged_template
+                stack_config.pop('TemplateURL')
 
     try:
         client.describe_stacks(StackName=stack_config['StackName'])
