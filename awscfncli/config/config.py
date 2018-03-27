@@ -119,11 +119,17 @@ class CfnCliConfig(object):
 
         # XXX: magically select template body or template url
         if Template.startswith('https') or Template.startswith('http'):
+            # s3 template
             TemplateURL, TemplateBody = Template, None
-        else:
-            TemplateURL = os.path.realpath(
-                os.path.join(os.path.dirname(self._filename), Template))
+        elif Package:
+            # local template with package=on
+            TemplateURL = os.path.realpath(os.path.join(os.path.dirname(self._filename), Template))
             TemplateBody = None
+        else:
+            # local template
+            TemplateURL = None
+            with open(os.path.join(os.path.dirname(self._filename), Template)) as fp:
+                TemplateBody = fp.read()
 
         # lookup canned policy
         if StackPolicy is not None:
