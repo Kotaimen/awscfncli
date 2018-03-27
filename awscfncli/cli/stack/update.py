@@ -74,6 +74,8 @@ def update(ctx, env_pattern, stack_pattern,
     pretty_print_stack(stack)
 
     # update stack
+    if ctx.obj.verbosity > 0:
+        click.echo(stack_config)
     stack.update(**stack_config)
 
     # exit immediately

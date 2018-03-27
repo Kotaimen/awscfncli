@@ -63,6 +63,8 @@ def deploy(ctx, env_pattern, stack_pattern, no_wait, on_failure):
             stack_config.pop('TemplateURL')
 
     # create stack
+    if ctx.obj.verbosity > 0:
+        click.echo(stack_config)
     stack = cloudformation.create_stack(**stack_config)
     stack_id = stack.stack_id
     pretty_print_stack(stack)
