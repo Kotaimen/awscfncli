@@ -1,32 +1,33 @@
 # AWS CloudFormation CLI
 
-Reloading...
-
 AWS CloudFormation stack manager.
 
 ## Introduction
 
-`awscfncli` is a tool that help manage AWS CloudFormation stacks.
+`awscfncli` is a tool that helps build and manage complex AWS 
+CloudFormation stacks.
 
 Features:
 
-- Simple CLI interface.
-- YAML stacks configuration file.
-- Stack management.
-- ChangeSet management.
-- Display and tracking stack events, including nested stack.
-- Tracking stack export value and references.
-
+- Single YAML configuration file for:
+    - Deployment configuration
+    - Stack parameters
+- Automatic packaging
+- Automatic applies Serverless and Include (aka: SAM support)
+- Automatic stack ChangeSet synchronization.
+- Display and tracking stack events on cli.
+- Describe stack status and export values.
  
 ## Install
 
-Install using [pip](https://pip.pypa.io/), from [pypi](https://pypi.python.org/pypi/awscfncli):
+Install using [pip](https://pip.pypa.io/) from 
+[pypi](https://pypi.python.org/pypi/awscfncli):
 
     pip install awscfncli
     
 ## Usage
 
-    cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...] ENVIRONMENT_NAME STACK_NAME
+    cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...]
 
 To view a list of available subcommands, type:
 
@@ -36,7 +37,29 @@ To view help of a particular subcommand, type:
     
     cfn-cli COMMAND SUBCOMMAND --help   
 
-By default, `cfn-cli` will try to locate `cfn-cli.yaml` file in current directory, override this using `-f` option. 
+
+Options:
+
+- `-f, --file`: Specify an alternate configuration file, (default:
+  `cfn-cli.yml`)
+- `-t, --stage`: Specify a deployment stage, (default: `Default`)
+- `-s, --stack`: Specify a stack name, (default: `*`)
+- `--profile`: Override AWS profile specified in the configuration 
+- `--region`: Override AWS region specified in the configuration 
+- `-1, --one`: Select only the first matching stack if glob is used in 
+   stage/stack options
+- `--verbose`: Be more verbose
+
+By default, `cfn-cli` will try to locate `cfn-cli.yml` file in current 
+directory, override this using `-f` option.
+
+Stages and stacks can be selected using globs:
+    
+    cfn-cli --stack=DDB* stack deploy
+
+Options can be specified using environment variables:
+
+    CFNCLI_STACK=DDB cfn-cli stack deploy 
 
 Supported commands/subcommands:
 
@@ -47,111 +70,34 @@ Supported commands/subcommands:
     - `tail` - Print stack events
     - `delete` - Delete stack
  - `changeset`
-    - `sync` - Create a ChangeSet and execute it (useful for SAM)
+    - `sync` - Create a ChangeSet and execute it
 
-## Config File Format
+## Automatic Packaging
 
+If a template contains property which requires a S3 url or text block,
+`Package` can be enabled so the resource is be automatically upload to 
+a S3 bucket, and S3 object location is inserted into the template.
+This is particular useful when your property is a lambda source code, 
+sql statements or some kind of configuration.
 
-### Format Version (optional)
+By default, artifact bucket name is `awscfncli-${AWS_ACCOUNT_ID}-${AWS_RERION}`.
+and the bucket will be created automatically.
 
-Currently, two version numbers are supported. Version 1 is for the 
-configuration of awscfncli 1.0 and version 2 is for awscfncli 2.0. version
-1 will be the default version if you don't specify a version number.
+The following resource property are supported by `awscfncli` and official
+`aws cloudformation package` command:
 
-```
-Version: VERSION_NUMBER
-```
+- `AWS::ApiGateway::RestApi->BodyS3Location`
+- `AWS::Lambda::Function->Code`
+- `AWS::Serverless::Function->CodeUri`
+- `AWS::Serverless::Api->DefinitionUri`
+- `AWS::ElasticBeanstalk::Application-Version->SourceBundle`
+- `AWS::CloudFormation::Stack->TemplateURL`
 
-### Environments (required)
+The following resource property are supported by `awscfncli`:
+- `AWS::Transform->Location`
+- `AWS::KinesisAnalytics::Application->ApplicationCode`
+- `AWS::StepFunctions::StateMachine->DefinitionString`
 
-Environment is a concept newly introduced in awscfncli 2.0 that can group
-bunches of stacks that serves for a same purpose for you. 
+## Configuration File
 
-Under section Environments, you could specify multiple environments with 
-their name as key. A environment is also a dict of named configuration 
-for stacks.
-
-```
-Environments:
-  Env1:
-    Stack1
-      Param1: Value1
-      Param2: Value2
-  Env2:
-    Stack2
-      Param1: Value1
-      Param2: Value2
-```
-
-### Stack (required)
-
-A stack configuration contains parameters required by AWS to create a 
-CloudFormation stack. 
-
-Some addtional meta parameters are also required
-to construct the connection to AWS, such as your AWS profile name, the
-region that you want to deploy your stack and etc. 
-
-
-```
-    Stack1
-      Profile: aws profile name
-      Region: us-east-1
-      
-      Param1: Value1
-      Param2: Value2
-```
-
-For sample configuration, please refer to `samples/cfn-cli.yml`.
-
-## Migrate From Version 0.x
-
-### Entrypoint
-
-To avoid confilct with `troposphere`, cli entrypoint has been renamed 
-from `cfn` to `cfn-cli`.
-
-### Config File
-
-Old syntax:
-
-```
-Stack:
-  Region:               us-east-1
-  StackName:            SampleIAMUsersGroupsAndPolicies
-  TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
-  Capabilities:         [CAPABILITY_IAM]
-  Parameters:
-    Password:           bob180180180
-  Tags:
-    project:            Bob
-```
-
-New syntax:
-
-```
-Version: 2
-Environments:
-  Default:
-    SampleIAMUsersGroupsAndPolicies:
-      Region:               us-east-1
-      TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
-      Capabilities:         [CAPABILITY_IAM]
-      Parameters:
-        Password:           bob180180180
-      Tags:
-        project:            Bob
-```
-
-### CLI
-
-You must specify environment and stack name in the CLI. 
-
-Before:
-    
-    cfn COMMAND SUBCOMMAND STACK_CONFIG [ARGS]...
-
-After:
-
-    cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...] ENVIRONMENT_NAME STACK_NAME
-   
+## Migrate from Old Version
