@@ -20,22 +20,24 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
 
 
 @changeset.command()
-@click.argument('env_pattern', envvar='CFN_ENV_PATTERN')
-@click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--confirm', is_flag=True, default=False)
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')
 @click.pass_context
 @boto3_exception_handler
-def sync(ctx, env_pattern, stack_pattern,
-         confirm, use_previous_template):
+def sync(ctx, confirm, use_previous_template):
     """Create a changeset and execute it immediately"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config \
-        = ctx.obj.find_one_stack_config(env_pattern=env_pattern,
-                                        stack_pattern=stack_pattern)
+    for stack_config in ctx.obj.stacks:
+        click.secho(
+            'Working on stack %s.%s' % \
+            (stack_config['Metadata']['EnvironmentName'], stack_config['StackName']),
+            bold=True)
+        sync_one(ctx, stack_config, confirm, use_previous_template)
+
+def sync_one(ctx, stack_config, confirm, use_previous_template):
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
@@ -50,6 +52,7 @@ def sync(ctx, env_pattern, stack_pattern,
     # pop metadata form stack config
     metadata = stack_config.pop('Metadata')
 
+    # generate a unique changeset name
     changeset_name = '%s-%s' % \
                      (stack_config['StackName'], str(uuid.uuid1()))
 
@@ -88,7 +91,6 @@ def sync(ctx, env_pattern, stack_pattern,
     stack_config.pop('StackPolicyURL', None)
 
     # create changeset
-
     echo_pair('ChangeSet Type', changeset_type)
     result = client.create_change_set(**stack_config)
     echo_pair('ChangeSet ARN', result['Id'])
@@ -136,6 +138,10 @@ def sync(ctx, env_pattern, stack_pattern,
         echo_pair_if_exists(change['ResourceChange'],
                             'Scope',
                             'Scope', indent=4)
+
+    if result['Status'] != 'AVAILABLE':
+        click.secho('ChangeSet not executable.', fg='red')
+        return
 
     if changeset_type == 'CREATE':
         waiter_model = 'stack_create_complete'
