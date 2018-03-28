@@ -14,7 +14,7 @@ def echo_pair(key, value=None, indent=0,
     assert key
     key = ' ' * indent + key + sep
     if key_style is None:
-        click.secho(key, bold=True, nl=False)
+        click.secho(key, bold=False, nl=False)
     else:
         click.secho(key, nl=False, **key_style)
 
