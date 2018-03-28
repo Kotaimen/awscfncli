@@ -98,7 +98,7 @@ Blueprints:
 Environments:
 
   # Environment name
-  Staging:
+  Default:
     
     # Stack name
     Table1:
@@ -110,5 +110,17 @@ Environments:
       Tags:
         Environment: staging
         
+      Parameters:
+        ReadCapacityUnits:      5
+
+    Table2:
+      <<: *DynamoDBSecondaryIndexes
+
+      # Overwride stack parameters
+      Region: us-west-2
+
+      Tags:
+        Environment: staging
+
       Parameters:
         ReadCapacityUnits:      5
