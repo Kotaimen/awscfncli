@@ -49,7 +49,7 @@ def update(ctx, env_pattern, stack_pattern,
     # pop metadata form stack config
     metadata = stack_config.pop('Metadata')
 
-    stack = cloudformation.Stack(stack_config['StackName'])
+    # stack = cloudformation.Stack(stack_config['StackName'])
     click.echo('Updating stack...')
 
     cfn = session.resource('cloudformation', region_name=region)

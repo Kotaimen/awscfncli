@@ -92,7 +92,7 @@ class CfnCliConfig(object):
                              Profile=None,
                              Region=None,
                              Package=None,
-                             ArtifactStorage=None,
+                             ArtifactStore=None,
                              Template=None,
                              Parameters=None,
                              DisableRollback=None,
@@ -114,7 +114,7 @@ class CfnCliConfig(object):
             Profile=Profile,
             Region=Region,
             Package=Package,
-            ArtifactStorage=ArtifactStorage,
+            ArtifactStore=ArtifactStore,
         )
 
         # XXX: magically select template body or template url

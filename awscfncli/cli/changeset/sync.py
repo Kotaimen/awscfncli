@@ -40,7 +40,7 @@ def sync(ctx, env_pattern, stack_pattern,
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
     package = stack_config['Metadata']['Package']
-    artifact_store = stack_config['Metadata']['ArtifactStorage']
+    artifact_store = stack_config['Metadata']['ArtifactStore']
 
     client = session.client(
         'cloudformation',

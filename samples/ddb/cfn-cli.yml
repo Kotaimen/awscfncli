@@ -80,7 +80,7 @@ Blueprints:
     # S3 bucket name for packaging artifacts.
     # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION}.
     # The bucket will be automaticlly created with default encryption enabled.
-    ArtifactStorage: 
+    ArtifactStore:
     
     # Whether to enable termination protection on the stack, default is false.
     EnableTerminationProtection: false

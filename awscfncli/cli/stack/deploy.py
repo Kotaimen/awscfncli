@@ -34,7 +34,7 @@ def deploy(ctx, env_pattern, stack_pattern, no_wait, on_failure):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
     package = stack_config['Metadata']['Package']
-    artifact_store = stack_config['Metadata']['ArtifactStorage']
+    artifact_store = stack_config['Metadata']['ArtifactStore']
 
     # option handling
     if on_failure is not None:
