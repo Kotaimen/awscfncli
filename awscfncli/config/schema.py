@@ -4,6 +4,8 @@ import os
 import json
 import jsonschema
 
+from .exceptions import ConfigError
+
 
 def get_schema_path():
     return os.path.dirname(os.path.abspath(__file__))
@@ -18,4 +20,7 @@ def load_schema(version):
 
 def validate_config(config, version):
     schema = load_schema(version)
-    jsonschema.validate(config, schema)
+    try:
+        jsonschema.validate(config, schema)
+    except Exception as e:
+        raise ConfigError(str(e))

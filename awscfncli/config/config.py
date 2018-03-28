@@ -8,11 +8,6 @@ from collections import OrderedDict
 
 from .schema import validate_config
 
-
-class ConfigError(RuntimeError):
-    pass
-
-
 CANNED_STACK_POLICIES = {
     'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
     'ALLOW_MODIFY': '{"Statement":[{"Effect":"Allow","Action":["Update:Modify"],"Principal":"*","Resource":"*"}]}',
@@ -123,12 +118,14 @@ class CfnCliConfig(object):
             TemplateURL, TemplateBody = Template, None
         elif Package:
             # local template with package=on
-            TemplateURL = os.path.realpath(os.path.join(os.path.dirname(self._filename), Template))
+            TemplateURL = os.path.realpath(
+                os.path.join(os.path.dirname(self._filename), Template))
             TemplateBody = None
         else:
             # local template
             TemplateURL = None
-            with open(os.path.join(os.path.dirname(self._filename), Template)) as fp:
+            with open(os.path.join(os.path.dirname(self._filename),
+                                   Template)) as fp:
                 TemplateBody = fp.read()
 
         # lookup canned policy

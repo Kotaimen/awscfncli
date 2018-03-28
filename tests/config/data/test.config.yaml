@@ -2,16 +2,18 @@ Version: 2
 Environments:
   Staging:
     Vpc1:
-      Template: "default.template"
+      Template: "test.template.yaml"
       Region: "us-east-1"
       Profile: "bob"
+      Package: True
       Tags:
         key1: 'value1'
         key2: 'value2'
     Vpc2:
-      Template: "default.template"
+      Template: "test.template.yaml"
       Region: "us-east-2"
       Profile: "ray"
+      Package: True
       Tags:
         key3: 'value3'
         key4: 'value4'
