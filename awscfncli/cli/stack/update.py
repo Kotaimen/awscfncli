@@ -11,8 +11,6 @@ from ...config import CANNED_STACK_POLICIES
 
 
 @stack.command()
-@click.argument('env_pattern', envvar='CFN_ENV_PATTERN')
-@click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
 @click.option('--use-previous-template', is_flag=True, default=False,
@@ -28,16 +26,19 @@ from ...config import CANNED_STACK_POLICIES
                    'ALLOW_MODIFY: Allows modify, denys replace and delete\n')
 @click.pass_context
 @boto3_exception_handler
-def update(ctx, env_pattern, stack_pattern,
-           no_wait, use_previous_template,
-           override_policy):
+def update(ctx, no_wait, use_previous_template, override_policy):
     """Update stack with configuration"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config \
-        = ctx.obj.find_one_stack_config(env_pattern=env_pattern,
-                                        stack_pattern=stack_pattern)
+    for stack_config in ctx.obj.stacks:
+        click.secho(
+            'Working on stack %s.%s' % \
+            (stack_config['Metadata']['EnvironmentName'], stack_config['StackName']),
+            bold=True)
+        update_one(ctx, stack_config, no_wait, use_previous_template, override_policy)
 
+
+def update_one(ctx, stack_config, no_wait, use_previous_template, override_policy):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
 
