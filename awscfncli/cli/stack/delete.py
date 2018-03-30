@@ -10,21 +10,23 @@ from ..utils import start_tail_stack_events_daemon
 
 
 @stack.command()
-# XXX: move this logic to a seperate decorator to be shared between subcommands
-@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
-@click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
 @click.pass_context
 @boto3_exception_handler
-def delete(ctx, stage_pattern, stack_pattern, no_wait):
+def delete(ctx, no_wait):
     """Delete stack."""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config = ctx.obj.find_one_stack_config(
-        stage_pattern=stage_pattern,
-        stack_pattern=stack_pattern)
+    for stack_config in ctx.obj.stacks:
+        click.secho(
+            'Working on stack %s.%s' % \
+            (stack_config['Metadata']['StageName'], stack_config['StackName']),
+            bold=True)
+        delete_one(ctx, stack_config, no_wait)
 
+
+def delete_one(ctx, stack_config, no_wait):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
 

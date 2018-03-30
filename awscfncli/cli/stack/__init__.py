@@ -9,7 +9,7 @@ from ...config import ConfigError
 def stack(ctx):
     """Commands operate on CloudFormation stacks"""
     try:
-        ctx.obj.load()
+        ctx.obj.stacks
     except ConfigError as e:
         click.secho(str(e), fg='red')
         raise SystemExit

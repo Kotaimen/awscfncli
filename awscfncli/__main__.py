@@ -6,7 +6,7 @@ __date__ = '28-Feb-2018'
 """Main cli entry point, called when awscfncli is run as a package,  
 imported in setuptools intergration.
 
-cli package stucture:
+cli package structure:
 
     Click main entry:
         cli/main.py

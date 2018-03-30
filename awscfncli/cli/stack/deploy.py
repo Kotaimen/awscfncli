@@ -10,8 +10,6 @@ from ..utils import package_template, is_local_path
 
 
 @stack.command()
-@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
-@click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
 @click.option('--on-failure',
@@ -23,14 +21,19 @@ from ..utils import package_template, is_local_path
                    'and "DisableRollback" in the stack configuration file.')
 @boto3_exception_handler
 @click.pass_context
-def deploy(ctx, stage_pattern, stack_pattern, no_wait, on_failure):
+def deploy(ctx, no_wait, on_failure):
     """Deploy a new stack"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config = ctx.obj.find_one_stack_config(
-        stage_pattern=stage_pattern,
-        stack_pattern=stack_pattern)
+    for stack_config in ctx.obj.stacks:
+        click.secho(
+            'Working on stack %s.%s' % \
+            (stack_config['Metadata']['StageName'], stack_config['StackName']),
+            bold=True)
+        deploy_one(ctx, stack_config, no_wait, on_failure)
 
+
+def deploy_one(ctx, stack_config, no_wait, on_failure):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
     package = stack_config['Metadata']['Package']

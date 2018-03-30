@@ -37,8 +37,8 @@ def sync(ctx, confirm, use_previous_template):
             bold=True)
         sync_one(ctx, stack_config, confirm, use_previous_template)
 
-def sync_one(ctx, stack_config, confirm, use_previous_template):
 
+def sync_one(ctx, stack_config, confirm, use_previous_template):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
     package = stack_config['Metadata']['Package']

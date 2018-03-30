@@ -11,21 +11,17 @@ from ..utils import boto3_exception_handler, \
 
 @stack.command()
 # XXX: move this logic to a seperate decorator to be shared between subcommands
-@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
-@click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--stack-resources', '-r', is_flag=True, default=False,
               help='Display stack resources.')
 @click.option('--stack-exports', '-e', is_flag=True, default=False,
               help='Display stack exports.')
 @click.pass_context
 @boto3_exception_handler
-def describe(ctx, stage_pattern, stack_pattern, stack_resources, stack_exports):
+def describe(ctx, stack_resources, stack_exports):
     """Describe stack status and information"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config \
-        = ctx.obj.find_one_stack_config(stage_pattern=stage_pattern,
-                                        stack_pattern=stack_pattern)
+    stack_config = ctx.obj.stacks[0]
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
