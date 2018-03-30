@@ -23,16 +23,16 @@ class TestConfig(object):
         assert c is not None
         assert c.version == 2
 
-    def test_list_environments(self, data_dir):
+    def test_list_stages(self, data_dir):
         configfile = data_dir.join('data/test.config.yaml')
         c = config.load_config(configfile)
 
         assert c is not None
         assert c.version == 2
 
-        environments = c.list_environments()
-        assert len(environments) == 1
-        assert 'Staging' in environments
+        stages = c.list_stages()
+        assert len(stages) == 1
+        assert 'Staging' in stages
 
     def test_list_stacks(self, data_dir):
         configfile = data_dir.join('data/test.config.yaml')
@@ -41,7 +41,7 @@ class TestConfig(object):
         assert c is not None
         assert c.version == 2
 
-        stacks = c.list_stacks('Staging')
+        stacks = c.list_stacks(stage_name='Staging')
         assert len(stacks) == 2
         assert 'Vpc1' in stacks
         assert 'Vpc2' in stacks

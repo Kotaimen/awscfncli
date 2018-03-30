@@ -39,50 +39,50 @@ class CfnCliConfig(object):
         self._filename = filename
         self._version = self._load_version(config)
         validate_config(config, self._version)
-        self._environments = self._load_environments(config)
+        self._stages = self._load_stages(config)
 
     @property
     def version(self):
         return self._version
 
-    def list_environments(self):
-        return self._environments.keys()
+    def list_stages(self):
+        return self._stages.keys()
 
-    def list_stacks(self, environment_name):
-        return self._environments[environment_name].keys()
+    def list_stacks(self, stage_name):
+        return self._stages[stage_name].keys()
 
-    def get_stack(self, environment_name, stack_name):
-        return self._environments[environment_name][stack_name]
+    def get_stack(self, stage_name, stack_name):
+        return self._stages[stage_name][stack_name]
 
     def _load_version(self, config):
         version = config.get('Version', 1)
         logging.debug('Loading version %s' % version)
         return version
 
-    def _load_environments(self, config):
-        environments = dict()
+    def _load_stages(self, config):
+        stages = dict()
 
-        for env_name, env_config in config['Environments'].items():
-            logging.debug('Loading environment "%s"' % env_name)
+        for stage_name, stage_config in config['Stages'].items():
+            logging.debug('Loading stage "%s"' % stage_name)
 
             stacks = dict()
-            for stack_name, stack_config in env_config.items():
-                logging.debug('Loading environment "%s" stack "%s"' % (
-                    env_name, stack_name))
+            for stack_name, stack_config in stage_config.items():
+                logging.debug('Loading stage "%s" stack "%s"' % (
+                    stage_name, stack_name))
 
                 stack_config = stack_config.copy()
 
+                stack_config['StageName'] = stage_name
                 stack_config['StackName'] = stack_name
-                stack_config['EnvironmentName'] = env_name
 
                 stacks[stack_name] = self._create_stack_config(**stack_config)
 
-            environments[env_name] = stacks
+            stages[stage_name] = stacks
 
-        return environments
+        return stages
 
     def _create_stack_config(self,
-                             EnvironmentName=None,
+                             StageName=None,
                              StackName=None,
                              Profile=None,
                              Region=None,
@@ -105,7 +105,7 @@ class CfnCliConfig(object):
                              ):
         # move those are not part of create_stack() call to metadata
         metadata = dict(
-            EnvironmentName=EnvironmentName,
+            StageName=StageName,
             Profile=Profile,
             Region=Region,
             Package=Package,

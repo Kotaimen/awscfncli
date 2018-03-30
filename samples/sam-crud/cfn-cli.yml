@@ -13,7 +13,7 @@ Blueprints:
       ReadCapacityUnits: 5
       WriteCapacityUnits: 5
 
-Environments:
+Stages:
 
   Staging:
     SimpleService-Staging:

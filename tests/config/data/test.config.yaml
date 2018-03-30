@@ -1,5 +1,5 @@
 Version: 2
-Environments:
+Stages:
   Staging:
     Vpc1:
       Template: "test.template.yaml"

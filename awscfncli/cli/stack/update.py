@@ -11,7 +11,7 @@ from ...config import CANNED_STACK_POLICIES
 
 
 @stack.command()
-@click.argument('env_pattern', envvar='CFN_ENV_PATTERN')
+@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
 @click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
@@ -28,14 +28,14 @@ from ...config import CANNED_STACK_POLICIES
                    'ALLOW_MODIFY: Allows modify, denys replace and delete\n')
 @click.pass_context
 @boto3_exception_handler
-def update(ctx, env_pattern, stack_pattern,
+def update(ctx, stage_pattern, stack_pattern,
            no_wait, use_previous_template,
            override_policy):
     """Update stack with configuration"""
     assert isinstance(ctx.obj, ContextObject)
 
     stack_config \
-        = ctx.obj.find_one_stack_config(env_pattern=env_pattern,
+        = ctx.obj.find_one_stack_config(stage_pattern=stage_pattern,
                                         stack_pattern=stack_pattern)
 
     session = ctx.obj.get_boto3_session(stack_config)

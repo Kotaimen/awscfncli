@@ -11,7 +11,7 @@ from ...config import CANNED_STACK_POLICIES
 
 
 @stack.command()
-@click.argument('env_pattern', envvar='CFN_ENV_PATTERN')
+@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
 @click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--timeout', '-t', type=click.IntRange(min=0, max=3600),
               default=300, help='wait time in seconds before exit')
@@ -21,13 +21,13 @@ from ...config import CANNED_STACK_POLICIES
                    'stack events')
 @click.pass_context
 @boto3_exception_handler
-def tail(ctx, env_pattern, stack_pattern,
+def tail(ctx, stage_pattern, stack_pattern,
          timeout, events):
     """Update stack with configuration"""
     assert isinstance(ctx.obj, ContextObject)
 
     stack_config \
-        = ctx.obj.find_one_stack_config(env_pattern=env_pattern,
+        = ctx.obj.find_one_stack_config(stage_pattern=stage_pattern,
                                         stack_pattern=stack_pattern)
 
     session = ctx.obj.get_boto3_session(stack_config)

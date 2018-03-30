@@ -11,18 +11,18 @@ from ..utils import start_tail_stack_events_daemon
 
 @stack.command()
 # XXX: move this logic to a seperate decorator to be shared between subcommands
-@click.argument('env_pattern', envvar='CFN_ENV_PATTERN')
+@click.argument('stage_pattern', envvar='CFN_STAGE_PATTERN')
 @click.argument('stack_pattern', envvar='CFN_STACK_PATTERN')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
 @click.pass_context
 @boto3_exception_handler
-def delete(ctx, env_pattern, stack_pattern, no_wait):
+def delete(ctx, stage_pattern, stack_pattern, no_wait):
     """Delete stack."""
     assert isinstance(ctx.obj, ContextObject)
 
     stack_config = ctx.obj.find_one_stack_config(
-        env_pattern=env_pattern,
+        stage_pattern=stage_pattern,
         stack_pattern=stack_pattern)
 
     session = ctx.obj.get_boto3_session(stack_config)

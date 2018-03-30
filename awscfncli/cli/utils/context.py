@@ -102,7 +102,7 @@ class ContextObject(object):
 
     # XXX should be put into config package
     def _find_all_stacks(self):
-        for stage_name in self.config.list_environments():
+        for stage_name in self.config.list_stages():
             for stack_name in self.config.list_stacks(stage_name):
                 yield '.'.join([stage_name, stack_name])
 
@@ -111,7 +111,7 @@ class ContextObject(object):
         """All stack config matching stage/stack patterns
 
         """
-        for stage_name in self.config.list_environments():
+        for stage_name in self.config.list_stages():
             if fnmatch.fnmatchcase(stage_name, self.stage_pattern):
                 for stack_name in self.config.list_stacks(stage_name):
                     if fnmatch.fnmatchcase(stack_name, self.stack_pattern):
