@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import os
+import fnmatch
 import logging
 import yaml
 import six
@@ -51,8 +52,25 @@ class CfnCliConfig(object):
     def list_stacks(self, stage_name):
         return self._stages[stage_name].keys()
 
+    def list_all_stages_and_stacks(self, sep='.'):
+        """List all stages and stacks in the config file"""
+        for stage_name in self.list_stages():
+            for stack_name in self.list_stacks(stage_name):
+                yield sep.join([stage_name, stack_name])
+
     def get_stack(self, stage_name, stack_name):
         return self._stages[stage_name][stack_name]
+
+    def find_stack(self, stage_pattern, stack_pattern):
+        """Find all stack config matching stage/stack patterns
+        """
+        for stage_name in self.list_stages():
+            if fnmatch.fnmatchcase(stage_name, stage_pattern):
+                for stack_name in self.list_stacks(stage_name):
+                    if fnmatch.fnmatchcase(stack_name, stack_pattern):
+                        stack_config = \
+                            self.get_stack(stage_name, stack_name)
+                        yield stack_config
 
     def _load_version(self, config):
         version = config.get('Version', 1)
