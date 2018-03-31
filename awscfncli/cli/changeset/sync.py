@@ -33,7 +33,7 @@ def sync(ctx, confirm, use_previous_template):
     for stack_config in ctx.obj.stacks:
         click.secho(
             'Working on stack %s.%s' % \
-            (stack_config['Metadata']['EnvironmentName'], stack_config['StackName']),
+            (stack_config['Metadata']['StageName'], stack_config['StackName']),
             bold=True)
         sync_one(ctx, stack_config, confirm, use_previous_template)
 

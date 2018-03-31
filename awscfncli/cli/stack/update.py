@@ -33,7 +33,7 @@ def update(ctx, no_wait, use_previous_template, override_policy):
     for stack_config in ctx.obj.stacks:
         click.secho(
             'Working on stack %s.%s' % \
-            (stack_config['Metadata']['EnvironmentName'], stack_config['StackName']),
+            (stack_config['Metadata']['StageName'], stack_config['StackName']),
             bold=True)
         update_one(ctx, stack_config, no_wait, use_previous_template, override_policy)
 

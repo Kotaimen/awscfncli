@@ -95,9 +95,9 @@ Blueprints:
       ReadCapacityUnits:      5
       WriteCapacityUnits:     5
 
-Environments:
+Stages:
 
-  # Environment name
+  # Stage name
   Default:
     
     # Stack name

@@ -6,7 +6,7 @@
     "Version": {
       "type": "integer"
     },
-    "Environments": {
+    "Stages": {
       "title": "stages",
       "type": "object",
       "additionalProperties": {
@@ -41,5 +41,5 @@
       "minProperties": 1
     }
   },
-  "required": ["Environments"]
+  "required": ["Stages"]
 }

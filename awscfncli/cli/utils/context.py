@@ -1,6 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-import fnmatch
 import copy
 import os.path
 
@@ -76,14 +75,17 @@ class ContextObject(object):
 
     def find_stacks(self):
         """Find all matching stacks"""
-        stack_configs = list(self._find_stack_config())
+        stack_configs = list(self.config.find_stack(
+            stage_pattern=self.stage_pattern,
+            stack_pattern=self.stack_pattern
+        ))
 
         if not stack_configs:
             raise ConfigError(
                 'No stack matching specified pattern {}.{}, '.format(
                     self.stage_pattern, self.stack_pattern) +
                 'possible values are: \n' +
-                '\n'.join(self._find_all_stacks())
+                '\n'.join(self.config.list_all_stages_and_stacks())
             )
 
         self._stacks = list()
@@ -99,25 +101,6 @@ class ContextObject(object):
                 stack_config['Metadata']['Region'] = self.region
 
             self._stacks.append(stack_config)
-
-    # XXX should be put into config package
-    def _find_all_stacks(self):
-        for stage_name in self.config.list_environments():
-            for stack_name in self.config.list_stacks(stage_name):
-                yield '.'.join([stage_name, stack_name])
-
-    # XXX should be put into config package
-    def _find_stack_config(self):
-        """All stack config matching stage/stack patterns
-
-        """
-        for stage_name in self.config.list_environments():
-            if fnmatch.fnmatchcase(stage_name, self.stage_pattern):
-                for stack_name in self.config.list_stacks(stage_name):
-                    if fnmatch.fnmatchcase(stack_name, self.stack_pattern):
-                        stack_config = \
-                            self.config.get_stack(stage_name, stack_name)
-                        yield stack_config
 
     def get_boto3_session(self, stack_config):
 

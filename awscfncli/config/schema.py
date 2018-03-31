@@ -22,5 +22,5 @@ def validate_config(config, version):
     schema = load_schema(version)
     try:
         jsonschema.validate(config, schema)
-    except Exception as e:
-        raise ConfigError(str(e))
+    except jsonschema.exceptions.ValidationError as e:
+        raise ConfigError(e.message)
