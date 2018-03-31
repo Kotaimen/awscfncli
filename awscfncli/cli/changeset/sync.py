@@ -139,7 +139,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
                             'Scope',
                             'Scope', indent=4)
 
-    if result['Status'] != 'AVAILABLE':
+    if result['Status'] not in ('AVAILABLE', 'CREATE_COMPLETE'):
         click.secho('ChangeSet not executable.', fg='red')
         return
 
