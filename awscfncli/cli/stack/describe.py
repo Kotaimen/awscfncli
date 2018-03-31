@@ -10,18 +10,28 @@ from ..utils import boto3_exception_handler, \
 
 
 @stack.command()
-# XXX: move this logic to a seperate decorator to be shared between subcommands
 @click.option('--stack-resources', '-r', is_flag=True, default=False,
               help='Display stack resources.')
 @click.option('--stack-exports', '-e', is_flag=True, default=False,
               help='Display stack exports.')
 @click.pass_context
-@boto3_exception_handler
+# @boto3_exception_handler
 def describe(ctx, stack_resources, stack_exports):
     """Describe stack status and information"""
     assert isinstance(ctx.obj, ContextObject)
 
-    stack_config = ctx.obj.stacks[0]
+    for stack_config in ctx.obj.stacks:
+        click.secho(
+            'Stack %s.%s' % \
+            (stack_config['Metadata']['StageName'], stack_config['StackName']),
+            bold=True)
+
+        describe_one(ctx, stack_config, stack_resources, stack_exports)
+
+
+def describe_one(ctx, stack_config, stack_resources, stack_exports):
+    """Describe stack status and information"""
+    assert isinstance(ctx.obj, ContextObject)
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
@@ -32,8 +42,11 @@ def describe(ctx, stack_resources, stack_exports):
     )
 
     stack = cloudformation.Stack(stack_config['StackName'])
-
-    pretty_print_stack(stack, detail=True)
+    try:
+        pretty_print_stack(stack, detail=True)
+    except botocore.exceptions.ClientError as e:
+        click.secho(str(e), fg='red')
+        return
 
     if stack_resources:
         echo_pair('Resources')

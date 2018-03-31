@@ -27,7 +27,7 @@ def deploy(ctx, no_wait, on_failure):
 
     for stack_config in ctx.obj.stacks:
         click.secho(
-            'Working on stack %s.%s' % \
+            'Deploying stack %s.%s' % \
             (stack_config['Metadata']['StageName'], stack_config['StackName']),
             bold=True)
         deploy_one(ctx, stack_config, no_wait, on_failure)
