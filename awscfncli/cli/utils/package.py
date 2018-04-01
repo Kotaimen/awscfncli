@@ -19,7 +19,7 @@ from ...config import ConfigError
 
 
 def is_local_path(path):
-    if path.startswith('http') or path.startswith('https'):
+    if os.path.exists(path):
         return True
 
 
@@ -59,7 +59,7 @@ def package_template(session, template_path, bucket_region,
     return exported_str
 
 
-# XXX: Hack
+# XXX: Hack, Register customized Resource in AWS Cli
 class ResourceWithInlineCode(Resource):
     def __init__(self, uploader):
         super(ResourceWithInlineCode, self).__init__(None)

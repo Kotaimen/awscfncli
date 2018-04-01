@@ -7,6 +7,7 @@ from ..utils import boto3_exception_handler, \
     pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
     STACK_STATUS_TO_COLOR
 from ..utils import start_tail_stack_events_daemon
+from ..utils import package_template, is_local_path
 from ...config import CANNED_STACK_POLICIES
 
 
@@ -41,6 +42,8 @@ def update(ctx, no_wait, use_previous_template, override_policy):
 def update_one(ctx, stack_config, no_wait, use_previous_template, override_policy):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
+    package = stack_config['Metadata']['Package']
+    artifact_store = stack_config['Metadata']['ArtifactStore']
 
     cloudformation = session.resource(
         'cloudformation',
@@ -65,6 +68,18 @@ def update_one(ctx, stack_config, no_wait, use_previous_template, override_polic
         stack_config.pop('TemplateBody', None)
         stack_config.pop('TemplateURL', None)
         stack_config['UsePreviousTemplate'] = use_previous_template
+    else:
+        if package and 'TemplateURL' in stack_config:
+            template_path = stack_config.get('TemplateURL')
+            if is_local_path(template_path):
+                packaged_template = package_template(
+                    session,
+                    template_path,
+                    bucket_region=region,
+                    bucket_name=artifact_store,
+                    prefix=stack_config['StackName'])
+                stack_config['TemplateBody'] = packaged_template
+                stack_config.pop('TemplateURL')
 
     if override_policy is not None:
         click.secho('Overriding stack policy during update...', fg='red')

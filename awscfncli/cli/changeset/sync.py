@@ -67,7 +67,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     else:
         if package and 'TemplateURL' in stack_config:
             template_path = stack_config.get('TemplateURL')
-            if not is_local_path(template_path):
+            if is_local_path(template_path):
                 packaged_template = package_template(
                     session,
                     template_path,
