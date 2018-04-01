@@ -44,6 +44,7 @@ def pretty_print_stack(stack, detail=False):
     if stack.last_updated_time:
         echo_pair('Last Updated', stack.last_updated_time)
     echo_pair('Capabilities', stack.capabilities)
+    echo_pair('Termination Protection', stack.enable_termination_protection)
 
     if stack.parameters:
         echo_pair('Parameters')

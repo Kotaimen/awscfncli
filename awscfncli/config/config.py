@@ -153,7 +153,7 @@ class CfnCliConfig(object):
             StackPolicyBody = None
 
         # Normalize parameter config
-        normalized_params = list()
+        normalized_params = None
         if Parameters and isinstance(Parameters, dict):
             normalized_params = list(
                 {
@@ -167,7 +167,7 @@ class CfnCliConfig(object):
             )
 
         # Normalize tag config
-        normalized_tags = list()
+        normalized_tags = None
         if Tags and isinstance(Tags, dict):
             normalized_tags = list(
                 {'Key': k, 'Value': v}
@@ -198,6 +198,6 @@ class CfnCliConfig(object):
         )
 
         # drop all None and empty list
-        config = dict((k, v) for k, v in six.iteritems(config) if v)
+        config = dict((k, v) for k, v in six.iteritems(config) if v is not None)
 
         return config

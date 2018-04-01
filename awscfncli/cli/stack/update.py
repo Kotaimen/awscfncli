@@ -36,19 +36,16 @@ def update(ctx, no_wait, use_previous_template, override_policy):
             'Updating on stack %s.%s' % \
             (stack_config['Metadata']['StageName'], stack_config['StackName']),
             bold=True)
-        update_one(ctx, stack_config, no_wait, use_previous_template, override_policy)
+        update_one(ctx, stack_config, no_wait, use_previous_template,
+                   override_policy)
 
 
-def update_one(ctx, stack_config, no_wait, use_previous_template, override_policy):
+def update_one(ctx, stack_config, no_wait, use_previous_template,
+               override_policy):
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']
     package = stack_config['Metadata']['Package']
     artifact_store = stack_config['Metadata']['ArtifactStore']
-
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region
-    )
 
     # pop metadata form stack config
     metadata = stack_config.pop('Metadata')
@@ -62,6 +59,8 @@ def update_one(ctx, stack_config, no_wait, use_previous_template, override_polic
     # remove unused parameters
     stack_config.pop('DisableRollback', None)
     stack_config.pop('OnFailure', None)
+    termination_protection = stack_config.pop(
+        'EnableTerminationProtection', None)
 
     # update parameters
     if use_previous_template:
@@ -93,6 +92,22 @@ def update_one(ctx, stack_config, no_wait, use_previous_template, override_polic
     if ctx.obj.verbosity > 0:
         click.echo(stack_config)
     stack.update(**stack_config)
+
+    # update termination protection
+    if termination_protection is not None:
+        client = session.client('cloudformation', region_name=region)
+        try:
+            click.secho(
+                'Setting Termination Protection to "%s"' %
+                termination_protection, fg='red')
+            client.update_termination_protection(
+                EnableTerminationProtection=termination_protection,
+                StackName=stack_config['StackName']
+            )
+        except Exception:
+            raise NotImplementedError('Termination protection is not supported '
+                                      'for current version of boto. '
+                                      'Please upgrade to a new version.')
 
     # exit immediately
     if no_wait:
