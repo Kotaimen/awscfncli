@@ -23,4 +23,4 @@ def validate_config(config, version):
     try:
         jsonschema.validate(config, schema)
     except jsonschema.exceptions.ValidationError as e:
-        raise ConfigError(e.message)
+        raise ConfigError(e)
