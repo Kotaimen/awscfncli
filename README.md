@@ -24,53 +24,60 @@ Install using [pip](https://pip.pypa.io/) from
 [pypi](https://pypi.python.org/pypi/awscfncli):
 
     pip install awscfncli
+
     
 ## Usage
 
     cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...]
 
-To view a list of available subcommands, type:
+To view a list of available subcommands, use:
 
     cfn-cli COMMAND --help
 
-To view help of a particular subcommand, type:
-    
-    cfn-cli COMMAND SUBCOMMAND --help   
-
-
 Options:
 
-- `-f, --file`: Specify an alternate configuration file, (default:
-  `cfn-cli.yml`)
-- `-t, --stage`: Specify a deployment stage, (default: `Default`)
-- `-s, --stack`: Specify a stack name, (default: `*`)
-- `--profile`: Override AWS profile specified in the configuration 
-- `--region`: Override AWS region specified in the configuration 
-- `-1, --one`: Select only the first matching stack if glob is used in 
-   stage/stack options
-- `--verbose`: Be more verbose
+- `-f, --file`: Specify an alternate config file, (default:
+    `cfn-cli.yml`)
+- `-s, --stack`: Specify stacks to operate on, defined by
+    `STAGE_NAME.STACK_NAME`, default value is `*`, which means
+    all stacks in `Default` stage.
+- `--profile`: Override AWS profile specified in the config.
+- `--region`: Override AWS region specified in the config.
+- `-1, --one`: Select only the first matching stack if glob 
+    is used in `--stack` option.
+- `--verbose`: Be more verbose.
 
-By default, `cfn-cli` will try to locate `cfn-cli.yml` file in current 
-directory, override this using `-f` option.
+Options can also be specified using environment variables:
 
-Stages and stacks can be selected using globs:
-    
-    cfn-cli --stack=DDB* stack deploy
+    CFN_STACK=Default.Table1 cfn-cli deploy
 
-Options can be specified using environment variables:
+By default, `cfn-cli` will try to locate `cfn-cli.yml` file in 
+current directory, override this using `-f` option.
 
-    CFNCLI_STACK=DDB cfn-cli stack deploy 
+Stack can be selected using full qualified name:
 
-Supported commands/subcommands:
+    cfn-cli -s Default.Table2 describe
 
- -  `stack`
-    - `deploy` - Deploy new stack  
-    - `update` - Update stack
-    - `describe` - Describe stack status
-    - `tail` - Print stack events
-    - `delete` - Delete stack
- - `changeset`
-    - `sync` - Create a ChangeSet and execute it
+`Default` is the stage name and `DDB1` is stack name, unix globs is also 
+supported when selecting stacks to operate on:
+
+    cfn-cli -s Default.Table* describe
+    cfn-cli -s Def*.Table1 describe
+
+When `.` is missing from `--stack` option, `cfn-cli` will assume
+stage name `Default` is specfied, thus `*` is equivalent to 
+`Default.*`.   
+ 
+
+### Supported Commands
+
+- `deploy` - Deploy new stacks.
+- `update` - Update stacks.
+- `describe` - Describe stacks details.
+- `tail` - Print stack events.
+- `delete` - Delete stacks.
+- `sync` - Create a ChangeSet and execute it.
+- `list` - List stacks in the config.
 
 ## Automatic Packaging
 
@@ -94,6 +101,7 @@ The following resource property are supported by `awscfncli` and official
 - `AWS::CloudFormation::Stack->TemplateURL`
 
 The following resource property are supported by `awscfncli`:
+
 - `AWS::Transform->Location`
 - `AWS::KinesisAnalytics::Application->ApplicationCode`
 - `AWS::StepFunctions::StateMachine->DefinitionString`

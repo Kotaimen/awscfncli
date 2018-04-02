@@ -17,67 +17,63 @@ VERSION = pkg_resources.require('awscfncli')[0].version
 @click.option('-f', '--file',
               type=click.Path(exists=False, dir_okay=True),
               default='cfn-cli.yml',
-              help='Alternate stack configuration file '
-                   '(default: cfn-cli.yml)')
-@click.option('-t', '--stage',
-              type=click.STRING, default='Default',
-              help='Specify a deployment stage name or pattern'
-                   '(default: Default)')
+              help='Specify an alternate stack configuration file '
+                   '(default: cfn-cli.yml).')
 @click.option('-s', '--stack',
               type=click.STRING, default='*',
-              help='Specify a stack name or pattern'
-                   '(default: *)')
-@click.option('--profile',
+              help='Specify stacks to operate on, defined by '
+                   'STAGE_NAME.STACK_NAME (default value is "*", which means '
+                   'all stacks in Default stage).')
+@click.option('-p', '--profile',
               type=click.STRING, default=None,
-              help='Profile name from AWS credential file, overrides '
-                   'config/env setting.')
-@click.option('--region',
+              help='Override AWS profile specified in the config.')
+@click.option('-r', '--region',
               type=click.STRING, default=None,
-              help='AWS region to use, overrides config/env setting.')
+              help='Override AWS region specified in the config.')
 @click.option('-1', '--one',
               is_flag=True, default=False,
-              help='Execute command on first matching ')
+              help='Select only the first matching stack if glob is used '
+                   'in --stack option.')
 @click.option('-v', '--verbose', count=True,
               help='Be more verbose.')
-def cfn_cli(ctx, file, stage, stack, profile, region, one, verbose):
+def cfn_cli(ctx, file, stack, profile, region, one, verbose):
     """AWS CloudFormation stack management command line interface.
 
-    Stages and stacks can be selected using globs:
+    Options can also be specified using environment variables:
 
     \b
-      cfn-cli --stack=DDB* stack deploy
-
-    Options can be specified using environment variables:
-
+        CFN_STACK=Default.DDB1 cfn-cli deploy
+    
+    By default, cfn-cli will try to locate cfn-cli.yml file in 
+    current directory, override this using -f option.
+    
+    Stack can be selected using full qualified name:
+    
     \b
-      CFNCLI_STACK=DDB cfn-cli stack deploy
-
-    Usage:
-
+        cfn-cli -s Default.DDB1 describe
+    
+    Default is the stage name and DDB1 is stack name, unix globs is also 
+    supported when selecting stacks to operate on:
+    
     \b
-      cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...]
-      cfn-cli --help
-
-    Some examples:
-
-    \b
-      cfn-cli stack deploy --help
-      cfn-cli -t dev -s ddb stack deploy
-      cfn-cli -f foobar/MyGreatProject.yml stack deploy
-
+        cfn-cli -s Default.DDB* describe
+        cfn-cli -s Def*.DDB1 describe
+    
+    When "." is missing from --stack option, cfn-cli will assume
+    stage name Default is specfied, thus "*" is equivalent to
+    "Default.*".
     """
 
     ctx_obj = ContextObject(
         config_file=file,
-        stage_pattern=stage,
-        stack_pattern=stack,
+        stack=stack,
         profile=profile,
         region=region,
         first_stack=one,
         verbosity=verbose,
     )
 
-    if verbose > 1:
+    if verbose > 0:
         logging.basicConfig(level=logging.DEBUG)
 
     ctx.obj = ctx_obj

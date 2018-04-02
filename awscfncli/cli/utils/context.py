@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 
+import logging
 import copy
 import os.path
 
@@ -13,12 +14,22 @@ class ContextObject(object):
 
     def __init__(self,
                  config_file,
-                 stage_pattern,
-                 stack_pattern,
+                 stack,
                  profile,
                  region,
                  first_stack,
                  verbosity):
+
+        split = stack.rsplit('.', 1)
+
+        if len(split) == 1:
+            stage_pattern = 'Default'
+            stack_pattern = stack
+        else:
+            stage_pattern = split[0]
+            stack_pattern = split[1]
+
+        logging.debug('Stack search pattern: %s -> %s.%s' % (stack, stage_pattern, stack_pattern))
 
         self.config_file = config_file
         self.stage_pattern = stage_pattern
@@ -82,10 +93,10 @@ class ContextObject(object):
 
         if not stack_configs:
             raise ConfigError(
-                'No stack matching specified pattern {}.{}, '.format(
+                'No stack matching specified pattern "{}.{}", '.format(
                     self.stage_pattern, self.stack_pattern) +
-                'possible values are: \n' +
-                '\n'.join(self.config.list_all_stages_and_stacks())
+                'possible values are: ' +
+                ', '.join(self.config.list_all_stages_and_stacks())
             )
 
         self._stacks = list()
