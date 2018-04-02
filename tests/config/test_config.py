@@ -49,6 +49,7 @@ class TestConfig(object):
         stack = c.get_stack('Staging', 'Vpc1')
         assert stack['Metadata']['Region'] == 'us-east-1'
         assert stack['Metadata']['Profile'] == 'bob'
+        assert stack['StackName'] == 'StackNameOfVpc1'
         assert stack['TemplateURL'] == data_dir.join('data/test.template.yaml')
         assert stack['Tags'][0]['Key'] == 'key1'
         assert stack['Tags'][0]['Value'] == 'value1'
@@ -58,6 +59,7 @@ class TestConfig(object):
         stack = c.get_stack('Staging', 'Vpc2')
         assert stack['Metadata']['Region'] == 'us-east-2'
         assert stack['Metadata']['Profile'] == 'ray'
+        assert stack['StackName'] == 'Vpc2'
         assert stack['TemplateURL'] == data_dir.join('data/test.template.yaml')
         assert stack['Tags'][0]['Key'] == 'key3'
         assert stack['Tags'][0]['Value'] == 'value3'

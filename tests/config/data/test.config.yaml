@@ -2,6 +2,7 @@ Version: 2
 Stages:
   Staging:
     Vpc1:
+      StackName: "StackNameOfVpc1"
       Template: "test.template.yaml"
       Region: "us-east-1"
       Profile: "bob"
