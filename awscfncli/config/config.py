@@ -89,12 +89,14 @@ class CfnCliConfig(object):
                     stage_name, stack_name))
 
                 stack_config = stack_config.copy()
-
                 stack_config['StageName'] = stage_name
+                stack_config['StackDisplayName'] = stack_name
+
                 if 'StackName' not in stack_config:
                     # if StackName is not specified, use the key of
                     # stack config as stack name.
                     stack_config['StackName'] = stack_name
+
 
                 stacks[stack_name] = self._create_stack_config(**stack_config)
 
@@ -105,6 +107,7 @@ class CfnCliConfig(object):
     def _create_stack_config(self,
                              StageName=None,
                              StackName=None,
+                             StackDisplayName=None,
                              Profile=None,
                              Region=None,
                              Package=None,
@@ -127,13 +130,14 @@ class CfnCliConfig(object):
         # move those are not part of create_stack() call to metadata
         metadata = dict(
             StageName=StageName,
+            StackDisplayName=StackDisplayName,
             Profile=Profile,
             Region=Region,
             Package=Package,
             ArtifactStore=ArtifactStore,
         )
 
-        # XXX: magically select template body or template url
+        # m agically select template body or template url
         if Template.startswith('https') or Template.startswith('http'):
             # s3 template
             TemplateURL, TemplateBody = Template, None
