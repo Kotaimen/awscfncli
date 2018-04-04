@@ -17,9 +17,8 @@ def status(ctx, dry_run):
     """List status of selected stacks."""
     assert isinstance(ctx.obj, ContextObject)
 
-    for stack_config in ctx.obj.stacks:
-        echo_pair(stack_config['Metadata']['QualifiedName'],
-                  key_style=dict(bold=True), sep='')
+    for qualified_name, stack_config in ctx.obj.stacks.items():
+        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
 
         echo_pair('Profile', stack_config['Metadata']['Profile'], indent=2)
         echo_pair('Region', stack_config['Metadata']['Region'], indent=2)

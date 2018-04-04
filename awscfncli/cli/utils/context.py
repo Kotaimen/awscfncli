@@ -29,7 +29,8 @@ class ContextObject(object):
             stage_pattern = split[0]
             stack_pattern = split[1]
 
-        logging.debug('Stack search pattern: %s -> %s.%s' % (stack, stage_pattern, stack_pattern))
+        logging.debug('Stack search pattern: %s -> %s.%s' % (
+        stack, stage_pattern, stack_pattern))
 
         self.config_file = config_file
         self.stage_pattern = stage_pattern
@@ -86,23 +87,27 @@ class ContextObject(object):
 
     def find_stacks(self):
         """Find all matching stacks"""
-        stack_configs = list(self.config.find_stack(
+        configs = list(self.config.search_stacks(
             stage_pattern=self.stage_pattern,
             stack_pattern=self.stack_pattern
         ))
 
-        if not stack_configs:
+        if not configs:
+            available_stacks = ', '.join(
+                '.'.join([stage_name, stack_name]) for
+                stage_name, stack_name, _ in self.config.search_stacks()
+            )
             raise ConfigError(
                 'No stack matching specified pattern "{}.{}", '.format(
                     self.stage_pattern, self.stack_pattern) +
-                'possible values are: ' +
-                ', '.join(self.config.list_all_stages_and_stacks())
+                'possible values are: ' + available_stacks
             )
 
-        self._stacks = list()
-        for n, stack_config in enumerate(stack_configs):
+        self._stacks = dict()
+        for n, config in enumerate(configs):
             if n > 0 and self.first_stack: return
             # make a deep copy as config may be modified in commands
+            stage_name, stack_name, stack_config = config
             stack_config = copy.deepcopy(stack_config)
 
             # override parameters
@@ -111,7 +116,8 @@ class ContextObject(object):
             if self.region is not None:
                 stack_config['Metadata']['Region'] = self.region
 
-            self._stacks.append(stack_config)
+            qualified_name = '.'.join([stack_name, stack_name])
+            self._stacks[qualified_name] = stack_config
 
     def get_boto3_session(self, stack_config):
 

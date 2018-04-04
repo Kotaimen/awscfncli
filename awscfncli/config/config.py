@@ -52,16 +52,10 @@ class CfnCliConfig(object):
     def list_stacks(self, stage_name):
         return self._stages[stage_name].keys()
 
-    def list_all_stages_and_stacks(self, sep='.'):
-        """List all stages and stacks in the config file"""
-        for stage_name in self.list_stages():
-            for stack_name in self.list_stacks(stage_name):
-                yield sep.join([stage_name, stack_name])
-
     def get_stack(self, stage_name, stack_name):
         return self._stages[stage_name][stack_name]
 
-    def find_stack(self, stage_pattern, stack_pattern):
+    def search_stacks(self, stage_pattern='*', stack_pattern='*'):
         """Find all stack config matching stage/stack patterns
         """
         for stage_name in self.list_stages():
@@ -70,7 +64,7 @@ class CfnCliConfig(object):
                     if fnmatch.fnmatchcase(stack_name, stack_pattern):
                         stack_config = \
                             self.get_stack(stage_name, stack_name)
-                        yield stack_config
+                        yield stage_name, stack_name, stack_config
 
     def _load_version(self, config):
         version = config.get('Version', 1)
@@ -90,13 +84,11 @@ class CfnCliConfig(object):
 
                 stack_config = stack_config.copy()
                 stack_config['StageName'] = stage_name
-                stack_config['StackDisplayName'] = stack_name
 
                 if 'StackName' not in stack_config:
                     # if StackName is not specified, use the key of
                     # stack config as stack name.
                     stack_config['StackName'] = stack_name
-
 
                 stacks[stack_name] = self._create_stack_config(**stack_config)
 
@@ -107,7 +99,6 @@ class CfnCliConfig(object):
     def _create_stack_config(self,
                              StageName=None,
                              StackName=None,
-                             StackDisplayName=None,
                              Profile=None,
                              Region=None,
                              Package=None,
@@ -130,8 +121,6 @@ class CfnCliConfig(object):
         # move those are not part of create_stack() call to metadata
         metadata = dict(
             StageName=StageName,
-            StackDisplayName=StackDisplayName,
-            QualifiedName='.'.join([StageName, StackDisplayName]),
             Profile=Profile,
             Region=Region,
             Package=Package,

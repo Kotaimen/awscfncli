@@ -18,9 +18,8 @@ def delete(ctx, no_wait):
     """Delete stack."""
     assert isinstance(ctx.obj, ContextObject)
 
-    for stack_config in ctx.obj.stacks:
-        echo_pair(stack_config['Metadata']['QualifiedName'],
-                  key_style=dict(bold=True), sep='')
+    for qualified_name, stack_config in ctx.obj.stacks.items():
+        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
         delete_one(ctx, stack_config, no_wait)
 
 
