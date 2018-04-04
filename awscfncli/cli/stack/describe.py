@@ -15,16 +15,14 @@ from ..utils import boto3_exception_handler, \
 @click.option('--stack-exports', '-e', is_flag=True, default=False,
               help='Display stack exports.')
 @click.pass_context
-# @boto3_exception_handler
+@boto3_exception_handler
 def describe(ctx, stack_resources, stack_exports):
     """Describe stack status and information"""
     assert isinstance(ctx.obj, ContextObject)
 
     for stack_config in ctx.obj.stacks:
-        click.secho(
-            'Stack %s.%s' % \
-            (stack_config['Metadata']['StageName'], stack_config['StackName']),
-            bold=True)
+        echo_pair(stack_config['Metadata']['QualifiedName'],
+                  key_style=dict(bold=True), sep='')
 
         describe_one(ctx, stack_config, stack_resources, stack_exports)
 
@@ -42,11 +40,14 @@ def describe_one(ctx, stack_config, stack_resources, stack_exports):
     )
 
     stack = cloudformation.Stack(stack_config['StackName'])
+
     try:
-        pretty_print_stack(stack, detail=True)
+        stack.stack_status
     except botocore.exceptions.ClientError as e:
         click.secho(str(e), fg='red')
         return
+
+    pretty_print_stack(stack, detail=True)
 
     if stack_resources:
         echo_pair('Resources')

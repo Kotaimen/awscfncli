@@ -5,7 +5,7 @@ import click
 from . import stack
 from ..utils import ContextObject
 from ..utils import boto3_exception_handler
-from ..utils import pretty_print_stack
+from ..utils import pretty_print_stack, echo_pair
 from ..utils import start_tail_stack_events_daemon
 
 
@@ -19,10 +19,8 @@ def delete(ctx, no_wait):
     assert isinstance(ctx.obj, ContextObject)
 
     for stack_config in ctx.obj.stacks:
-        click.secho(
-            'Deleting stack %s.%s' % \
-            (stack_config['Metadata']['StageName'], stack_config['StackName']),
-            bold=True)
+        echo_pair(stack_config['Metadata']['QualifiedName'],
+                  key_style=dict(bold=True), sep='')
         delete_one(ctx, stack_config, no_wait)
 
 

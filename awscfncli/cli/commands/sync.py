@@ -1,11 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-import uuid
 import click
-
+import uuid
 import botocore.exceptions
 
-from . import changeset
+from ..main import cfn_cli
 from ..utils import boto3_exception_handler, \
     echo_pair, ContextObject, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
@@ -19,7 +18,7 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
                   key_style=key_style, value_style=value_style, )
 
 
-@changeset.command()
+@cfn_cli.command()
 @click.option('--confirm', is_flag=True, default=False)
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
@@ -27,14 +26,14 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
 @click.pass_context
 @boto3_exception_handler
 def sync(ctx, confirm, use_previous_template):
-    """Create a changeset and execute it immediately"""
+    """Create a changeset and execute immediately.
+
+    Combines "aws cloudformation package" and "aws cloudformation deploy" """
     assert isinstance(ctx.obj, ContextObject)
 
     for stack_config in ctx.obj.stacks:
-        click.secho(
-            'Syncing on stack %s.%s' % \
-            (stack_config['Metadata']['StageName'], stack_config['StackName']),
-            bold=True)
+        echo_pair(stack_config['Metadata']['QualifiedName'],
+                  key_style=dict(bold=True), sep='')
         sync_one(ctx, stack_config, confirm, use_previous_template)
 
 

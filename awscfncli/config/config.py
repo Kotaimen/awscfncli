@@ -131,6 +131,7 @@ class CfnCliConfig(object):
         metadata = dict(
             StageName=StageName,
             StackDisplayName=StackDisplayName,
+            QualifiedName='.'.join([StageName, StackDisplayName]),
             Profile=Profile,
             Region=Region,
             Package=Package,

@@ -1,13 +1,10 @@
 #  -*- encoding: utf-8 -*-
 
 import click
-from . import stack
-from ..utils import ContextObject
-from ..utils import boto3_exception_handler
-from ..utils import pretty_print_stack
-from ..utils import start_tail_stack_events_daemon
-from ..utils import package_template, is_local_path
 
+from . import stack
+from ..utils import ContextObject, boto3_exception_handler, package_template, \
+    is_local_path, pretty_print_stack, echo_pair, start_tail_stack_events_daemon
 
 @stack.command()
 @click.option('--no-wait', is_flag=True, default=False,
@@ -26,10 +23,8 @@ def deploy(ctx, no_wait, on_failure):
     assert isinstance(ctx.obj, ContextObject)
 
     for stack_config in ctx.obj.stacks:
-        click.secho(
-            'Deploying stack %s.%s' % \
-            (stack_config['Metadata']['StageName'], stack_config['StackName']),
-            bold=True)
+        echo_pair(stack_config['Metadata']['QualifiedName'],
+                  key_style=dict(bold=True), sep='')
         deploy_one(ctx, stack_config, no_wait, on_failure)
 
 

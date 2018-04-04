@@ -32,10 +32,8 @@ def update(ctx, no_wait, use_previous_template, override_policy):
     assert isinstance(ctx.obj, ContextObject)
 
     for stack_config in ctx.obj.stacks:
-        click.secho(
-            'Updating on stack %s.%s' % \
-            (stack_config['Metadata']['StageName'], stack_config['StackName']),
-            bold=True)
+        echo_pair(stack_config['Metadata']['QualifiedName'],
+                  key_style=dict(bold=True), sep='')
         update_one(ctx, stack_config, no_wait, use_previous_template,
                    override_policy)
 

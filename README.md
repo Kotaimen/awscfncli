@@ -49,20 +49,20 @@ Options:
 
 Options can also be specified using environment variables:
 
-    CFN_STACK=Default.Table1 cfn-cli deploy
+    CFN_STACK=Default.Table1 cfn-cli stack deploy
 
 By default, `cfn-cli` will try to locate `cfn-cli.yml` file in 
 current directory, override this using `-f` option.
 
 Stack can be selected using full qualified name:
 
-    cfn-cli -s Default.Table2 describe
+    cfn-cli -s Default.Table2 status
 
 `Default` is the stage name and `DDB1` is stack name, unix globs is also 
 supported when selecting stacks to operate on:
 
-    cfn-cli -s Default.Table* describe
-    cfn-cli -s Def*.Table1 describe
+    cfn-cli -s Default.Table* status
+    cfn-cli -s Def*.Table1 status
 
 When `.` is missing from `--stack` option, `cfn-cli` will assume
 stage name `Default` is specfied, thus `*` is equivalent to 
@@ -71,13 +71,14 @@ stage name `Default` is specfied, thus `*` is equivalent to
 
 ### Supported Commands
 
-- `deploy` - Deploy new stacks.
-- `update` - Update stacks.
-- `describe` - Describe stacks details.
-- `tail` - Print stack events.
-- `delete` - Delete stacks.
 - `sync` - Create a ChangeSet and execute it.
-- `list` - List stacks in the config.
+- `status` - List status of selected stacks.
+- `stack`
+    - `deploy` - Deploy new stacks.
+    - `update` - Update stacks.
+    - `describe` - Describe stacks details.
+    - `tail` - Print stack events.
+    - `delete` - Delete stacks.
 
 ## Automatic Packaging
 
