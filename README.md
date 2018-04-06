@@ -10,10 +10,10 @@ CloudFormation stacks.
 Features:
 
 - Single YAML configuration file for:
-    - Deployment configuration
-    - Stack parameters
-- Automatic packaging
-- Automatic applies Serverless and Include (aka: SAM support)
+    - Deployment configuration.
+    - Stack parameters.
+- Automatic packaging template resources.
+- Automatic applies Serverless transform (aka: SAM support).
 - Automatic stack ChangeSet synchronization.
 - Display and tracking stack events on cli.
 - Describe stack status and export values.
@@ -23,9 +23,9 @@ Features:
 Install using [pip](https://pip.pypa.io/) from 
 [pypi](https://pypi.python.org/pypi/awscfncli):
 
-    pip install awscfncli
+    pip install awscfncli2
 
-    
+
 ## Usage
 
     cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...]
@@ -40,7 +40,7 @@ Options:
     `cfn-cli.yml`)
 - `-s, --stack`: Specify stacks to operate on, defined by
     `STAGE_NAME.STACK_NAME`, default value is `*`, which means
-    all stacks in `Default` stage.
+    all stacks in all stages.
 - `--profile`: Override AWS profile specified in the config.
 - `--region`: Override AWS region specified in the config.
 - `-1, --one`: Select only the first matching stack if glob 
@@ -65,8 +65,8 @@ supported when selecting stacks to operate on:
     cfn-cli -s Def*.Table1 status
 
 When `.` is missing from `--stack` option, `cfn-cli` will assume
-stage name `Default` is specfied, thus `*` is equivalent to 
-`Default.*`.   
+stage name `*` is specfied, thus `*` is equivalent to 
+`*.*`, which means all stacks in all stages.   
  
 
 ### Supported Commands

@@ -23,7 +23,7 @@ VERSION = pkg_resources.require('awscfncli')[0].version
               type=click.STRING, default='*',
               help='Specify stacks to operate on, defined by '
                    'STAGE_NAME.STACK_NAME (default value is "*", which means '
-                   'all stacks in Default stage).')
+                   'all stacks in all stages).')
 @click.option('-p', '--profile',
               type=click.STRING, default=None,
               help='Override AWS profile specified in the config.')

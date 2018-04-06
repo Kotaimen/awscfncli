@@ -24,7 +24,7 @@ class ContextObject(object):
         split = stack.rsplit('.', 1)
 
         if len(split) == 1:
-            stage_pattern = 'Default'
+            stage_pattern = '*'
             stack_pattern = stack
         else:
             stage_pattern = split[0]
