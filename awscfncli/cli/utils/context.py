@@ -116,7 +116,7 @@ class ContextObject(object):
             if self.region is not None:
                 stack_config['Metadata']['Region'] = self.region
 
-            qualified_name = '.'.join([stack_name, stack_name])
+            qualified_name = '.'.join([stage_name, stack_name])
             self._stacks[qualified_name] = stack_config
 
     def get_boto3_session(self, stack_config):
