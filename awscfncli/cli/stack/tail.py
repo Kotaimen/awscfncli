@@ -23,7 +23,7 @@ def tail(ctx, timeout, events):
     """Update stack with configuration"""
     assert isinstance(ctx.obj, ContextObject)
 
-    qualified_name, stack_config = ctx.obj.stacks.items()[0]
+    qualified_name, stack_config = list(ctx.obj.stacks.items())[0]
 
     session = ctx.obj.get_boto3_session(stack_config)
     region = stack_config['Metadata']['Region']

@@ -3,6 +3,7 @@
 import logging
 import copy
 import os.path
+from collections import OrderedDict
 
 import boto3
 
@@ -103,7 +104,7 @@ class ContextObject(object):
                 'possible values are: ' + available_stacks
             )
 
-        self._stacks = dict()
+        self._stacks = OrderedDict()
         for n, config in enumerate(configs):
             if n > 0 and self.first_stack: return
             # make a deep copy as config may be modified in commands
