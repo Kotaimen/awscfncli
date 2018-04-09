@@ -1,6 +1,7 @@
 #  -*- encoding: utf-8 -*-
 
-import os
+"""Main cli entrypoint"""
+
 import logging
 
 import click
@@ -21,7 +22,7 @@ VERSION = pkg_resources.require('awscfncli')[0].version
                    '(default: cfn-cli.yml).')
 @click.option('-s', '--stack',
               type=click.STRING, default='*',
-              help='Specify stacks to operate on, defined by '
+              help='Stack selector, specify stacks to operate on, defined by '
                    'STAGE_NAME.STACK_NAME (default value is "*", which means '
                    'all stacks in all stages).')
 @click.option('-p', '--profile',
@@ -58,15 +59,17 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
     \b
         cfn-cli -s Default.DDB* describe
         cfn-cli -s Def*.DDB1 describe
-    
-    When "." is missing from --stack option, cfn-cli will assume
-    stage name Default is specfied, thus "*" is equivalent to
-    "Default.*".
+
+    If "." is missing from stack selector, "cfn-cli" will assume
+    stage name "*" is specfied, thus "*" is equivalent to "*.*", which
+    means all stacks in all stages.
     """
 
+    # Builds the context object which contains config object and stack
+    # selection query parsers.
     ctx_obj = ContextObject(
         config_file=file,
-        stack=stack,
+        stack_selector=stack,
         profile=profile,
         region=region,
         first_stack=one,

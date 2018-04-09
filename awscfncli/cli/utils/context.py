@@ -15,23 +15,23 @@ class ContextObject(object):
 
     def __init__(self,
                  config_file,
-                 stack,
+                 stack_selector,
                  profile,
                  region,
                  first_stack,
                  verbosity):
 
-        split = stack.rsplit('.', 1)
+        split = stack_selector.rsplit('.', 1)
 
         if len(split) == 1:
             stage_pattern = '*'
-            stack_pattern = stack
+            stack_pattern = stack_selector
         else:
             stage_pattern = split[0]
             stack_pattern = split[1]
 
-        logging.debug('Stack search pattern: %s -> %s.%s' % (
-        stack, stage_pattern, stack_pattern))
+        logging.debug('Stack selector: %s -> %s.%s' % (
+            stack_selector, stage_pattern, stack_pattern))
 
         self.config_file = config_file
         self.stage_pattern = stage_pattern
@@ -47,32 +47,31 @@ class ContextObject(object):
 
     @property
     def config(self):
-        """Config object
+        """Config object (lazy loading)"""
 
-        Layout:
-
-            Config {
-                Stages {
-                    Stacks {
-                        StackConfig {
-                            Stack Parameter
-                            ...
-                            Metadata {
-                                Stack Metadata
-                                ...
-                            }
-                        }
-                    }
-                }
-            }
-        """
+        # Layout:
+        #
+        #     Config {
+        #         Stages {
+        #             Stacks {
+        #                 StackConfig {
+        #                     Stack Parameter
+        #                     ...
+        #                     Metadata {
+        #                         Stack Metadata
+        #                         ...
+        #                     }
+        #                 }
+        #             }
+        #         }
+        #     }
         if self._config is None:
             self.load_config()
         return self._config
 
     @property
     def stacks(self):
-        """Matching stack configs"""
+        """Stack configs matching the selector"""
         if self._stacks is None:
             self.find_stacks()
         return self._stacks

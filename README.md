@@ -126,7 +126,7 @@ New configuration file supports mutilable stages and stacks, to convert an `0.x`
 1. Add following block to the head of conf file and indent properly:
 
 ```yaml
-Vesion: 2
+Version: 2
 Stages:
   Default:
     << old config file >>
@@ -153,7 +153,7 @@ Stack:
 New:
 
 ```yaml
-Vesion: 2
+Version: 2
 Stages:
   Default:
     Stack:
