@@ -26,9 +26,13 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
 @click.pass_context
 @boto3_exception_handler
 def sync(ctx, confirm, use_previous_template):
-    """Create a changeset and execute immediately.
+    """Create and execute ChangeSets.
 
-    Combines "aws cloudformation package" and "aws cloudformation deploy" """
+    Combines "aws cloudformation package" and "aws cloudformation deploy" command
+    into one.  If the stack is not created yet, a CREATE type ChangeSet is created,
+    otherwise UPDATE ChangeSet is created.
+
+    """
     assert isinstance(ctx.obj, ContextObject)
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
@@ -76,11 +80,13 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
                 stack_config.pop('TemplateURL')
 
     try:
+        # check whether stack is already created.
         client.describe_stacks(StackName=stack_config['StackName'])
     except botocore.exceptions.ClientError as e:
-        # except Exception as e:
+        is_new_stack=True
         changeset_type = 'CREATE'
     else:
+        is_new_stack=False
         changeset_type = 'UPDATE'
 
     stack_config['ChangeSetType'] = changeset_type
@@ -115,8 +121,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     try:
         waiter.wait(ChangeSetName=result['Id'])
     except botocore.exceptions.WaiterError as e:
-        # click.secho('ChangeSet create failed.', fg='red')
-        pass
+        click.secho('ChangeSet create failed.', fg='red')
     else:
         click.secho('ChangeSet create complete.', fg='green')
 

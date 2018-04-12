@@ -209,7 +209,12 @@ def to_boto3_format(basedir, config):
     # lookup canned policy
     StackPolicy = properties['StackPolicy']
     if StackPolicy is not None:
-        StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
+        try:
+            StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
+        except KeyError:
+            raise ConfigError('Invalid canned policy "%s", valid values are: %s.' % \
+                                  (StackPolicy, ', '.join(CANNED_STACK_POLICIES.keys())))
+
     else:
         StackPolicyBody = None
 

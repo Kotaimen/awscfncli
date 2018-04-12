@@ -1,5 +1,6 @@
 #  -*- encoding: utf-8 -*-
 
+import six
 import click
 
 from . import stack
@@ -12,13 +13,26 @@ from ..utils import start_tail_stack_events_daemon
 @stack.command()
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
+@click.option('--quiet', is_flag=True, default=False,
+              help='Suppress warning if more than one stack is being deleted.')
 @click.pass_context
 @boto3_exception_handler
-def delete(ctx, no_wait):
-    """Delete stack."""
+def delete(ctx, no_wait, quiet):
+    """Delete stacks"""
     assert isinstance(ctx.obj, ContextObject)
 
-    for qualified_name, stack_config in ctx.obj.stacks.items():
+    selected_stacks = list(six.iteritems(ctx.obj.stacks))
+
+    # prompt user if more than
+    if len(selected_stacks) > 1:
+        if not quiet:
+            click.confirm('Do you want to delete more than one stacks?  '
+                          'Be more specific using --stack option.', abort=True)
+
+    # reverse creation order
+    selected_stacks.reverse()
+
+    for qualified_name, stack_config in selected_stacks:
         echo_pair(qualified_name, key_style=dict(bold=True), sep='')
         delete_one(ctx, stack_config, no_wait)
 

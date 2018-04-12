@@ -10,10 +10,10 @@ CloudFormation stacks.
 Features:
 
 - Single YAML configuration file for:
-    - Deployment configuration
-    - Stack parameters
-- Automatic packaging
-- Automatic applies Serverless and Include (aka: SAM support)
+    - Deployment configuration.
+    - Stack parameters.
+- Automatic packaging template resources.
+- Automatic applies Serverless transform (aka: SAM support).
 - Automatic stack ChangeSet synchronization.
 - Display and tracking stack events on cli.
 - Describe stack status and export values.
@@ -23,9 +23,9 @@ Features:
 Install using [pip](https://pip.pypa.io/) from 
 [pypi](https://pypi.python.org/pypi/awscfncli):
 
-    pip install awscfncli
+    pip install awscfncli2
 
-    
+
 ## Usage
 
     cfn-cli [OPTIONS...] COMMAND SUBCOMMAND [ARGS...]
@@ -40,7 +40,7 @@ Options:
     `cfn-cli.yml`)
 - `-s, --stack`: Specify stacks to operate on, defined by
     `STAGE_NAME.STACK_NAME`, default value is `*`, which means
-    all stacks in `Default` stage.
+    all stacks in all stages.
 - `--profile`: Override AWS profile specified in the config.
 - `--region`: Override AWS region specified in the config.
 - `-1, --one`: Select only the first matching stack if glob 
@@ -54,24 +54,28 @@ Options can also be specified using environment variables:
 By default, `cfn-cli` will try to locate `cfn-cli.yml` file in 
 current directory, override this using `-f` option.
 
-Stack can be selected using full qualified name:
+### Stack Selector
+
+Individual stack can be selected using full qualified name:
 
     cfn-cli -s Default.Table2 status
 
-`Default` is the stage name and `DDB1` is stack name, unix globs is also 
-supported when selecting stacks to operate on:
+Here `Default` is the stage name and `DDB1` is stack name.
+Unix globs is supported when selecting stacks:
 
     cfn-cli -s Default.Table* status
     cfn-cli -s Def*.Table1 status
 
-When `.` is missing from `--stack` option, `cfn-cli` will assume
-stage name `Default` is specfied, thus `*` is equivalent to 
-`Default.*`.   
- 
+If `.` is missing from stack selector, `cfn-cli` will assume
+stage name `*` is specfied, thus `*` is equivalent to 
+`*.*`, which means all stacks in all stages.
+
+> Be careful when executing `stack delete` command, as default 
+> behaviour is delete all stacks.
 
 ### Supported Commands
 
-- `sync` - Create a ChangeSet and execute it.
+- `sync` - Create ChangeSet and execute it.
 - `status` - List status of selected stacks.
 - `stack`
     - `deploy` - Deploy new stacks.
@@ -83,12 +87,14 @@ stage name `Default` is specfied, thus `*` is equivalent to
 ## Automatic Packaging
 
 If a template contains property which requires a S3 url or text block,
-`Package` can be enabled so the resource is be automatically upload to 
-a S3 bucket, and S3 object location is inserted into the template.
-This is particular useful when your property is a lambda source code, 
-sql statements or some kind of configuration.
+Set `Package` parameter to `True` so the resource is be automatically 
+upload to a S3 bucket, and S3 object location is inserted into the 
+resource location.
 
-By default, artifact bucket name is `awscfncli-${AWS_ACCOUNT_ID}-${AWS_RERION}`.
+This feature is particular useful when your property is a lambda source 
+code, sql statements or some kind of configuration.
+
+By default, the artifact bucket is `awscfncli-${AWS_ACCOUNT_ID}-${AWS_RERION}`.
 and the bucket will be created automatically.
 
 The following resource property are supported by `awscfncli` and official
@@ -107,6 +113,81 @@ The following resource property are supported by `awscfncli`:
 - `AWS::KinesisAnalytics::Application->ApplicationCode`
 - `AWS::StepFunctions::StateMachine->DefinitionString`
 
-## Configuration File
+## Config File
 
-## Migrate from Old Version
+> TODO: Write config document and sample here, diff to previous version will be covered blow.  
+
+## Migrate from 0.x
+
+### Config File
+
+New configuration file supports mutilable stages and stacks, to convert an `0.x` configure file to current version,
+
+1. Add following block to the head of conf file and indent properly:
+
+```yaml
+Version: 2
+Stages:
+  Default:
+    << old config file >>
+```
+
+2. Change any `TemplateURL` or `TemplateBody` parameter to `Template`.
+
+For example:
+
+Old:
+
+```yaml
+Stack:
+  TemplateURL:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+  Region:               us-east-1
+  StackName:            SampleIAMUsersGroupsAndPolicies
+  Capabilities:         [CAPABILITY_IAM]
+  Parameters:
+    Password:           bob180180180
+  Tags:
+    project:            Bob
+```
+
+New:
+
+```yaml
+Version: 2
+Stages:
+  Default:
+    Stack:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+      Region:               us-east-1
+      StackName:            SampleIAMUsersGroupsAndPolicies
+      Capabilities:         [CAPABILITY_IAM]
+      Parameters:
+        Password:           bob180180180
+      Tags:
+        project:            Bob
+```
+
+
+### CLI
+
+- `cfn` is renamed to `cfn-cli` to avoid conflict with `troposphere`. 
+- `template` command is removed.
+- `changeset` command is removed, but a new `sync` command is added.
+- Because config file supports mutilable stages and stacks, stack selector must be specified when you want to operate a subset of stacks.
+
+
+### Sync
+New `sync` command combines `aws cloudformation package` and `aws cloudformation deploy` in one step:
+
+	cfn changeset create
+	cfn changeset execute
+
+Is replaced by:
+
+	cfn-cli -s sam.api sync
+
+`sync` uses `ChangeSet` interally which is required by the `Serverless` transform (aka: SAM). 
+
+> Note: SAM cannot be used together with nested stacks, this is a 
+AWS limit.
+	
