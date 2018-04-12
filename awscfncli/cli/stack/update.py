@@ -85,26 +85,23 @@ def update_one(ctx, stack_config, no_wait, use_previous_template,
     stack_id = stack.stack_id
     pretty_print_stack(stack)
 
+    # termination protection should be updated
+    # no matter stack's update succeeded or not
+    if termination_protection is not None:
+        client = session.client('cloudformation', region_name=region)
+        click.secho(
+            'Setting Termination Protection to "%s"' %
+            termination_protection, fg='red')
+        client.update_termination_protection(
+            EnableTerminationProtection=termination_protection,
+            StackName=stack_config['StackName']
+        )
+
     # update stack
     if ctx.obj.verbosity > 0:
         click.echo(stack_config)
     stack.update(**stack_config)
 
-    # update termination protection
-    if termination_protection is not None:
-        client = session.client('cloudformation', region_name=region)
-        try:
-            click.secho(
-                'Setting Termination Protection to "%s"' %
-                termination_protection, fg='red')
-            client.update_termination_protection(
-                EnableTerminationProtection=termination_protection,
-                StackName=stack_config['StackName']
-            )
-        except Exception:
-            raise NotImplementedError('Termination protection is not supported '
-                                      'for current version of boto. '
-                                      'Please upgrade to a new version.')
 
     # exit immediately
     if no_wait:

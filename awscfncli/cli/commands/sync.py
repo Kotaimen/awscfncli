@@ -96,9 +96,14 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     termination_protection = stack_config.pop(
         'EnableTerminationProtection', None)
 
-    # update termination protection
-    if termination_protection is not None:
-        try:
+    # create changeset
+    echo_pair('ChangeSet Type', changeset_type)
+    try:
+        result = client.create_change_set(**stack_config)
+    finally:
+        # termination protection could be set after the creation of stack
+        # or changeset
+        if termination_protection is not None:
             click.secho(
                 'Setting Termination Protection to "%s"' %
                 termination_protection, fg='red')
@@ -106,14 +111,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
                 EnableTerminationProtection=termination_protection,
                 StackName=stack_config['StackName']
             )
-        except Exception:
-            raise NotImplementedError('Termination protection is not supported '
-                                      'for current version of boto. '
-                                      'Please upgrade to a new version.')
 
-    # create changeset
-    echo_pair('ChangeSet Type', changeset_type)
-    result = client.create_change_set(**stack_config)
     echo_pair('ChangeSet ARN', result['Id'])
 
     # wait until changeset is created
