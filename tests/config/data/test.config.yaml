@@ -1,4 +1,13 @@
 Version: 2
+Blueprints:
+  Base:
+    Template: "test.template.yaml"
+    Region: "cn-east-1"
+    Profile: "ray"
+    Capabilities: [CAPABILITY_IAM]
+    Tags:
+      Project: 'demo'
+      Environment: 'dev'
 Stages:
   Staging:
     Vpc1:
@@ -18,3 +27,9 @@ Stages:
       Tags:
         key3: 'value3'
         key4: 'value4'
+    Vpc3:
+      Extends: 'Base'
+      Capabilities: [CAPABILITY_NAMED_IAM]
+      Tags:
+        Environment: 'prod'
+        Department: 'cloud'

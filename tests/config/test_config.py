@@ -42,9 +42,10 @@ class TestConfig(object):
         assert c.version == 2
 
         stacks = c.list_stacks(stage_name='Staging')
-        assert len(stacks) == 2
+        assert len(stacks) == 3
         assert 'Vpc1' in stacks
         assert 'Vpc2' in stacks
+        assert 'Vpc3' in stacks
 
         stack = c.get_stack('Staging', 'Vpc1')
         assert stack['Metadata']['Region'] == 'us-east-1'
@@ -66,5 +67,16 @@ class TestConfig(object):
         assert stack['Tags'][1]['Key'] == 'key4'
         assert stack['Tags'][1]['Value'] == 'value4'
 
-    def test_find_stacks(self):
-        pass
+        stack = c.get_stack('Staging', 'Vpc3')
+        assert stack['Metadata']['Region'] == 'cn-east-1'
+        assert stack['Metadata']['Profile'] == 'ray'
+        assert stack['StackName'] == 'Vpc3'
+        assert stack['TemplateBody'] == open(data_dir.join('data/test.template.yaml')).read()
+        assert stack['Tags'][0]['Key'] == 'Department'
+        assert stack['Tags'][0]['Value'] == 'cloud'
+        assert stack['Tags'][1]['Key'] == 'Environment'
+        assert stack['Tags'][1]['Value'] == 'prod'
+        assert stack['Tags'][2]['Key'] == 'Project'
+        assert stack['Tags'][2]['Value'] == 'demo'
+        assert stack['Capabilities'] == ['CAPABILITY_NAMED_IAM']
+
