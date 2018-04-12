@@ -2,6 +2,7 @@
 
 import click
 import botocore.exceptions
+import yaml
 
 from ..main import cfn_cli
 from ..utils import boto3_exception_handler, ContextObject, echo_pair, \
@@ -19,12 +20,16 @@ def status(ctx, dry_run):
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
         echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-
-        echo_pair('Profile', stack_config['Metadata']['Profile'], indent=2)
-        echo_pair('Region', stack_config['Metadata']['Region'], indent=2)
-        echo_pair('Stack Name', stack_config['StackName'], indent=2)
-
-        if dry_run: continue
+        if ctx.obj.verbosity > 0:
+            click.secho(
+                yaml.safe_dump(stack_config, default_flow_style=False),
+            )
+        else:
+            echo_pair('Profile', stack_config['Metadata']['Profile'], indent=2)
+            echo_pair('Region', stack_config['Metadata']['Region'], indent=2)
+            echo_pair('Stack Name', stack_config['StackName'], indent=2)
+        if dry_run:
+            continue
 
         session = ctx.obj.get_boto3_session(stack_config)
 
