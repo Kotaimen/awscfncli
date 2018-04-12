@@ -9,7 +9,7 @@ Version: 2
 Blueprints:
   
   # Stack default configuration name
-  DynamoDBSecondaryIndexes: &DynamoDBSecondaryIndexes
+  DynamoDBSecondaryIndexes:
 
     # AWS CLI profile name.
     # Optional, use default profile if this is not specified
@@ -102,7 +102,7 @@ Stages:
     
     # Stack name
     Table1:
-      <<: *DynamoDBSecondaryIndexes
+      Extends: DynamoDBSecondaryIndexes
 
       # Overwride stack parameters
       Region: us-west-2
@@ -114,7 +114,7 @@ Stages:
         ReadCapacityUnits:      5
 
     Table2:
-      <<: *DynamoDBSecondaryIndexes
+      Extends: DynamoDBSecondaryIndexes
 
       # Overwride stack parameters
       Region: us-west-2
