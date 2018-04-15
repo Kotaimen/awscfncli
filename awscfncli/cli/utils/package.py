@@ -5,15 +5,16 @@ import yaml
 import click
 import logging
 
+from botocore.exceptions import ClientError
 from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     Resource, EXPORT_DICT, make_abs_path
-
 try:
     from awscli.customizations.cloudformation.s3uploader import S3Uploader
 except ImportError:
     # Fix import error for awscli version later than 1.11.161
     from awscli.customizations.s3uploader import S3Uploader
+
 
 from ...config import ConfigError
 
@@ -21,7 +22,6 @@ from ...config import ConfigError
 def is_local_path(path):
     if os.path.exists(path):
         return True
-
 
 def package_template(session, template_path, bucket_region,
                      bucket_name=None, prefix=None, kms_key_id=None):
@@ -35,9 +35,33 @@ def package_template(session, template_path, bucket_region,
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         bucket_name = 'awscfncli-%s-%s' % (account_id, bucket_region)
-        logging.info('Using defualt artifact storage %s' % bucket_name)
+        click.echo('Using defualt artifact storage name "%s"' % bucket_name)
+    else:
+        click.echo('Using artifact storage name "%s"' % bucket_name)
 
     s3_client = session.client('s3')
+
+    # create bucket if not exists
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            if bucket_region != 'us-east-1':
+                s3_client.create_bucket(
+                    Bucket=bucket_name,
+                    CreateBucketConfiguration={
+                        'LocationConstraint': bucket_region
+                    }
+                )
+            else:
+                s3_client.create_bucket(
+                    Bucket=bucket_name
+                )
+            click.echo(
+                'Created artifact storage "%s"' % bucket_name)
+        else:
+            raise e
+
     s3_uploader = S3Uploader(
         s3_client,
         bucket_name,

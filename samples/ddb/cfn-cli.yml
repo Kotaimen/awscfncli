@@ -9,7 +9,7 @@ Version: 2
 Blueprints:
   
   # Stack default configuration name
-  DynamoDBSecondaryIndexes: &DynamoDBSecondaryIndexes
+  DynamoDBSecondaryIndexes:
 
     # AWS CLI profile name.
     # Optional, use default profile if this is not specified
@@ -80,7 +80,7 @@ Blueprints:
     # S3 bucket name for packaging artifacts.
     # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION}.
     # The bucket will be automaticlly created with default encryption enabled.
-#    ArtifactStore:
+    ArtifactStore: awscfncli-artifact
     
     # Whether to enable termination protection on the stack, default is false.
     EnableTerminationProtection: false
@@ -102,7 +102,7 @@ Stages:
     
     # Stack name
     Table1:
-      <<: *DynamoDBSecondaryIndexes
+      Extends: DynamoDBSecondaryIndexes
 
       # Overwride stack parameters
       Region: us-west-2
