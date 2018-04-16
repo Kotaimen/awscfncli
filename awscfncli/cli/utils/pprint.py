@@ -49,7 +49,12 @@ def pretty_print_stack(stack, detail=False):
     if stack.parameters:
         echo_pair('Parameters')
         for p in stack.parameters:
-            echo_pair(p['ParameterKey'], p['ParameterValue'], indent=2)
+            if 'ResolvedValue' in p:
+                # SSM parameter
+                echo_pair('%s (%s)' % (p['ParameterKey'], p['ParameterValue']),
+                          p['ResolvedValue'], indent=2)
+            else:
+                echo_pair(p['ParameterKey'], p['ParameterValue'], indent=2)
     if stack.outputs:
         echo_pair('Outputs')
         for o in stack.outputs:
