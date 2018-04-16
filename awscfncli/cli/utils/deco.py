@@ -18,9 +18,9 @@ def boto3_exception_handler(f):
                 botocore.exceptions.ParamValidationError,
                 ) as e:
             click.secho(str(e), fg='red')
+            raise click.Abort
         except ConfigError as e:
             click.secho(str(e), fg='red')
-        except KeyboardInterrupt as e:
-            click.secho('Aborted.', fg='red')
+            raise click.Abort
 
     return wrapper
