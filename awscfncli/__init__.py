@@ -12,6 +12,7 @@ from .commands.template.costs import costs
 
 from .commands.stack.deploy import deploy
 from .commands.stack.update import update
+from .commands.stack.set_termination_protection import set_termination_protection
 from .commands.stack.delete import delete
 from .commands.stack.describe import describe
 from .commands.stack.tail import tail
