@@ -30,6 +30,7 @@ Features:
 install_requires = [
     'six>=1.10.0',
     'boto3>=1.6',
+    'botocore>=1.9'
     'click>=6.0',
     'PyYAML>=3.11',
     'jsonschema>=2.6.0',
@@ -42,7 +43,7 @@ dev_requires = test_requires
 
 setup(
     # Project Name
-    name='awscfncli',
+    name='awscfncli2',
 
     # Version and description
     version='2.0.0-pre',

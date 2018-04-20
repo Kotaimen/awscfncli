@@ -3,13 +3,13 @@
 """Main cli entrypoint"""
 
 import logging
-
+import os
 import click
 import pkg_resources
 
 from .utils.context import ContextObject
 
-VERSION = pkg_resources.require('awscfncli')[0].version
+VERSION = pkg_resources.require('awscfncli2')[0].version
 
 
 @click.group()
@@ -17,7 +17,7 @@ VERSION = pkg_resources.require('awscfncli')[0].version
 @click.version_option(version=VERSION)
 @click.option('-f', '--file',
               type=click.Path(exists=False, dir_okay=True),
-              default='cfn-cli.yml',
+              default=None,
               help='Specify an alternate stack configuration file '
                    '(default: cfn-cli.yml).')
 @click.option('-s', '--stack',
@@ -64,6 +64,21 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
     stage name "*" is specfied, thus "*" is equivalent to "*.*", which
     means all stacks in all stages.
     """
+
+    DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
+    if file is None:
+        # no config file is specified, try default names
+        for fn in DEFAULT_CONFIG_FILE_NAMES:
+            file = fn
+            if os.path.exists(file) and os.path.isfile(file):
+                break
+    elif os.path.isdir(file):
+        # specified a directory, try default names under given dir
+        base = file
+        for fn in DEFAULT_CONFIG_FILE_NAMES:
+            file = os.path.join(base, fn)
+            if os.path.exists(file) and os.path.isfile(file):
+                break
 
     # Builds the context object which contains config object and stack
     # selection query parsers.
