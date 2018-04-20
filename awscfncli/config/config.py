@@ -41,7 +41,10 @@ class CfnCliConfig(object):
 
     def load(self, filename):
         with open(filename) as fp:
-            config = yaml.safe_load(fp)
+            try:
+                config = yaml.safe_load(fp)
+            except yaml.MarkedYAMLError as e:
+                raise ConfigError(e)
             if config is None:
                 config = dict()
 
