@@ -1,0 +1,35 @@
+Version: 2
+
+Blueprints:
+  
+  DDB:
+
+    Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+    StackPolicy: DENY_ALL
+
+    EnableTerminationProtection: false
+    
+    Tags:
+      Project:  Booba
+      CostUnit: 1B0
+    Parameters:
+      ReadCapacityUnits:      5
+      WriteCapacityUnits:     5
+      HashKeyElementName:     id
+
+Stages:
+
+  Develop:
+    
+    DDBTable1:
+      Extends: DDB
+      StackName: DynamoDbTable1
+      Region: us-west-2
+      Tags:
+        Environment: staging
+      Parameters:
+        ReadCapacityUnits:      5
+
+    DDBTable2:
+      Extends: DDB
+      Region: us-east-1

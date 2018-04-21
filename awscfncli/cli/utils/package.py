@@ -29,13 +29,13 @@ def package_template(session, template_path, bucket_region,
     if not os.path.isfile(template_path):
         raise ConfigError('Invalid Template Path "%s"' % template_path)
 
-    # if bucket name is not provided, create a defualt bucket with name
+    # if bucket name is not provided, create a default bucket with name
     # awscfncli-{AWS::AccountId}-{AWS::Region}
     if bucket_name is None:
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         bucket_name = 'awscfncli-%s-%s' % (account_id, bucket_region)
-        click.echo('Using defualt artifact storage name "%s"' % bucket_name)
+        click.echo('Using default artifact storage name "%s"' % bucket_name)
     else:
         click.echo('Using artifact storage name "%s"' % bucket_name)
 

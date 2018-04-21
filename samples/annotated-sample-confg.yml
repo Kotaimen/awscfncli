@@ -3,24 +3,22 @@ Version: 2
 
 # Default values for all stacks in this configuration file, 
 # can be overwritten in environment stacks.
-#
-# You can also specify shell environment variables using:
-#   ${VARIABLE_NAME}
 Blueprints:
   
-  # Stack default configuration name
-  DynamoDBSecondaryIndexes:
+  # Blueprint name
+  DDB:
 
-    # AWS CLI profile name.
-    # Optional, use default profile if this is not specified
-    Profile: default
+    # AWS CLI profile name. Use "default" profile if not specified.
+#    Profile:
     
-    # AWS region name for the stack
+    # AWS region name for the stack.
+    # Use region configured in the CLI profile if not specified.
     Region: us-east-1
 
-    # Template file location, specify a local file using relative path,
-    # or s3 location (recognized automatically).
-    Template: https://s3-us-west-2.amazonaws.com/cloudformation-templates-us-west-2/DynamoDB_Secondary_Indexes.template
+    # Template file location.
+    # Specify a local file using relative path or s3 location using s3 url.
+    # (recognized automatically).
+    Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
 
     # Canned stack policy, possible values are:
     #   - DENY_ALL : deny all modify/delete
@@ -29,11 +27,11 @@ Blueprints:
     #   - Local file: stack policy json file
     StackPolicy: DENY_ALL
     
-    # XXX: policy s3 url, tbd...
+    # TODO : Not supported yet
 #    StackPolicyURL:
     
     # List of stack capabilities, possible values are:
-    #   - CAPABILITY_IAM: accesskeys, IAM user&groups, IAM roles&policy 
+    #   - CAPABILITY_IAM: Access keys, IAM user&groups, IAM roles&policy
     #   - CAPABILITY_NAMED_IAM: IAM resources with custom names
     Capabilities: [CAPABILITY_IAM]
     
@@ -41,7 +39,8 @@ Blueprints:
     # If no value is specified, CloudFormatino uses a temporary session which 
     # generated form caller's credentials
 #    RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
-    
+
+    # TODO: Not supported yet
     # A list of template resources which is allowed for stack creation:
     #   - AWS::* : all AWS resource
     #   - Custom:* : all custom resources
@@ -49,27 +48,28 @@ Blueprints:
     #   - AWS::EC2::Instance : specific AWS resource
     # This value is used by IAM policy condition keys. 
     # By default, all resource types are allowed.
-#    ResourceTypes:
+#    ResourceTypes: !!null
     
     # List of SNS ARNs to publish stack related events.
 #    NotificationARNs: ['arn:aws:sns::xxxxx']
     
-    # XXX: new feature, tbd...
-    # RollbackConfiguration:
-    #  RollbackTriggers: [ '' ]
-    #  MonitoringTimeInMinutes: 3
+    # TODO: Not supported yet
+#    RollbackConfiguration:
+#      RollbackTriggers: [ '' ]
+#      MonitoringTimeInMinutes: 3
     
-    # Automatically package local resources to s3. 
-    #
-    # These are supported automaticlly by aws cloudformation package command:
+    # Automatically package local resources to s3.
+    # These are supported automatically by "aws cloudformation package" command:
     #   - BodyS3Location property for the AWS::ApiGateway::RestApi resource
     #   - Code property for the AWS::Lambda::Function resource
     #   - CodeUri property for the AWS::Serverless::Function resource
     #   - DefinitionUri property for the AWS::Serverless::Api resource
     #   - SourceBundle  property for the AWS::ElasticBeanstalk::Application-Version resource
     #   - TemplateURL property for the AWS::CloudFormation::Stack resource
-    #
-    # XXX: need scan template file, TBD ~
+    # These are supported by awscfncli:
+    #   - KinesisAnalysisApplicationCode for AWS::KinesisAnalytics::Application resource
+    #   - StepFunctionsDefinitionString for AWS::StepFunctions::StateMachine resource
+    # TODO: Following are planned but not implemented yet
     # These are implemented using Transform::Include:
     #   - DefinitionBody property for AWS::Serverless::Api resource
     #   - PolicyDocument property for IAM resources
@@ -78,14 +78,16 @@ Blueprints:
     Package:  false
     
     # S3 bucket name for packaging artifacts.
-    # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION}.
-    # The bucket will be automaticlly created with default encryption enabled.
+    # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION} and will be
+    # automatically created if its not exists.
+    # The security credential awscfncli assume must have write permission to
+    # the bucket and ability to create the bucket if its not exists.
 #    ArtifactStore:
     
     # Whether to enable termination protection on the stack, default is false.
     EnableTerminationProtection: false
     
-    # Tags to associate with this stack
+    # Tags to associate with this stack.
     Tags:
       Project:  Booba
       CostUnit: 1B0
@@ -94,33 +96,34 @@ Blueprints:
     Parameters:
       ReadCapacityUnits:      5
       WriteCapacityUnits:     5
+      HashKeyElementName:     id
 
+# Stages, each stage can contain mutilable stacks.
 Stages:
 
   # Stage name
-  Default:
+  Develop:
     
-    # Stack name
-    Table1:
-      Extends: DynamoDBSecondaryIndexes
+    # Stack name, each stack is qualified by stage_name.stack_name
+    DDBTable1:
+      # Optional, inherit values from specified blueprint.
+      Extends: DDB
 
-      # Overwride stack parameters
+      # Optional, use custom StackName instead the stack name specified in
+      # stages.
+      StackName: DynamoDbTable1
+
+      # Override any stack parameters
       Region: us-west-2
 
-      Tags:
-        Environment: staging
-        
-      Parameters:
-        ReadCapacityUnits:      5
-
-    Table2:
-      Extends: DynamoDBSecondaryIndexes
-
-      # Overwride stack parameters
-      Region: us-west-2
-
+      # Tags is merged with blueprint
       Tags:
         Environment: staging
 
+      # Parameters is merged with blueprint
       Parameters:
         ReadCapacityUnits:      5
+
+    DDBTable2:
+      Extends: DDB
+      Region: us-east-1
