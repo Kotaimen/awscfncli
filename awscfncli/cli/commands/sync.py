@@ -1,15 +1,16 @@
 # -*- encoding: utf-8 -*-
 
-import click
 import uuid
+
 import botocore.exceptions
+import click
 
 from ..main import cfn_cli
 from ..utils import boto3_exception_handler, \
     echo_pair, ContextObject, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
-from ..utils import start_tail_stack_events_daemon
 from ..utils import package_template, is_local_path
+from ..utils import start_tail_stack_events_daemon
 
 
 def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
@@ -99,6 +100,8 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     # create changeset
     echo_pair('ChangeSet Type', changeset_type)
     try:
+        if ctx.obj.verbosity > 0:
+            click.echo(stack_config)
         result = client.create_change_set(**stack_config)
     finally:
         # termination protection could be set after the creation of stack

@@ -6,6 +6,7 @@ from . import stack
 from ..utils import ContextObject, boto3_exception_handler, package_template, \
     is_local_path, pretty_print_stack, echo_pair, start_tail_stack_events_daemon
 
+
 @stack.command()
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')
@@ -16,8 +17,8 @@ from ..utils import ContextObject, boto3_exception_handler, package_template, \
                    'fails. This must be one of: DO_NOTHING, ROLLBACK, or '
                    'DELETE. Note setting this option overwrites "OnFailure" '
                    'and "DisableRollback" in the stack configuration file.')
-@boto3_exception_handler
 @click.pass_context
+@boto3_exception_handler
 def deploy(ctx, no_wait, on_failure):
     """Deploy a new stack"""
     assert isinstance(ctx.obj, ContextObject)
