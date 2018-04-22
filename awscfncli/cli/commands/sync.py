@@ -99,21 +99,21 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
 
     # create changeset
     echo_pair('ChangeSet Type', changeset_type)
-    try:
-        if ctx.obj.verbosity > 0:
-            click.echo(stack_config)
-        result = client.create_change_set(**stack_config)
-    finally:
-        # termination protection could be set after the creation of stack
-        # or changeset
-        if termination_protection is not None:
-            click.secho(
-                'Setting Termination Protection to "%s"' %
-                termination_protection, fg='red')
-            client.update_termination_protection(
-                EnableTerminationProtection=termination_protection,
-                StackName=stack_config['StackName']
-            )
+
+    if ctx.obj.verbosity > 0:
+        click.echo(stack_config)
+    result = client.create_change_set(**stack_config)
+
+    # termination protection should be set after the creation of stack
+    # or changeset
+    if result and 'Id' in result and termination_protection is not None:
+        click.secho(
+            'Setting Termination Protection to "%s"' %
+            termination_protection, fg='red')
+        client.update_termination_protection(
+            EnableTerminationProtection=termination_protection,
+            StackName=stack_config['StackName']
+        )
 
     echo_pair('ChangeSet ARN', result['Id'])
 
