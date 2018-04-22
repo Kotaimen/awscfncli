@@ -1,0 +1,32 @@
+Version: 2
+
+Blueprints:
+
+  ApiBackend:
+    Template: template.yaml
+    Capabilities: [CAPABILITY_IAM]
+    Package: true
+
+Stages:
+
+  Develop:
+    ApiBackend-Develop:
+      Extends: ApiBackend
+      Region: us-east-1
+      Tags:
+        Stage: Develop
+
+  Staging:
+    ApiBackend-Staging:
+      Extends: ApiBackend
+      Region: us-east-1
+      Tags:
+        Stage: Staging
+
+  Production:
+    ApiBackend-Production:
+      Extends: ApiBackend
+      StackPolicy: DENY_ALL
+      Region: us-east-1
+      Tags:
+        Stage: Production
