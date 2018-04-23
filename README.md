@@ -178,7 +178,6 @@ Stages:
       Region:            us-east-1
       Profile:           prod
       StackName:         DDB
-      Capabilities:      [CAPABILITY_IAM]
       Parameters:
         ReadCapacityUnits:      100
         WriteCapacityUnits:     100
@@ -188,18 +187,85 @@ Stages:
       Region:            us-east-2
       Profile:           prod
       StackName:         DDB
-      Capabilities:      [CAPABILITY_IAM]
       Parameters:
         ReadCapacityUnits:      100
         WriteCapacityUnits:     100
         HashKeyElementName:     id
 ```
 
+In many cases, you want to deploy your stacks with only parameters changing. So to
+reuse your stack config and save your time of typing, here comes the `Config Inheritance`.
+You can predefine a named template of stack config in the *Blueprints* section
+and extends it in your stages. Take the above config file as an example, by using Blueprints it
+could be rewritten in the following way:
+
+```yaml
+
+Version: 2
+Blueprints:
+  BaseDDB:
+    Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+    Parameters:
+      ReadCapacityUnits:      5
+      WriteCapacityUnits:     5
+      HashKeyElementName:     id
+Stages:
+  Dev:
+    Stack1:
+      Extends:           BaseDDB
+      Region:            us-east-1
+      Profile:           dev
+      StackName:         DevDDB
+    Stack2:
+      Extends:           BaseDDB
+      Region:            us-east-2
+      Profile:           dev
+      StackName:         DevDDB
+  Prod:
+    Stack1:
+      Extends:           BaseDDB
+      Region:            us-east-1
+      Profile:           prod
+      StackName:         DDB
+      Parameters:
+        ReadCapacityUnits:      100
+        WriteCapacityUnits:     100
+    Stack2:
+      Extends:           BaseDDB
+      Region:            us-east-2
+      Profile:           prod
+      StackName:         DDB
+      Parameters:
+        ReadCapacityUnits:      100
+        WriteCapacityUnits:     100
+```
+
+For details about rules of how parameters are extended, please see the
+folloing chapter `Config Inheritance`.
+
+### Config Anatomy
+
+#### Version
+The version of the config file. Only support version 1 and 2. This
+field is optional. The default version is 2.
+
+#### Blueprints
+In this section, you can define named templates of stack config that could
+be extended later. You could includes basic parameters
+that could be reused in the stack configuration in stages.
+
+#### Stages
+Stages are the most important part of cfn-cli configuration. It defines
+how and in which environment your templates will be deployed.
+
+You can define multiple stages in the `Stages` section. A stage is a
+dict of named stacks. You can reference these stacks with dict key in
+the cli command. If you does not specify `StackName` in your stack config.
+Awscfncli will use its dict key as it's stack name.
 
 ### Config Inheritance
 
 
-### Config Best Practice
 
 
 ## Migrate from 0.x
@@ -264,15 +330,14 @@ Stages:
 ### Sync
 New `sync` command combines `aws cloudformation package` and `aws cloudformation deploy` in one step:
 
-	cfn changeset create
-	cfn changeset execute
+    cfn changeset create
+    cfn changeset execute
 
 Is replaced by:
 
-	cfn-cli -s sam.api sync
+    cfn-cli -s sam.api sync
 
 `sync` uses `ChangeSet` interally which is required by the `Serverless` transform (aka: SAM). 
 
 > Note: SAM cannot be used together with nested stacks, this is a 
 AWS limit.
-	
