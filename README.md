@@ -115,20 +115,21 @@ The following resource property are supported by `awscfncli`:
 
 ## Config File
 
-The awscfncli config is a YAML formatted text file with .yaml and .yml
+The awscfncli config is a YAML formatted text file with `.yaml` and `.yml`
 extension. Awscfncli uses these files as instructions to manage and deploy your
 AWS CloudFormation templates. In a awscfncli config, you can describe how you
 are going to deploy your stack with parameters such as account profile, region,
-stack name, capabilities, teminal protections and etc. You can also group your
-stack into different development stages such as DEV, QA and PROD.
-
-With awscfncli you can record the exact parameters used to deploy a stack and
-keep them under version control.
+stack name, capabilities, teminal protections and etc. With awscfncli you can
+record the exact parameters used to deploy a stack and keep them under version
+control. You can also group your stacks into different stages in a more
+enterprise way such as DEV, QA and PROD. Every stack will be contained in one
+stage. You can specify your own stage name.
 
 For example, if you deploy a template with the following config file. Awscfncli
 will deploy a stack named Test in region us-east-1 with your default
-aws credential. The stack will be grouped in a stage called `Default`. Every
-stack will be organized by stages. You can specify your own stage name.
+aws credential. The stack will be in a stage called *"Default"* and identified
+by *"Stack1"*.
+
 
 ```yaml
 Version: 2
@@ -141,6 +142,64 @@ Stages:
       Capabilities:      [CAPABILITY_IAM]
 ```
 
+You can also specify multiple stacks in different stage and configure these stacks
+with separate parameters. For example, in the following config file,
+two stacks are deployed with different parameters in different stages.
+The stacks in *"Dev"* stage are deployed using dev profile with
+small read/write capacities and the stacks in *"Prod"* are deployed using
+prod profile with large read/write capacities.
+
+
+```yaml
+Version: 2
+Stages:
+  Dev:
+    Stack1:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Region:            us-east-1
+      Profile:           dev
+      StackName:         DevDDB
+      Parameters:
+        ReadCapacityUnits:      5
+        WriteCapacityUnits:     5
+        HashKeyElementName:     id
+    Stack2:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Region:            us-east-2
+      Profile:           dev
+      StackName:         DevDDB
+      Parameters:
+        ReadCapacityUnits:      5
+        WriteCapacityUnits:     5
+        HashKeyElementName:     id
+  Prod:
+    Stack1:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Region:            us-east-1
+      Profile:           prod
+      StackName:         DDB
+      Capabilities:      [CAPABILITY_IAM]
+      Parameters:
+        ReadCapacityUnits:      100
+        WriteCapacityUnits:     100
+        HashKeyElementName:     id
+    Stack2:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Region:            us-east-2
+      Profile:           prod
+      StackName:         DDB
+      Capabilities:      [CAPABILITY_IAM]
+      Parameters:
+        ReadCapacityUnits:      100
+        WriteCapacityUnits:     100
+        HashKeyElementName:     id
+```
+
+
+### Config Inheritance
+
+
+### Config Best Practice
 
 
 ## Migrate from 0.x
