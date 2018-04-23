@@ -115,7 +115,33 @@ The following resource property are supported by `awscfncli`:
 
 ## Config File
 
-> TODO: Write config document and sample here, diff to previous version will be covered blow.  
+The awscfncli config is a YAML formatted text file with .yaml and .yml
+extension. Awscfncli uses these files as instructions to manage and deploy your
+AWS CloudFormation templates. In a awscfncli config, you can describe how you
+are going to deploy your stack with parameters such as account profile, region,
+stack name, capabilities, teminal protections and etc. You can also group your
+stack into different development stages such as DEV, QA and PROD.
+
+With awscfncli you can record the exact parameters used to deploy a stack and
+keep them under version control.
+
+For example, if you deploy a template with the following config file. Awscfncli
+will deploy a stack named Test in region us-east-1 with your default
+aws credential. The stack will be grouped in a stage called `Default`. Every
+stack will be organized by stages. You can specify your own stage name.
+
+```yaml
+Version: 2
+Stages:
+  Default:
+    Stack1:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+      Region:            us-east-1
+      StackName:         Test
+      Capabilities:      [CAPABILITY_IAM]
+```
+
+
 
 ## Migrate from 0.x
 
