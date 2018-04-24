@@ -265,7 +265,65 @@ Awscfncli will use its dict key as it's stack name.
 
 ### Config Inheritance
 
+You can extends or overrides the paramters defined in your blueprints.
+Here are the general rules that apply when you extends your config.
 
+Suppose we have base template:
+```yaml
+Version: 2
+Blueprints:
+  Base:
+    Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/IAM_Users_Groups_and_Policies.template
+    Region:            us-east-1
+    StackName:         Test
+    Capabilities:      [CAPABILITY_IAM]
+    Tags:
+      Project: Demo
+      Environment: Dev
+    ResourceTypes:
+      - AWS::IAM
+
+```
+
+1. Paramters with scale value will be directly replaced. For example, in
+the following config, the `Region` will be replace with 'us-west-1'
+```yaml
+Stages:
+  Default:
+    Stack1:
+      Extends: Base
+      Region:  us-west-1
+```
+2. Paramters with dict value will be updated. Items with same key will be
+replaced and new item will be added to the dict. For example, in the
+following config, the 'Envrionment' will be replaced with 'Prod' and
+the new 'Owner' key will be added to the 'Tags' dict and the 'Project'
+remains the same.
+```yaml
+Stages:
+  Default:
+    Stack1:
+      Extends: Base
+      Region:  us-west-1
+      Tags:
+        Environment: Prod
+        Owner: Ray
+```
+3. Paramters with array value will be append with the new value except
+some specific parameter like 'Capabilities'. For example, the following
+config will append 'AWS::EC2' to ResourceTypes list.
+```yaml
+Stages:
+  Default:
+    Stack1:
+      Extends: Base
+      Region:  us-west-1
+      ResourceTypes:
+        - AWS::EC2
+```
+4. Special Case List:
+
+    Capabilities: Replace the original value.
 
 
 ## Migrate from 0.x
