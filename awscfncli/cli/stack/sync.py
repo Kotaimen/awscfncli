@@ -5,7 +5,7 @@ import uuid
 import botocore.exceptions
 import click
 
-from ..main import cfn_cli
+from . import stack
 from ..utils import boto3_exception_handler, \
     echo_pair, ContextObject, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
@@ -19,7 +19,7 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
                   key_style=key_style, value_style=value_style, )
 
 
-@cfn_cli.command()
+@stack.command()
 @click.option('--confirm', is_flag=True, default=False)
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
@@ -27,7 +27,7 @@ def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
 @click.pass_context
 @boto3_exception_handler
 def sync(ctx, confirm, use_previous_template):
-    """Create and execute ChangeSets.
+    """Create and execute ChangeSets (SAM)
 
     Combines "aws cloudformation package" and "aws cloudformation deploy" command
     into one.  If the stack is not created yet, a CREATE type ChangeSet is created,
@@ -84,10 +84,10 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
         # check whether stack is already created.
         client.describe_stacks(StackName=stack_config['StackName'])
     except botocore.exceptions.ClientError as e:
-        is_new_stack=True
+        is_new_stack = True
         changeset_type = 'CREATE'
     else:
-        is_new_stack=False
+        is_new_stack = False
         changeset_type = 'UPDATE'
 
     stack_config['ChangeSetType'] = changeset_type
