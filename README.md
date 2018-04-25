@@ -51,8 +51,8 @@ Options can also be specified using environment variables:
 
     CFN_STACK=Default.Table1 cfn-cli stack deploy
 
-By default, `cfn-cli` will try to locate `cfn-cli.yml` file in 
-current directory, override this using `-f` option.
+By default, `cfn-cli` will try to locate `cfn-cli.yml` or `cfn-cli.yaml` file 
+in current directory, override this behaviour using `-f` option.
 
 ### Stack Selector
 
@@ -60,7 +60,6 @@ Individual stack can be selected using full qualified name:
 
     cfn-cli -s Default.Table2 status
 
-Here `Default` is the stage name and `DDB1` is stack name.
 Unix globs is supported when selecting stacks:
 
     cfn-cli -s Default.Table* status
@@ -73,11 +72,12 @@ stage name `*` is specfied, thus `*` is equivalent to
 > Be careful when executing `stack delete` command, as default 
 > behaviour is delete all stacks.
 
-### Supported Commands
+### Available Commands
 
-- `sync` - Create ChangeSet and execute it.
+- `validate` - Validate template.
 - `status` - List status of selected stacks.
 - `stack`
+    - `sync` - Create ChangeSet and execute it (required by SAM).
     - `deploy` - Deploy new stacks.
     - `update` - Update stacks.
     - `describe` - Describe stacks details.
@@ -115,20 +115,20 @@ The following resource property are supported by `awscfncli`:
 
 ## Config File
 
-The awscfncli config is a YAML formatted text file with `.yaml` and `.yml`
-extension. Awscfncli uses these files as instructions to manage and deploy your
-AWS CloudFormation templates. In a awscfncli config, you can describe how you
+`awscfncli` config is a YAML formatted text file with `.yaml` and `.yml`
+extension. `awscfncli` uses these files as instructions to manage and deploy 
+AWS CloudFormation templates. In a `awscfncli` config, you can describe how you
 are going to deploy your stack with parameters such as account profile, region,
-stack name, capabilities, teminal protections and etc. With awscfncli you can
+stack name, capabilities, teminal protections and etc. With `awscfncli` you can
 record the exact parameters used to deploy a stack and keep them under version
 control. You can also group your stacks into different stages in a more
 enterprise way such as DEV, QA and PROD. Every stack will be contained in one
 stage. You can specify your own stage name.
 
-For example, if you deploy a template with the following config file. Awscfncli
+For example, if you deploy a template with the following config file. `awscfncli`
 will deploy a stack named Test in region us-east-1 with your default
-aws credential. The stack will be in a stage called *"Default"* and identified
-by *"Stack1"*.
+aws credential. The stack will be in a stage called *`Default`* and identified
+by *`Stack1`*.
 
 
 ```yaml
@@ -194,7 +194,7 @@ Stages:
 ```
 
 In many cases, you want to deploy your stacks with only parameters changing. So to
-reuse your stack config and save your time of typing, here comes the `Config Inheritance`.
+reuse your stack config and save your time of typing, here comes the *config inheritance*.
 You can predefine a named template of stack config in the *Blueprints* section
 and extends it in your stages. Take the above config file as an example, by using Blueprints it
 could be rewritten in the following way:
@@ -261,7 +261,7 @@ how and in which environment your templates will be deployed.
 You can define multiple stages in the `Stages` section. A stage is a
 dict of named stacks. You can reference these stacks with dict key in
 the cli command. If you does not specify `StackName` in your stack config.
-Awscfncli will use its dict key as it's stack name.
+`awscfncli` will use its dict key as it's stack name.
 
 ### Config Inheritance
 
