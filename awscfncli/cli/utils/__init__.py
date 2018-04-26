@@ -5,4 +5,4 @@ from .deco import boto3_exception_handler
 from .pager import custom_paginator
 from .context import ContextObject
 from .events import tail_stack_events, start_tail_stack_events_daemon
-from .package import package_template, is_local_path
+from .package import run_packaging

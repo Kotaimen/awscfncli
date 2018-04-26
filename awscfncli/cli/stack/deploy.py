@@ -3,8 +3,9 @@
 import click
 
 from . import stack
-from ..utils import ContextObject, boto3_exception_handler, package_template, \
-    is_local_path, pretty_print_stack, echo_pair, start_tail_stack_events_daemon
+from ..utils import ContextObject, boto3_exception_handler, \
+    run_packaging, pretty_print_config, pretty_print_stack, \
+    start_tail_stack_events_daemon
 
 
 @stack.command()
@@ -24,15 +25,15 @@ def deploy(ctx, no_wait, on_failure):
     assert isinstance(ctx.obj, ContextObject)
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        deploy_one(ctx, stack_config, no_wait, on_failure)
+        session = ctx.obj.get_boto3_session(stack_config)
+        pretty_print_config(qualified_name, stack_config, session,
+                            ctx.obj.verbosity)
+        deploy_one(ctx, session, stack_config, no_wait, on_failure)
 
 
-def deploy_one(ctx, stack_config, no_wait, on_failure):
-    session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
-    package = stack_config['Metadata']['Package']
-    artifact_store = stack_config['Metadata']['ArtifactStore']
+def deploy_one(ctx, session, stack_config, no_wait, on_failure):
+    # package the template
+    run_packaging(stack_config, session, ctx.obj.verbosity)
 
     # option handling
     if on_failure is not None:
@@ -40,29 +41,12 @@ def deploy_one(ctx, stack_config, no_wait, on_failure):
         stack_config['OnFailure'] = on_failure
 
     # connect to cloudformation
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region)
+    cloudformation = session.resource('cloudformation')
 
     # pop metadata form stack config
     stack_config.pop('Metadata')
 
-    # package the template
-    if package and 'TemplateURL' in stack_config:
-        template_path = stack_config.get('TemplateURL')
-        if is_local_path(template_path):
-            packaged_template = package_template(
-                session,
-                template_path,
-                bucket_region=region,
-                bucket_name=artifact_store,
-                prefix=stack_config['StackName'])
-            stack_config['TemplateBody'] = packaged_template
-            stack_config.pop('TemplateURL')
-
     # create stack
-    if ctx.obj.verbosity > 0:
-        click.echo(stack_config)
     stack = cloudformation.create_stack(**stack_config)
     stack_id = stack.stack_id
     pretty_print_stack(stack)
@@ -75,8 +59,8 @@ def deploy_one(ctx, stack_config, no_wait, on_failure):
     start_tail_stack_events_daemon(session, stack, latest_events=0)
 
     # wait until update complete
-    waiter = session.client('cloudformation', region_name=region). \
-        get_waiter('stack_create_complete')
+    waiter = session.client('cloudformation').get_waiter(
+        'stack_create_complete')
     waiter.wait(StackName=stack_id)
 
     click.secho('Stack deployment complete.', fg='green')

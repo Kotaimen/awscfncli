@@ -3,11 +3,8 @@
 import click
 
 from . import stack
-from ..utils import boto3_exception_handler, \
-    pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
-    STACK_STATUS_TO_COLOR
+from ..utils import boto3_exception_handler, ContextObject
 from ..utils import tail_stack_events
-from ...config import CANNED_STACK_POLICIES
 
 
 @stack.command()
@@ -26,12 +23,8 @@ def tail(ctx, timeout, events):
     qualified_name, stack_config = list(ctx.obj.stacks.items())[0]
 
     session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
 
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region
-    )
+    cloudformation = session.resource('cloudformation')
 
     stack = cloudformation.Stack(stack_config['StackName'])
 

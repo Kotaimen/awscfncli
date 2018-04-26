@@ -2,7 +2,6 @@
 
 import click
 import botocore.exceptions
-import yaml
 
 from ..main import cfn_cli
 from ..utils import boto3_exception_handler, ContextObject
@@ -42,5 +41,4 @@ def status(ctx, dry_run):
                 raise
 
         echo_pair('Status', stack_status,
-                  value_style=STACK_STATUS_TO_COLOR[stack_status],
-                  indent=2)
+                  value_style=STACK_STATUS_TO_COLOR[stack_status])

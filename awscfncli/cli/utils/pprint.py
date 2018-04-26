@@ -1,6 +1,7 @@
 import click
 import yaml
 
+
 def echo_pair(key, value=None, indent=0,
               value_style=None, key_style=None,
               sep=': '):
@@ -29,19 +30,20 @@ def echo_pair(key, value=None, indent=0,
             click.secho(value, **value_style)
 
 
-def pretty_print_config(qualified_name, stack_config, session, verbosity=0, retrieve_identity=False):
+def pretty_print_config(qualified_name, stack_config, session, verbosity=0,
+                        retrieve_identity=False):
     """Pretty stack config"""
     click.secho(qualified_name, bold=True)
 
-    echo_pair('Profile', session.profile_name, indent=2)
-    echo_pair('Region', session.region_name, indent=2)
+    echo_pair('Profile', session.profile_name)
+    echo_pair('Region', session.region_name)
 
     # following requires dry run
     if retrieve_identity:
         sts = session.client('sts')
         identity = sts.get_caller_identity()
-        echo_pair('Account', identity['Account'], indent=2)
-        echo_pair('Identity', identity['Arn'], indent=2)
+        echo_pair('Account', identity['Account'])
+        echo_pair('Identity', identity['Arn'])
 
     if verbosity > 0:
         click.secho(
@@ -49,7 +51,7 @@ def pretty_print_config(qualified_name, stack_config, session, verbosity=0, retr
             fg='white', dim=True
         )
 
-    echo_pair('Stack Name', stack_config['StackName'], indent=2)
+    echo_pair('Stack Name', stack_config['StackName'])
 
 
 def pretty_print_stack(stack, detail=False):
@@ -59,7 +61,7 @@ def pretty_print_stack(stack, detail=False):
     if not detail:
         return
 
-    echo_pair('Name', stack.stack_name)
+    # echo_pair('Name', stack.stack_name)
     echo_pair('Description', stack.description)
 
     echo_pair('Status', stack.stack_status,
@@ -87,6 +89,8 @@ def pretty_print_stack(stack, detail=False):
         echo_pair('Tags')
         for t in stack.tags:
             echo_pair(t['Key'], t['Value'], indent=2)
+
+
 #
 # Status string to click.style mapping
 #
@@ -134,5 +138,3 @@ ACTION_TO_COLOR = {
     'Modify': dict(fg='yellow', dim=True),
     'Remove': dict(fg='red'),
 }
-
-

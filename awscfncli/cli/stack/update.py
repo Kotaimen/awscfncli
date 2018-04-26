@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
 
 import click
+import botocore.exceptions
 
 from . import stack
-from ..utils import boto3_exception_handler, \
-    pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
-    STACK_STATUS_TO_COLOR
+from ..utils import boto3_exception_handler, pretty_print_config, \
+    pretty_print_stack, ContextObject
 from ..utils import start_tail_stack_events_daemon
-from ..utils import package_template, is_local_path
+from ..utils import run_packaging
 from ...config import CANNED_STACK_POLICIES
 
 
@@ -17,6 +17,8 @@ from ...config import CANNED_STACK_POLICIES
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')
+@click.option('--ignore-no-update', is_flag=True, default=False,
+              help='Ignore error when there are no updates to be performed.')
 @click.option('--override-policy',
               type=click.Choice(CANNED_STACK_POLICIES.keys()),
               default=None,
@@ -27,30 +29,35 @@ from ...config import CANNED_STACK_POLICIES
                    'ALLOW_MODIFY: Allows modify, denys replace and delete\n')
 @click.pass_context
 @boto3_exception_handler
-def update(ctx, no_wait, use_previous_template, override_policy):
+def update(ctx, no_wait, use_previous_template, ignore_no_update, override_policy):
     """Update stack with configuration"""
     assert isinstance(ctx.obj, ContextObject)
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        update_one(ctx, stack_config, no_wait, use_previous_template,
-                   override_policy)
+        session = ctx.obj.get_boto3_session(stack_config)
+        pretty_print_config(qualified_name, stack_config, session,
+                            ctx.obj.verbosity)
+        update_one(ctx, session, stack_config, no_wait, use_previous_template,
+                   ignore_no_update, override_policy)
 
 
-def update_one(ctx, stack_config, no_wait, use_previous_template,
-               override_policy):
-    session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
-    package = stack_config['Metadata']['Package']
-    artifact_store = stack_config['Metadata']['ArtifactStore']
+def update_one(ctx, session, stack_config, no_wait, use_previous_template,
+               ignore_no_update, override_policy):
+    # package the template
+    if use_previous_template:
+        stack_config.pop('TemplateBody', None)
+        stack_config.pop('TemplateURL', None)
+        stack_config['UsePreviousTemplate'] = use_previous_template
+    else:
+        run_packaging(stack_config, session, ctx.obj.verbosity)
 
     # pop metadata form stack config
-    metadata = stack_config.pop('Metadata')
+    stack_config.pop('Metadata')
 
     # stack = cloudformation.Stack(stack_config['StackName'])
     click.echo('Updating stack...')
 
-    cfn = session.resource('cloudformation', region_name=region)
+    cfn = session.resource('cloudformation')
     stack = cfn.Stack(stack_config['StackName'])
 
     # remove unused parameters
@@ -58,24 +65,6 @@ def update_one(ctx, stack_config, no_wait, use_previous_template,
     stack_config.pop('OnFailure', None)
     termination_protection = stack_config.pop(
         'EnableTerminationProtection', None)
-
-    # update parameters
-    if use_previous_template:
-        stack_config.pop('TemplateBody', None)
-        stack_config.pop('TemplateURL', None)
-        stack_config['UsePreviousTemplate'] = use_previous_template
-    else:
-        if package and 'TemplateURL' in stack_config:
-            template_path = stack_config.get('TemplateURL')
-            if is_local_path(template_path):
-                packaged_template = package_template(
-                    session,
-                    template_path,
-                    bucket_region=region,
-                    bucket_name=artifact_store,
-                    prefix=stack_config['StackName'])
-                stack_config['TemplateBody'] = packaged_template
-                stack_config.pop('TemplateURL')
 
     if override_policy is not None:
         click.secho('Overriding stack policy during update...', fg='red')
@@ -88,7 +77,7 @@ def update_one(ctx, stack_config, no_wait, use_previous_template,
     # termination protection should be updated
     # no matter stack's update succeeded or not
     if termination_protection is not None:
-        client = session.client('cloudformation', region_name=region)
+        client = session.client('cloudformation')
         click.secho(
             'Setting Termination Protection to "%s"' %
             termination_protection, fg='red')
@@ -100,8 +89,17 @@ def update_one(ctx, stack_config, no_wait, use_previous_template,
     # update stack
     if ctx.obj.verbosity > 0:
         click.echo(stack_config)
-    stack.update(**stack_config)
 
+    try:
+        stack.update(**stack_config)
+    except botocore.exceptions.ClientError as e:
+        if ignore_no_update:
+            error = e.response.get('Error', {})
+            error_message = error.get('Message', 'Unknown')
+            if error_message.endswith('No updates are to be performed.'):
+                click.secho('Warning: No updates are to be performed', fg='red')
+                return
+        raise
 
     # exit immediately
     if no_wait:
@@ -111,8 +109,7 @@ def update_one(ctx, stack_config, no_wait, use_previous_template,
     start_tail_stack_events_daemon(session, stack, latest_events=2)
 
     # wait until update complete
-    waiter = session.client('cloudformation', region_name=region). \
-        get_waiter('stack_update_complete')
+    waiter = session.client('cloudformation').get_waiter('stack_update_complete')
     waiter.wait(StackName=stack_id)
 
     click.secho('Stack update complete.', fg='green')

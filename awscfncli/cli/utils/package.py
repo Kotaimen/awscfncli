@@ -9,12 +9,12 @@ from botocore.exceptions import ClientError
 from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     Resource, EXPORT_DICT, make_abs_path
+
 try:
     from awscli.customizations.cloudformation.s3uploader import S3Uploader
 except ImportError:
     # Fix import error for awscli version later than 1.11.161
     from awscli.customizations.s3uploader import S3Uploader
-
 
 from ...config import ConfigError
 
@@ -22,6 +22,23 @@ from ...config import ConfigError
 def is_local_path(path):
     if os.path.exists(path):
         return True
+
+def run_packaging(stack_config, session, verbosity):
+    """Package templates and resources and upload to artifact bucket"""
+    package = stack_config['Metadata']['Package']
+    artifact_store = stack_config['Metadata']['ArtifactStore']
+
+    if package and 'TemplateURL' in stack_config:
+        template_path = stack_config.get('TemplateURL')
+        if is_local_path(template_path):
+            packaged_template = package_template(
+                session,
+                template_path,
+                bucket_region=session.region_name,
+                bucket_name=artifact_store,
+                prefix=stack_config['StackName'])
+            stack_config['TemplateBody'] = packaged_template
+            stack_config.pop('TemplateURL')
 
 def package_template(session, template_path, bucket_region,
                      bucket_name=None, prefix=None, kms_key_id=None):

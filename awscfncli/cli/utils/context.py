@@ -121,7 +121,6 @@ class ContextObject(object):
             self._stacks[qualified_name] = stack_config
 
     def get_boto3_session(self, stack_config):
-
         session = boto3.session.Session(
             profile_name=stack_config['Metadata']['Profile'],
             region_name=stack_config['Metadata']['Region'],

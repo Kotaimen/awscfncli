@@ -4,8 +4,8 @@ import click
 import boto3
 
 from ..main import cfn_cli
-from ..utils import ContextObject, boto3_exception_handler, package_template, \
-    is_local_path, pretty_print_stack, echo_pair, start_tail_stack_events_daemon
+from ..utils import ContextObject, boto3_exception_handler, run_packaging, \
+    pretty_print_stack, echo_pair, start_tail_stack_events_daemon
 
 
 @cfn_cli.command()
@@ -25,17 +25,7 @@ def validate(ctx):
 
         client = boto3.client('cloudformation')
 
-        if package and 'TemplateURL' in stack_config:
-            template_path = stack_config.get('TemplateURL')
-            if is_local_path(template_path):
-                packaged_template = package_template(
-                    session,
-                    template_path,
-                    bucket_region=region,
-                    bucket_name=artifact_store,
-                    prefix=stack_config['StackName'])
-                stack_config['TemplateBody'] = packaged_template
-                stack_config.pop('TemplateURL')
+        run_packaging(stack_config, session, ctx.obj.verbosity)
 
         try:
             template_body = stack_config['TemplateBody']

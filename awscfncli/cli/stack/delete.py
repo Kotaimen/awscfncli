@@ -6,7 +6,7 @@ import click
 from . import stack
 from ..utils import ContextObject
 from ..utils import boto3_exception_handler
-from ..utils import pretty_print_stack, echo_pair
+from ..utils import pretty_print_config, pretty_print_stack, echo_pair
 from ..utils import start_tail_stack_events_daemon
 
 
@@ -33,18 +33,15 @@ def delete(ctx, no_wait, quiet):
     selected_stacks.reverse()
 
     for qualified_name, stack_config in selected_stacks:
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        delete_one(ctx, stack_config, no_wait)
+        session = ctx.obj.get_boto3_session(stack_config)
+        pretty_print_config(qualified_name, stack_config, session,
+                            ctx.obj.verbosity)
+        delete_one(ctx, session, stack_config, no_wait)
 
 
-def delete_one(ctx, stack_config, no_wait):
-    session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
-
+def delete_one(ctx, session, stack_config, no_wait):
     # connect to cloudformation
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region)
+    cloudformation = session.resource('cloudformation')
 
     # connect to stack
     stack = cloudformation.Stack(stack_config['StackName'])
@@ -63,8 +60,7 @@ def delete_one(ctx, stack_config, no_wait):
     start_tail_stack_events_daemon(session, stack, latest_events=2)
 
     # wait until delete complete
-    waiter = session.client('cloudformation', region_name=region).get_waiter(
-        'stack_delete_complete')
+    waiter = session.client('cloudformation').get_waiter('stack_delete_complete')
     waiter.wait(StackName=stack_id)
 
     click.secho('Stack delete complete.', fg='green')

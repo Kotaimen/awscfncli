@@ -7,9 +7,9 @@ import click
 
 from . import stack
 from ..utils import boto3_exception_handler, \
-    echo_pair, ContextObject, \
+    echo_pair, ContextObject, pretty_print_config, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
-from ..utils import package_template, is_local_path
+from ..utils import run_packaging
 from ..utils import start_tail_stack_events_daemon
 
 
@@ -37,23 +37,26 @@ def sync(ctx, confirm, use_previous_template):
     assert isinstance(ctx.obj, ContextObject)
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        sync_one(ctx, stack_config, confirm, use_previous_template)
+        session = ctx.obj.get_boto3_session(stack_config)
+        pretty_print_config(qualified_name, stack_config, session,
+                            ctx.obj.verbosity)
+        sync_one(ctx, session, stack_config, confirm, use_previous_template)
 
 
-def sync_one(ctx, stack_config, confirm, use_previous_template):
-    session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
-    package = stack_config['Metadata']['Package']
-    artifact_store = stack_config['Metadata']['ArtifactStore']
+def sync_one(ctx, session, stack_config, confirm, use_previous_template):
+    # package the template
+    if use_previous_template:
+        stack_config.pop('TemplateBody', None)
+        stack_config.pop('TemplateURL', None)
+        stack_config['UsePreviousTemplate'] = use_previous_template
+    else:
+        run_packaging(stack_config, session, ctx.obj.verbosity)
 
-    client = session.client(
-        'cloudformation',
-        region_name=region
-    )
+    # connect to cloudformation client
+    client = session.client('cloudformation')
 
     # pop metadata form stack config
-    metadata = stack_config.pop('Metadata')
+    stack_config.pop('Metadata')
 
     # generate a unique changeset name
     changeset_name = '%s-%s' % \
@@ -62,23 +65,6 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     # prepare stack config
     stack_config['ChangeSetName'] = changeset_name
     click.echo('Generated ChangeSet name {}'.format(changeset_name))
-
-    if use_previous_template:
-        stack_config.pop('TemplateBody', None)
-        stack_config.pop('TemplateURL', None)
-        stack_config['UsePreviousTemplate'] = use_previous_template
-    else:
-        if package and 'TemplateURL' in stack_config:
-            template_path = stack_config.get('TemplateURL')
-            if is_local_path(template_path):
-                packaged_template = package_template(
-                    session,
-                    template_path,
-                    bucket_region=region,
-                    bucket_name=artifact_store,
-                    prefix=stack_config['StackName'])
-                stack_config['TemplateBody'] = packaged_template
-                stack_config.pop('TemplateURL')
 
     try:
         # check whether stack is already created.
@@ -99,9 +85,6 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
 
     # create changeset
     echo_pair('ChangeSet Type', changeset_type)
-
-    if ctx.obj.verbosity > 0:
-        click.echo(stack_config)
     result = client.create_change_set(**stack_config)
 
     # termination protection should be set after the creation of stack
@@ -164,7 +147,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
         click.secho('ChangeSet not executable.', fg='red')
         return
 
-    if changeset_type == 'CREATE':
+    if is_new_stack:
         waiter_model = 'stack_create_complete'
     else:
         waiter_model = 'stack_update_complete'
@@ -179,10 +162,7 @@ def sync_one(ctx, stack_config, confirm, use_previous_template):
     click.echo('Executing changeset...')
 
     # get stack resource to wait on changset execution
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region
-    )
+    cloudformation = session.resource('cloudformation')
     stack = cloudformation.Stack(stack_config['StackName'])
     # pretty_print_stack(stack)
 

@@ -4,8 +4,8 @@ import click
 import botocore.exceptions
 
 from . import stack
-from ..utils import boto3_exception_handler, \
-    pretty_print_stack, custom_paginator, echo_pair, ContextObject, \
+from ..utils import boto3_exception_handler, ContextObject, \
+    pretty_print_config, pretty_print_stack, custom_paginator, echo_pair, \
     STACK_STATUS_TO_COLOR
 
 
@@ -21,29 +21,19 @@ def describe(ctx, stack_resources, stack_exports):
     assert isinstance(ctx.obj, ContextObject)
 
     for qualified_name, stack_config in ctx.obj.stacks.items():
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        describe_one(ctx, stack_config, stack_resources, stack_exports)
+        session = ctx.obj.get_boto3_session(stack_config)
+        pretty_print_config(qualified_name, stack_config, session,
+                            ctx.obj.verbosity)
+        describe_one(ctx, session, stack_config, stack_resources, stack_exports)
 
 
-def describe_one(ctx, stack_config, stack_resources, stack_exports):
+def describe_one(ctx, session, stack_config, stack_resources, stack_exports):
     """Describe stack status and information"""
     assert isinstance(ctx.obj, ContextObject)
 
-    session = ctx.obj.get_boto3_session(stack_config)
-    region = stack_config['Metadata']['Region']
-
-    cloudformation = session.resource(
-        'cloudformation',
-        region_name=region
-    )
+    cloudformation = session.resource('cloudformation')
 
     stack = cloudformation.Stack(stack_config['StackName'])
-
-    try:
-        stack.stack_status
-    except botocore.exceptions.ClientError as e:
-        click.secho(str(e), fg='red')
-        return
 
     pretty_print_stack(stack, detail=True)
 
@@ -60,15 +50,15 @@ def describe_one(ctx, stack_config, stack_resources, stack_exports):
             echo_pair('Last Updated', r.last_updated_timestamp, indent=4)
 
     if stack_exports:
-        client = session.client('cloudformation',
-                                region_name=region)
+        client = session.client('cloudformation',)
         echo_pair('Exports')
         for export in custom_paginator(client.list_exports, 'Exports'):
 
             if export['ExportingStackId'] == stack.stack_id:
                 echo_pair(export['Name'], export['Value'], indent=2)
                 try:
-                    for import_ in custom_paginator(client.list_imports, 'Imports',
+                    for import_ in custom_paginator(client.list_imports,
+                                                    'Imports',
                                                     ExportName=export['Name']):
                         echo_pair('Imported By', import_,
                                   value_style=dict(fg='red'), indent=4)
