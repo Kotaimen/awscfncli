@@ -11,6 +11,7 @@ from .utils.context import ContextObject
 
 VERSION = pkg_resources.require('awscfncli2')[0].version
 
+DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
 
 @click.group()
 @click.pass_context
@@ -47,7 +48,7 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
     
     By default, cfn-cli will try to locate cfn-cli.yml file in 
     current directory, override this using -f option.
-    
+
     Stack can be selected using full qualified name:
     
     \b
@@ -65,7 +66,6 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
     means all stacks in all stages.
     """
 
-    DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
     if file is None:
         # no config file is specified, try default names
         for fn in DEFAULT_CONFIG_FILE_NAMES:
@@ -91,7 +91,13 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
         verbosity=verbose,
     )
 
-    if verbose > 0:
-        logging.basicConfig(level=logging.DEBUG)
+    # Set logging level according to verbosity
+    if verbose == 2:
+        logging.getLogger().setLevel(logging.DEBUG)
+    elif verbose == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
+        logging.getLogger().setLevel(logging.WARNING)
 
+    # Assign context object
     ctx.obj = ctx_obj
