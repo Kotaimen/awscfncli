@@ -15,13 +15,12 @@ def boto3_exception_handler(f):
         try:
             return f(ctx, *args, **kwargs)
         except (botocore.exceptions.ClientError,
-                botocore.exceptions.WaiterError,
-                botocore.exceptions.ValidationError,
-                botocore.exceptions.ParamValidationError,
+                botocore.exceptions.BotoCoreError,
                 ) as e:
-            click.secho(str(e), fg='red')
             if ctx.obj.verbosity > 0:
-                traceback.print_exc()
+                click.secho(traceback.format_exc(), fg='red')
+            else:
+                click.secho(str(e), fg='red')
             raise click.Abort
         except ConfigError as e:
             click.secho(str(e), fg='red')
