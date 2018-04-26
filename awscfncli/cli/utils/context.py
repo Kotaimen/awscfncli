@@ -2,7 +2,7 @@
 
 import logging
 import copy
-import os.path
+import os
 from collections import OrderedDict
 
 import boto3
@@ -81,8 +81,9 @@ class ContextObject(object):
 
         if not os.path.exists(self.config_file):
             raise ConfigError(
-                'Stack configuration file not found: "{}", specify a '
-                'non-default filename using -f.'.format(self.config_file))
+                'Stack config file not found: "{}", specify a valid one '
+                'using "-f" option.'.format(self.config_file))
+
         self._config = load_config(self.config_file)
 
     def find_stacks(self):
