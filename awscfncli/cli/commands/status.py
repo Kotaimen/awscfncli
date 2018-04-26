@@ -29,13 +29,18 @@ def status(ctx, dry_run):
 
         cloudformation = session.resource('cloudformation')
         stack = cloudformation.Stack(stack_config['StackName'])
+
         try:
-            stack.stack_status
+            stack_status = stack.stack_status
         except botocore.exceptions.ClientError as e:
-            echo_pair('Status', 'STACK_NOT_FOUND',
-                      value_style=dict(fg='red', bold=True),
-                      indent=2)
-        else:
-            echo_pair('Status', stack.stack_status,
-                      value_style=STACK_STATUS_TO_COLOR[stack.stack_status],
-                      indent=2)
+            # only suppress "stack does not exist" error
+            error = e.response.get('Error', {})
+            error_message = error.get('Message', 'Unknown')
+            if error_message.endswith('does not exist'):
+                stack_status = 'STACK_NOT_FOUND'
+            else:
+                raise
+
+        echo_pair('Status', stack_status,
+                  value_style=STACK_STATUS_TO_COLOR[stack_status],
+                  indent=2)
