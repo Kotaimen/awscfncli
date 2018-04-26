@@ -1,4 +1,5 @@
 import click
+import yaml
 
 def echo_pair(key, value=None, indent=0,
               value_style=None, key_style=None,
@@ -26,6 +27,29 @@ def echo_pair(key, value=None, indent=0,
             click.echo(value)
         else:
             click.secho(value, **value_style)
+
+
+def pretty_print_config(qualified_name, stack_config, session, verbosity=0, retrieve_identity=False):
+    """Pretty stack config"""
+    click.secho(qualified_name, bold=True)
+
+    echo_pair('Profile', session.profile_name, indent=2)
+    echo_pair('Region', session.region_name, indent=2)
+
+    # following requires dry run
+    if retrieve_identity:
+        sts = session.client('sts')
+        identity = sts.get_caller_identity()
+        echo_pair('Account', identity['Account'], indent=2)
+        echo_pair('Identity', identity['Arn'], indent=2)
+
+    if verbosity > 0:
+        click.secho(
+            yaml.safe_dump(stack_config, default_flow_style=False),
+            fg='white', dim=True
+        )
+
+    echo_pair('Stack Name', stack_config['StackName'], indent=2)
 
 
 def pretty_print_stack(stack, detail=False):
@@ -86,6 +110,8 @@ STACK_STATUS_TO_COLOR = {
     'UPDATE_ROLLBACK_COMPLETE': dict(fg='green'),
     'UPDATE_FAILED': dict(fg='red'),
     'REVIEW_IN_PROGRESS': dict(fg='yellow'),
+    # custom status:
+    'STACK_NOT_FOUND': dict(fg='red')
 }
 
 CHANGESET_STATUS_TO_COLOR = {
