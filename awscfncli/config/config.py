@@ -69,13 +69,18 @@ class CfnCliConfig(object):
     def search_stacks(self, stage_pattern='*', stack_pattern='*'):
         """Find all stack config matching stage/stack patterns
         """
-        for stage_name in self.list_stages():
-            if fnmatch.fnmatchcase(stage_name, stage_pattern):
-                for stack_name in self.list_stacks(stage_name):
-                    if fnmatch.fnmatchcase(stack_name, stack_pattern):
+        result = list()
+        for stage_id in self.list_stages():
+            if fnmatch.fnmatchcase(stage_id, stage_pattern):
+                for stack_id in self.list_stacks(stage_id):
+                    if fnmatch.fnmatchcase(stack_id, stack_pattern):
                         stack_config = \
-                            self.get_stack(stage_name, stack_name)
-                        yield stage_name, stack_name, stack_config
+                            self.get_stack(stage_id, stack_id)
+                        result.append(stack_config)
+
+        result.sort(key=lambda c: c.stack_order)
+
+        return result
 
     def _load_version(self, config):
         version = config.get('Version', 1)
@@ -106,11 +111,15 @@ class CfnCliConfig(object):
                 else:
                     blueprint = dict()
 
-                config = StackConfig(stack_id)
+                # find stack stack_order, default
+                stack_order = stack_config.pop('Order', 0)
+
+                config = StackConfig(
+                    stage_id, stack_id, stack_order, self._basedir)
                 config.update(**blueprint)
                 config.update(**stack_config)
 
-                stacks[stack_id] = to_boto3_format(self._basedir, config)
+                stacks[stack_id] = config
 
             stages[stage_id] = stacks
 
@@ -140,13 +149,24 @@ class StackConfig(object):
         EnableTerminationProtection=(bool, None),
     )
 
-    def __init__(self, stack_id):
-        self._name = stack_id
+    def __init__(self, stage_id, stack_id, stack_order, basedir):
+        self._stage_id = stage_id
+        self._stack_id = stack_id
+        self._stack_order = stack_order
+        self._basedir = basedir
         self._properties = dict((k, v[1]) for k, v in self.PROPERTIES.items())
 
     @property
+    def stage_id(self):
+        return self._stage_id
+
+    @property
     def stack_id(self):
-        return self._name
+        return self._stack_id
+
+    @property
+    def stack_order(self):
+        return self._stack_order
 
     @property
     def properties(self):
@@ -170,108 +190,110 @@ class StackConfig(object):
                         else:
                             self._properties[k] = params[k]
 
+    def to_boto3_format(self):
+        properties = self.properties
 
-def to_boto3_format(basedir, config):
-    properties= config.properties
+        # inject parameters
+        StackName = properties['StackName']
+        if StackName is None:
+            # if StackName is not specified, use the key of
+            # stack config as stack name.
+            StackName = self.stack_id
 
-    # inject parameters
-    StackName = properties['StackName']
-    if StackName is None:
-        # if StackName is not specified, use the key of
-        # stack config as stack name.
-        StackName = config.stack_id
+        Profile = properties['Profile']
+        Region = properties['Region']
+        Package = properties['Package']
+        ArtifactStore = properties['ArtifactStore']
 
-    Profile = properties['Profile']
-    Region = properties['Region']
-    Package = properties['Package']
-    ArtifactStore = properties['ArtifactStore']
-
-    # move those are not part of create_stack() call to metadata
-    metadata = dict(
-        Profile=Profile,
-        Region=Region,
-        Package=Package,
-        ArtifactStore=ArtifactStore,
-    )
-
-    # m agically select template body or template url
-    Template = properties['Template']
-    if Template.startswith('https') or Template.startswith('http'):
-        # s3 template
-        TemplateURL, TemplateBody = Template, None
-    elif Package:
-        # local template with package=on
-        TemplateURL = os.path.realpath(os.path.join(basedir, Template))
-        TemplateBody = None
-    else:
-        # local template
-        TemplateURL = None
-        with open(os.path.join(basedir, Template)) as fp:
-            TemplateBody = fp.read()
-
-    # lookup canned policy
-    StackPolicy = properties['StackPolicy']
-    if StackPolicy is not None:
-        try:
-            StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
-        except KeyError:
-            raise ConfigError('Invalid canned policy "%s", valid values are: %s.' % \
-                                  (StackPolicy, ', '.join(CANNED_STACK_POLICIES.keys())))
-
-    else:
-        StackPolicyBody = None
-
-    # Normalize parameter config
-    Parameters = properties['Parameters']
-    normalized_params = None
-    if Parameters and isinstance(Parameters, dict):
-        normalized_params = list(
-            {
-                'ParameterKey': k,
-                'ParameterValue': _normalize_value(v)
-            }
-            for k, v in
-            six.iteritems(OrderedDict(
-                sorted(six.iteritems(Parameters)))
-            )
+        # move those are not part of create_stack() call to metadata
+        metadata = dict(
+            Profile=Profile,
+            Region=Region,
+            Package=Package,
+            ArtifactStore=ArtifactStore,
+            Order=self.stack_order
         )
 
-    # Normalize tag config
-    Tags = properties['Tags']
-    normalized_tags = None
-    if Tags and isinstance(Tags, dict):
-        normalized_tags = list(
-            {'Key': k, 'Value': v}
-            for k, v in
-            six.iteritems(OrderedDict(
-                sorted(six.iteritems(Tags)))
+        # magically select template body or template url
+        Template = properties['Template']
+        if Template.startswith('https') or Template.startswith('http'):
+            # s3 template
+            TemplateURL, TemplateBody = Template, None
+        elif Package:
+            # local template with package=on
+            TemplateURL = os.path.realpath(
+                os.path.join(self._basedir, Template))
+            TemplateBody = None
+        else:
+            # local template
+            TemplateURL = None
+            with open(os.path.join(self._basedir, Template)) as fp:
+                TemplateBody = fp.read()
+
+        # lookup canned policy
+        StackPolicy = properties['StackPolicy']
+        if StackPolicy is not None:
+            try:
+                StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
+            except KeyError:
+                raise ConfigError(
+                    'Invalid canned policy "%s", valid values are: %s.' % \
+                    (StackPolicy, ', '.join(CANNED_STACK_POLICIES.keys())))
+
+        else:
+            StackPolicyBody = None
+
+        # Normalize parameter config
+        Parameters = properties['Parameters']
+        normalized_params = None
+        if Parameters and isinstance(Parameters, dict):
+            normalized_params = list(
+                {
+                    'ParameterKey': k,
+                    'ParameterValue': _normalize_value(v)
+                }
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(Parameters)))
+                )
             )
+
+        # Normalize tag config
+        Tags = properties['Tags']
+        normalized_tags = None
+        if Tags and isinstance(Tags, dict):
+            normalized_tags = list(
+                {'Key': k, 'Value': v}
+                for k, v in
+                six.iteritems(OrderedDict(
+                    sorted(six.iteritems(Tags)))
+                )
+            )
+
+        normalized_config = dict(
+            Metadata=metadata,
+            StackName=StackName,
+            TemplateURL=TemplateURL,
+            TemplateBody=TemplateBody,
+            DisableRollback=properties['DisableRollback'],
+            RollbackConfiguration=properties['RollbackConfiguration'],
+            TimeoutInMinutes=properties['TimeoutInMinutes'],
+            NotificationARNs=properties['NotificationARNs'],
+            Capabilities=properties['Capabilities'],
+            ResourceTypes=properties['ResourceTypes'],
+            RoleARN=properties['RoleARN'],
+            OnFailure=properties['OnFailure'],
+            StackPolicyBody=StackPolicyBody,
+            Parameters=normalized_params,
+            Tags=normalized_tags,
+            ClientRequestToken=properties['ClientRequestToken'],
+            EnableTerminationProtection=properties[
+                'EnableTerminationProtection'],
         )
 
-    normalized_config = dict(
-        Metadata=metadata,
-        StackName=StackName,
-        TemplateURL=TemplateURL,
-        TemplateBody=TemplateBody,
-        DisableRollback=properties['DisableRollback'],
-        RollbackConfiguration=properties['RollbackConfiguration'],
-        TimeoutInMinutes=properties['TimeoutInMinutes'],
-        NotificationARNs=properties['NotificationARNs'],
-        Capabilities=properties['Capabilities'],
-        ResourceTypes=properties['ResourceTypes'],
-        RoleARN=properties['RoleARN'],
-        OnFailure=properties['OnFailure'],
-        StackPolicyBody=StackPolicyBody,
-        Parameters=normalized_params,
-        Tags=normalized_tags,
-        ClientRequestToken=properties['ClientRequestToken'],
-        EnableTerminationProtection=properties[
-            'EnableTerminationProtection'],
-    )
+        # drop all None and empty list
+        normalized_config = dict(
+            (k, v) for k, v in six.iteritems(normalized_config) if
+            v is not None)
 
-    # drop all None and empty list
-    normalized_config = dict(
-        (k, v) for k, v in six.iteritems(normalized_config) if
-        v is not None)
-
-    return normalized_config
+        return normalized_config

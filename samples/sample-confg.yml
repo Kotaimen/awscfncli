@@ -29,7 +29,9 @@ Stages:
         Environment: staging
       Parameters:
         ReadCapacityUnits:      5
+      Order: 1
 
     DDBTable2:
       Extends: DDB
       Region: us-east-1
+      Order: 0

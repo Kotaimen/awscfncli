@@ -95,8 +95,8 @@ class ContextObject(object):
 
         if not configs:
             available_stacks = ', '.join(
-                '.'.join([stage_name, stack_name]) for
-                stage_name, stack_name, _ in self.config.search_stacks()
+                '.'.join([config.stage_id, config.stack_id]) for
+                config in self.config.search_stacks()
             )
             raise ConfigError(
                 'No stack matching specified pattern "{}.{}", '.format(
@@ -108,8 +108,9 @@ class ContextObject(object):
         for n, config in enumerate(configs):
             if n > 0 and self.first_stack: return
             # make a deep copy as config may be modified in commands
-            stage_name, stack_name, stack_config = config
-            stack_config = copy.deepcopy(stack_config)
+            stage_id = config.stage_id
+            stack_id = config.stack_id
+            stack_config = config.to_boto3_format()
 
             # override parameters
             if self.profile is not None:
@@ -117,7 +118,7 @@ class ContextObject(object):
             if self.region is not None:
                 stack_config['Metadata']['Region'] = self.region
 
-            qualified_name = '.'.join([stage_name, stack_name])
+            qualified_name = '.'.join([stage_id, stack_id])
             self._stacks[qualified_name] = stack_config
 
     def get_boto3_session(self, stack_config):
