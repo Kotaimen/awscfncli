@@ -19,11 +19,8 @@ def validate(ctx):
 
         echo_pair(qualified_name, key_style=dict(bold=True), sep='')
         session = ctx.obj.get_boto3_session(stack_config)
-        region = stack_config['Metadata']['Region']
-        package = stack_config['Metadata']['Package']
-        artifact_store = stack_config['Metadata']['ArtifactStore']
 
-        client = boto3.client('cloudformation')
+        client = session.client('cloudformation')
 
         run_packaging(stack_config, session, ctx.obj.verbosity)
 
