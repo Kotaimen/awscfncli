@@ -4,8 +4,8 @@ import click
 import boto3
 
 from ..main import cfn_cli
-from ..utils import ContextObject, boto3_exception_handler, run_packaging, \
-    pretty_print_stack, echo_pair, start_tail_stack_events_daemon
+from ..utils import boto3_exception_handler, ContextObject, run_packaging
+from ..utils import echo_pair, echo_pair_if_exists
 
 
 @cfn_cli.command()
@@ -36,3 +36,6 @@ def validate(ctx):
             )
 
         click.secho('Validation complete.')
+        echo_pair_if_exists(result, 'Capabilities', 'Capabilities')
+        echo_pair_if_exists(result, 'Capabilities Reason', 'CapabilitiesReason')
+        echo_pair_if_exists(result, 'Declared Transforms', 'DeclaredTransforms')

@@ -30,6 +30,12 @@ def echo_pair(key, value=None, indent=0,
             click.secho(value, **value_style)
 
 
+def echo_pair_if_exists(data, key, value, indent=2, key_style=None, value_style=None):
+    if value in data:
+        echo_pair(key, data[value], indent=indent,
+                  key_style=key_style, value_style=value_style, )
+
+
 def pretty_print_config(qualified_name, stack_config, session, verbosity=0,
                         retrieve_identity=False):
     """Pretty stack config"""
