@@ -1,7 +1,19 @@
 # Changelog
 
-## Version 2 (2018-02-23)
-Reloading...
+## Version 2 rc1 (2018-05-1)
+
+Rewrite and incompatible with previous version.
+
+Features:
+- New CLI interface
+- Multi-stages and stacks in a single config file
+- Supports SAM and new `sync` command to easy SAM deployment
+- Additional custom packaging resources
+
+Deferred Features:
+- `changeset` command
+- Environment variable support in config file
+- Specify deployment order
 
 ## Version 0.5.1 (2017-10-11)
 

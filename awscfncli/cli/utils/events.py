@@ -10,7 +10,7 @@ from .pprint import STACK_STATUS_TO_COLOR
 
 def tail_stack_events(session,
                       stack,
-                      latest_events=5,
+                      latest_events=1,
                       event_limit=10000,
                       time_limit=3600,
                       check_interval=5,
@@ -101,7 +101,7 @@ def tail_stack_events(session,
 
 def start_tail_stack_events_daemon(session,
                                    stack,
-                                   latest_events=5,
+                                   latest_events=1,
                                    event_limit=10000,
                                    time_limit=3600,
                                    check_interval=5,
