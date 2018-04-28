@@ -57,7 +57,7 @@ def delete_one(ctx, session, stack_config, no_wait):
         return
 
     # start event tailing
-    start_tail_stack_events_daemon(session, stack, latest_events=2)
+    start_tail_stack_events_daemon(session, stack)
 
     # wait until delete complete
     waiter = session.client('cloudformation').get_waiter('stack_delete_complete')
