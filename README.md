@@ -193,8 +193,8 @@ Stages:
         HashKeyElementName:     id
 ```
 
-In many cases, you want to deploy your stacks with only parameters changing. So to
-reuse your stack config and save your time of typing, here comes the *config inheritance*.
+In many cases, you may want to deploy stacks with a few parameters changes only. So to
+reuse stack configs and save your time of typing, you can use *config inheritance*.
 You can predefine a named template of stack config in the *Blueprints* section
 and extends it in your stages. Take the above config file as an example, by using Blueprints it
 could be rewritten in the following way:
@@ -242,6 +242,39 @@ Stages:
 
 For details about rules of how parameters are extended, please see the
 folloing chapter `Config Inheritance`.
+
+Stacks could also be deployed in a predefined order. You could specify a
+order number in the config to deploy stacks in a definite order.
+For example:
+
+```
+Stages:
+  Foundation:
+    VPC:
+      Order: 0
+  Develop:
+    Database:
+      Order: 1
+    Service:
+      Order: 2
+  Production:
+    Database:
+      Order: 1
+    Service:
+      Order: 2
+  Routing:
+    DNS:
+      Order: 3
+ ```
+
+The above config will deploy these stacks in the follwing order:
+
+- Foundation.VPC
+- Develop.Database
+- Production.Database
+- Develop.Service
+- Production.Service
+- Routing.DNS
 
 ### Config Anatomy
 
