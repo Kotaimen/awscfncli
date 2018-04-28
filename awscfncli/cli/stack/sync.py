@@ -6,17 +6,11 @@ import botocore.exceptions
 import click
 
 from . import stack
-from ..utils import boto3_exception_handler, \
-    echo_pair, ContextObject, pretty_print_config, \
+from ..utils import boto3_exception_handler, ContextObject
+from ..utils import echo_pair, pretty_print_config, echo_pair_if_exists, \
     CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR
 from ..utils import run_packaging
 from ..utils import start_tail_stack_events_daemon
-
-
-def echo_pair_if_exists(d, k, v, indent=2, key_style=None, value_style=None):
-    if v in d:
-        echo_pair(k, d[v], indent=indent,
-                  key_style=key_style, value_style=value_style, )
 
 
 @stack.command()
@@ -167,7 +161,7 @@ def sync_one(ctx, session, stack_config, confirm, use_previous_template):
     # pretty_print_stack(stack)
 
     # start event tailing
-    start_tail_stack_events_daemon(session, stack, latest_events=5)
+    start_tail_stack_events_daemon(session, stack)
 
     # wait until update complete
     waiter = client.get_waiter(waiter_model)

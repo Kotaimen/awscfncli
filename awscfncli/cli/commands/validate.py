@@ -4,8 +4,8 @@ import click
 import boto3
 
 from ..main import cfn_cli
-from ..utils import ContextObject, boto3_exception_handler, run_packaging, \
-    pretty_print_stack, echo_pair, start_tail_stack_events_daemon
+from ..utils import boto3_exception_handler, ContextObject, run_packaging
+from ..utils import echo_pair, echo_pair_if_exists
 
 
 @cfn_cli.command()
@@ -19,11 +19,8 @@ def validate(ctx):
 
         echo_pair(qualified_name, key_style=dict(bold=True), sep='')
         session = ctx.obj.get_boto3_session(stack_config)
-        region = stack_config['Metadata']['Region']
-        package = stack_config['Metadata']['Package']
-        artifact_store = stack_config['Metadata']['ArtifactStore']
 
-        client = boto3.client('cloudformation')
+        client = session.client('cloudformation')
 
         run_packaging(stack_config, session, ctx.obj.verbosity)
 
@@ -39,3 +36,6 @@ def validate(ctx):
             )
 
         click.secho('Validation complete.')
+        echo_pair_if_exists(result, 'Capabilities', 'Capabilities')
+        echo_pair_if_exists(result, 'Capabilities Reason', 'CapabilitiesReason')
+        echo_pair_if_exists(result, 'Declared Transforms', 'DeclaredTransforms')
