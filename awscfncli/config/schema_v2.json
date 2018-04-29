@@ -88,8 +88,11 @@
       "additionalProperties": {
         "title": "Stage Config",
         "type": "object",
+        "properties": {
+          "Order": { "type": "integer" }
+        },
         "patternProperties": {
-          "^[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
+          "^(?!Order)[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
             "title": "Stack Config",
             "type": "object",
             "allOf": [

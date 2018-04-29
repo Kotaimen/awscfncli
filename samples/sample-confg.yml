@@ -20,7 +20,7 @@ Blueprints:
 Stages:
 
   Develop:
-    
+    Order: 1
     DDBTable1:
       Extends: DDB
       StackName: DynamoDbTable1
@@ -29,9 +29,29 @@ Stages:
         Environment: staging
       Parameters:
         ReadCapacityUnits:      5
+      Order: 0
+
+    DDBTable2:
+      Extends: DDB
+      StackName: DynamoDbTable1
+      Region: us-east-1
+      Order: 1
+
+
+  Stage:
+    Order: 0
+    DDBTable1:
+      Extends: DDB
+      StackName: DynamoDbTable1
+      Region: us-west-1
+      Tags:
+        Environment: staging
+      Parameters:
+        ReadCapacityUnits:      5
       Order: 1
 
     DDBTable2:
       Extends: DDB
-      Region: us-east-1
+      StackName: DynamoDbTable1
+      Region: ap-northeast-1
       Order: 0

@@ -78,7 +78,7 @@ class CfnCliConfig(object):
                             self.get_stack(stage_id, stack_id)
                         result.append(stack_config)
 
-        result.sort(key=lambda c: c.stack_order)
+        result.sort(key=lambda c: c.order)
 
         return result
 
@@ -94,6 +94,8 @@ class CfnCliConfig(object):
         stages = dict()
         for stage_id, stage_config in six.iteritems(config['Stages']):
             logging.debug('Loading stage "%s"' % stage_id)
+
+            stage_order = stage_config.pop('Order', 0)
 
             stacks = dict()
             for stack_id, stack_config in six.iteritems(stage_config):
@@ -115,7 +117,10 @@ class CfnCliConfig(object):
                 stack_order = stack_config.pop('Order', 0)
 
                 config = StackConfig(
-                    stage_id, stack_id, stack_order, self._basedir)
+                    stage_id,
+                    stack_id,
+                    (stage_order, stack_order),
+                    self._basedir)
                 config.update(**blueprint)
                 config.update(**stack_config)
 
@@ -165,7 +170,7 @@ class StackConfig(object):
         return self._stack_id
 
     @property
-    def stack_order(self):
+    def order(self):
         return self._stack_order
 
     @property
@@ -211,7 +216,6 @@ class StackConfig(object):
             Region=Region,
             Package=Package,
             ArtifactStore=ArtifactStore,
-            Order=self.stack_order
         )
 
         # magically select template body or template url

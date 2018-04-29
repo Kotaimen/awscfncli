@@ -250,31 +250,31 @@ For example:
 ```
 Stages:
   Foundation:
+    Order: 0
     VPC:
       Order: 0
   Develop:
+    Order: 1
     Database:
       Order: 1
     Service:
       Order: 2
   Production:
+    Order: 2
     Database:
       Order: 1
     Service:
       Order: 2
-  Routing:
-    DNS:
-      Order: 3
  ```
 
-The above config will deploy these stacks in the follwing order:
+The above config will deploy these stacks in the stage order first and
+then in stack order:
 
 - Foundation.VPC
 - Develop.Database
-- Production.Database
 - Develop.Service
+- Production.Database
 - Production.Service
-- Routing.DNS
 
 ### Config Anatomy
 
