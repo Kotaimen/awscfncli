@@ -12,10 +12,17 @@ Features:
 - Single YAML configuration file for:
     - Deployment configuration.
     - Stack parameters.
-- Automatic packaging template resources.
-- Automatic applies Serverless transform (aka: SAM support).
-- Automatic stack ChangeSet synchronization.
-- Display and tracking stack events on cli.
+- Manage stacks in different regions and accounts.
+    - Group collection of stacks as stages.
+    - Operate on a set of stacks using globs (eg: `dev.db*`).
+    - Stack blueprint and YAML tags to ease configuration file writing.
+- Automatic packaging template resources:
+    - Lambda function packages
+    - Nested stacks
+    - SQL statements
+- Automatic applies template transform (SAM support).
+- Automatic ChangeSet synchronization.
+- Display and tracking stack events in the console.
 - Describe stack status and export values.
  
 ## Install
@@ -241,13 +248,16 @@ Stages:
 ```
 
 For details about rules of how parameters are extended, please see the
-folloing chapter `Config Inheritance`.
+following chapter `Config Inheritance`.
 
-Stacks could also be deployed in a predefined order. You could specify a
-order number in the config to deploy stacks in a definite order.
-For example:
+### Deployment Order
 
-```
+By default, stages and stacks are deployed by the order they are 
+specified in the configuration file.
+If this is not expected behavior, overwrite this using `Order`, you can 
+change both stack deployment order and stage deployment order:
+
+```yaml
 Stages:
   Foundation:
     Order: 0
@@ -265,16 +275,16 @@ Stages:
       Order: 1
     Service:
       Order: 2
- ```
+```
 
 The above config will deploy these stacks in the stage order first and
 then in stack order:
 
-- Foundation.VPC
-- Develop.Database
-- Develop.Service
-- Production.Database
-- Production.Service
+1. Foundation.VPC
+2. Develop.Database
+3. Develop.Service
+4. Production.Database
+5. Production.Service
 
 ### Config Anatomy
 

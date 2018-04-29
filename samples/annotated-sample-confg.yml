@@ -103,9 +103,16 @@ Stages:
 
   # Stage name
   Develop:
-    
+
+    # Defines deployment order of the stage.
+    # By default, stage are deployed by order of definition
+    Order: 1
+
     # Stack name, each stack is qualified by stage_name.stack_name
     DDBTable1:
+
+      # Defines deployment order stack
+      Order: 1
       # Optional, inherit values from specified blueprint.
       Extends: DDB
 
