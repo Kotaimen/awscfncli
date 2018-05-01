@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2 rc2 (2018-05-1)
+
+Issues:
+- Fix distribution conflict with old version of awscfncli
+
+
 ## Version 2 rc1 (2018-05-1)
 
 Rewrite and incompatible with previous version.
