@@ -1,0 +1,15 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "AWS CloudFormation Sample Template DynamoDB_Secondary_Indexes",
+
+  "Resources": {
+    "TableOfBooks": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "DynamoDB_Secondary_Indexes.json"
+      }
+    }
+  }
+
+}

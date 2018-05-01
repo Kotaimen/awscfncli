@@ -1,0 +1,4 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  Admin:
+    Type: AWS::IAM::Group

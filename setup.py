@@ -4,7 +4,7 @@ import os
 from setuptools import setup, find_packages
 
 __author__ = 'kotaimen'
-__date__ = '03/01/2017'
+__date__ = '22-Feb-2018'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,24 +16,25 @@ AWS CloudFormation CLI
 Introduction
 ============
 
-``awscfncli`` is a simple CLI tool that helps you manage AWS CloudFormation stacks.
+``awscfncli`` AWS CloudFormation stack management command line interface.
 
 Features:
 
 * awscli a-like CLI interface.
-* Simple YAML stack configuration file.
+* Simple YAML stacks configuration file.
 * Tracking stack events in the CLI.
-
-See also: `awscfncli <https://kotaimen.github.io/awscfncli>`_
+* Managing stacks across different stages and accounts.
 
 """
 
 install_requires = [
     'six>=1.10.0',
-    'boto3>=1.3',
+    'boto3>=1.6',
+    'botocore>=1.9',
     'click>=6.0',
     'PyYAML>=3.11',
-    'awscli>=1.10'
+    'jsonschema>=2.6.0',
+    'awscli>=1.14'
 ]
 
 test_requires = ['pytest', 'pytest-cov', 'mock']
@@ -42,10 +43,10 @@ dev_requires = test_requires
 
 setup(
     # Project Name
-    name='awscfncli',
+    name='awscfncli2',
 
     # Version and description
-    version='0.5.2',
+    version='2.0.0-rc1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -91,6 +92,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        cfn=awscfncli.__main__:main
+        cfn-cli=awscfncli.__main__:main
     ''',
 )
