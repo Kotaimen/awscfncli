@@ -4,7 +4,7 @@ import os
 import pytest
 import jsonschema
 import shutil
-from awscfncli import config
+from awscfncli2 import config
 
 
 @pytest.fixture

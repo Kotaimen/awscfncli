@@ -46,7 +46,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='2.0.0-rc1',
+    version='2.0.0-rc2',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -80,10 +80,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
     ],
-    keywords='awscfncli aws cfn cli cloudformation stack '
+    keywords='awscfncli awscfncli2 aws cfn cli cloudformation stack '
              'template changeset commandline development',
 
-    packages=find_packages(exclude=('tests',)),
+    packages=find_packages(exclude=['tests.*', 'tests']),
     install_requires=install_requires,
     extras_require={
         'test': test_requires,
@@ -92,6 +92,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        cfn-cli=awscfncli.__main__:main
+        cfn-cli=awscfncli2.__main__:main
     ''',
 )
