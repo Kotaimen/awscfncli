@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "definitions": {
+    "stack_config": {
+      "title": "Properties of Stack Config",
+      "type": "object",
+      "properties": {
+        "StackName": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][-a-zA-Z0-9]{0,127}$"
+        },
+        "Profile": {
+          "type": "string"
+        },
+        "Region": {
+          "type": "string"
+        },
+        "Package": {
+          "type": "boolean"
+        },
+        "ArtifactStore": {
+          "type": "string"
+        },
+        "Template": {
+          "type": "string"
+        },
+        "Parameters": {
+          "type": "object"
+        },
+        "DisableRollback": {
+          "type": "string"
+        },
+        "RollbackConfiguration": {
+          "type": "object"
+        },
+        "TimeoutInMinutes": {
+          "type": "integer"
+        },
+        "NotificationARNs": {
+          "type": "array"
+        },
+        "Capabilities": {
+          "type": "array"
+        },
+        "ResourceTypes": {
+          "type": "array"
+        },
+        "RoleARN": {
+          "type": "string"
+        },
+        "OnFailure": {
+          "type": "string"
+        },
+        "StackPolicy": {
+          "type": "string"
+        },
+        "Tags": {
+          "type": "object"
+        },
+        "ClientRequestToken": {
+          "type": "string"
+        },
+        "EnableTerminationProtection": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "title": "cfn-cli config",
+  "type": "object",
+  "properties": {
+    "Version": {
+      "title": "Version Number",
+      "type": "integer"
+    },
+    "Blueprints": {
+      "title": "A Collection of Template of Stack Config",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
+          "$ref": "#/definitions/stack_config"
+        }
+      }
+    },
+    "Stages": {
+      "title": "A Collection of Stages",
+      "type": "object",
+      "additionalProperties": {
+        "title": "Stage Config",
+        "type": "object",
+        "properties": {
+          "Order": { "type": "integer" }
+        },
+        "patternProperties": {
+          "^(?!Order)[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
+            "title": "Stack Config",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/definitions/stack_config"
+              },
+              {
+                "properties": {
+                  "Extends": {
+                    "type": "string"
+                  },
+                  "Order": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "minProperties": 1
+    }
+  },
+  "required": [
+    "Stages"
+  ]
+}

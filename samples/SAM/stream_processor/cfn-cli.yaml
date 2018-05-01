@@ -1,0 +1,12 @@
+Version: 2
+
+Stages:
+
+  Develop:
+    StreamProcessor:
+      Template: ./template.yaml
+      Capabilities: [CAPABILITY_IAM]
+      Region: us-east-1
+      Package: true
+      Tags:
+        Stage: Develop

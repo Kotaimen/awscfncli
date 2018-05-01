@@ -1,7 +1,0 @@
-Stack:
-  Region:                   us-west-2
-  StackName:                EC2SecurityGroupSample
-  TemplateBody:              ../solution/NestedStackSample.template.yaml
-  Capabilities:             [CAPABILITY_IAM]
-  Tags:
-    project:                Bob
