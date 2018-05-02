@@ -29,15 +29,19 @@ Features:
 
 install_requires = [
     'six>=1.10.0',
-    'boto3>=1.6',
-    'botocore>=1.9',
-    'click>=6.0',
-    'PyYAML>=3.11',
-    'jsonschema>=2.6.0',
-    'awscli>=1.14'
+    'boto3>=1.6,<2',
+    'botocore>=1.9,<2',
+    'click>=6.0,<7',
+    'PyYAML>=3.11,<4',
+    'jsonschema>=2.6.0,<3',
+    'awscli>=1.14,<2'
 ]
 
-test_requires = ['pytest', 'pytest-cov', 'mock']
+test_requires = [
+    'pytest',
+    'pytest-cov',
+    'mock'
+]
 
 dev_requires = test_requires
 
@@ -81,7 +85,7 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='awscfncli awscfncli2 aws cfn cli cloudformation stack '
-             'template changeset commandline development',
+             'template changeset commandline development sam serverless',
 
     packages=find_packages(exclude=['tests.*', 'tests']),
     install_requires=install_requires,
