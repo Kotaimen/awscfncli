@@ -121,3 +121,7 @@ pip-selfcheck.json
 
 ### Pycharm
 .idea
+
+### Unused project files
+.samples/
+.docker/
