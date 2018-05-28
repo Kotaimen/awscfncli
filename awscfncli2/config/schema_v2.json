@@ -77,7 +77,7 @@
       "title": "A Collection of Template of Stack Config",
       "type": "object",
       "patternProperties": {
-        "^[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
+        "^[a-zA-Z][-a-zA-Z0-9_]{0,127}$": {
           "$ref": "#/definitions/stack_config"
         }
       }
@@ -92,7 +92,7 @@
           "Order": { "type": "integer" }
         },
         "patternProperties": {
-          "^(?!Order)[a-zA-Z][-a-zA-Z0-9]{0,127}$": {
+          "^(?!Order)[a-zA-Z][-a-zA-Z0-9_]{0,127}$": {
             "title": "Stack Config",
             "type": "object",
             "allOf": [
