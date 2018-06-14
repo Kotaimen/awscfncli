@@ -29,6 +29,15 @@ Deferred Features:
 - Specify deployment order
 
 
+## Version 0.5.2 (2018-04-17)
+
+Features:
+- Add command for setting termination protection
+
+Issues:
+- Return error when exception raised. Fix #17
+
+
 ## Version 0.5.1 (2017-10-11)
 
 Features:
