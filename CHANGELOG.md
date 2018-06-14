@@ -1,12 +1,19 @@
 # Changelog
 
-## Version 2 rc2 (2018-05-1)
+## Version 2.0.0 (2018-05-1)
+
+Issues:
+- Override doesn't work properly when blueprint doesn't contain a parameter section
+- Allow creating and applying ChangeSets when stack is in REVIEW_IN_PROGRESS status
+- Allow "_" in stack and stage names
+
+## Version 2.0.0-rc2 (2018-05-1)
 
 Issues:
 - Fix distribution conflict with old version of awscfncli
 
 
-## Version 2 rc1 (2018-05-1)
+## Version 2.0.0-rc1 (2018-05-1)
 
 Rewrite and incompatible with previous version.
 

@@ -5,6 +5,8 @@ import fnmatch
 import logging
 import yaml
 import six
+import copy
+
 from collections import OrderedDict
 
 from .schema import validate_config
@@ -178,22 +180,31 @@ class StackConfig(object):
         return self._properties
 
     def update(self, **params):
-        for k, v in six.iteritems(self.PROPERTIES):
-            if k in params:
-                val_type, default_val = v
 
-                if self._properties[k] is None:
-                    self._properties[k] = params[k]
+        for key, (typ, default) in six.iteritems(self.PROPERTIES):
+
+            # skip unknown parameters
+            if key not in params:
+                continue
+
+            # overwrite Capabilities parameter
+            if key == 'Capabilities':
+                self._properties[key] = copy.deepcopy(params[key])
+            # append list
+            elif typ is list:
+                if self._properties[key] is None:
+                    self._properties[key] = list(params[key])
                 else:
-                    if k == 'Capabilities':
-                        self._properties[k] = params[k]
-                    else:
-                        if val_type == list:
-                            self._properties[k].extend(params[k])
-                        elif val_type == dict:
-                            self._properties[k].update(params[k])
-                        else:
-                            self._properties[k] = params[k]
+                    self._properties[key].extend(params[key])
+            # update dict
+            elif typ is dict:
+                if self._properties[key] is None:
+                    self._properties[key] = dict(params[key])
+                else:
+                    self._properties[key].update(params[key])
+            # copy everything else
+            else:
+                self._properties[key] = copy.deepcopy(params[key])
 
     def to_boto3_format(self):
         properties = self.properties

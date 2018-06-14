@@ -62,16 +62,23 @@ def sync_one(ctx, session, stack_config, confirm, use_previous_template):
 
     try:
         # check whether stack is already created.
-        client.describe_stacks(StackName=stack_config['StackName'])
+        status = client.describe_stacks(StackName=stack_config['StackName'])
+        stack_status = status['Stacks'][0]['StackStatus']
     except botocore.exceptions.ClientError as e:
+        # stack not yet created
         is_new_stack = True
         changeset_type = 'CREATE'
     else:
-        is_new_stack = False
-        changeset_type = 'UPDATE'
+        if stack_status == 'REVIEW_IN_PROGRESS':
+            # first ChangeSet execution failed, create "new stack" changeset again
+            is_new_stack = True
+            changeset_type = 'CREATE'
+        else:
+            # updating an existing stack
+            is_new_stack = False
+            changeset_type = 'UPDATE'
 
     stack_config['ChangeSetType'] = changeset_type
-
     stack_config.pop('StackPolicyBody', None)
     stack_config.pop('StackPolicyURL', None)
     termination_protection = stack_config.pop(
