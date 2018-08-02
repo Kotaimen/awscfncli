@@ -92,8 +92,8 @@ def sync_one(ctx, session, stack_config, confirm, use_previous_template):
     # or changeset
     if result and 'Id' in result and termination_protection is not None:
         click.secho(
-            'Setting Termination Protection to "%s"' %
-            termination_protection, fg='red')
+            'Setting TerminationProtection to "%s"' %
+            termination_protection)
         client.update_termination_protection(
             EnableTerminationProtection=termination_protection,
             StackName=stack_config['StackName']

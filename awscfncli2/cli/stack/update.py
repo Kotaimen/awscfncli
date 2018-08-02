@@ -79,8 +79,8 @@ def update_one(ctx, session, stack_config, no_wait, use_previous_template,
     if termination_protection is not None:
         client = session.client('cloudformation')
         click.secho(
-            'Setting Termination Protection to "%s"' %
-            termination_protection, fg='red')
+            'Setting TerminationProtection to "%s"' %
+            termination_protection)
         client.update_termination_protection(
             EnableTerminationProtection=termination_protection,
             StackName=stack_config['StackName']
