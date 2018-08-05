@@ -36,7 +36,7 @@ Blueprints:
     Capabilities: [CAPABILITY_IAM]
     
     # ARN of an IAM role that CloudFormation assumes when operating the stack.
-    # If no value is specified, CloudFormatino uses a temporary session which 
+    # If no value is specified, CloudFormation uses a temporary session which
     # generated form caller's credentials
 #    RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
 

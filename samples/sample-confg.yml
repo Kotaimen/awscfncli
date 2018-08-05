@@ -7,8 +7,6 @@ Blueprints:
     Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
     StackPolicy: DENY_ALL
 
-    EnableTerminationProtection: false
-    
     Tags:
       Project:  Booba
       CostUnit: 1B0
@@ -21,8 +19,6 @@ Blueprints:
 
     Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Secondary_Indexes.template
     StackPolicy: DENY_ALL
-
-    EnableTerminationProtection: false
 
     Tags:
       Project:  Booba
@@ -63,6 +59,7 @@ Stages:
       Extends: DDB
       StackName: DynamoDbTable1
       Region: us-west-1
+      EnableTerminationProtection: True
       Tags:
         Environment: staging
       Parameters:
@@ -71,5 +68,5 @@ Stages:
     DDBTable2:
       Order: 1
       Extends: DDB2Idx
-      StackName: DynamoDbTable1
+      StackName: DynamoDbTable2
       Region: us-west-1

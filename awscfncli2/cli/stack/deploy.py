@@ -45,11 +45,23 @@ def deploy_one(ctx, session, stack_config, no_wait, on_failure):
 
     # pop metadata form stack config
     stack_config.pop('Metadata')
+    termination_protection = stack_config.pop(
+        'EnableTerminationProtection', None)
 
     # create stack
     stack = cloudformation.create_stack(**stack_config)
     stack_id = stack.stack_id
     pretty_print_stack(stack)
+
+    if termination_protection is not None:
+        client = session.client('cloudformation')
+        click.secho(
+            'Setting TerminationProtection to "%s"' %
+            termination_protection)
+        client.update_termination_protection(
+            EnableTerminationProtection=termination_protection,
+            StackName=stack_config['StackName']
+        )
 
     # exit immediately
     if no_wait:
