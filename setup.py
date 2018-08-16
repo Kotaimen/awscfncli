@@ -50,7 +50,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='2.0.0',
+    version='2.0.1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -88,6 +88,9 @@ setup(
              'template changeset commandline development sam serverless',
 
     packages=find_packages(exclude=['tests.*', 'tests']),
+    package_data={
+        'awscfncli2.config': '*.json'
+    },
     install_requires=install_requires,
     extras_require={
         'test': test_requires,
