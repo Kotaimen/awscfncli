@@ -1,11 +1,10 @@
-FROM amazonlinux:2017.09
+FROM python:3.6
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 RUN set -x \
-  && yum install -y python27 python27-pip \
-  && pip-2.7 install .
+  && pip install .
 
 ENTRYPOINT ["cfn-cli"]
