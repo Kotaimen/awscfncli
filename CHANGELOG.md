@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.0.1 (2018-08-17)
+
+Issues:
+- Fix missing package files, update related tests.
+
 ## Version 2.0.0 (2018-05-1)
 
 Issues:
