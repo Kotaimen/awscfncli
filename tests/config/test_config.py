@@ -61,37 +61,37 @@ class TestConfig(object):
 
         stack = c.get_stack('Staging', 'Vpc0')
 
-        assert stack.profile['Region'] == 'cn-east-1'
-        assert stack.profile['Profile'] == 'ray'
-        assert stack.parameters['StackName'] == 'Vpc0'
-        assert stack.parameters['Template'] == data_dir.join('data/test.template.yaml')
-        assert stack.parameters['Capabilities'] == ['CAPABILITY_NAMED_IAM']
-        assert stack.parameters['Tags']['Environment'] == 'staging'
-        assert stack.parameters['Tags']['Project'] == 'demo'
-        assert stack.parameters['Tags']['Test'] == 'test'
-        assert len(stack.parameters['Tags']) == 3
+        assert stack.profile.Region == 'cn-east-1'
+        assert stack.profile.Profile == 'ray'
+        assert stack.parameters.StackName == 'Vpc0'
+        assert stack.parameters.Template == data_dir.join('data/test.template.yaml')
+        assert stack.parameters.Capabilities == ['CAPABILITY_NAMED_IAM']
+        assert stack.parameters.Tags['Environment'] == 'staging'
+        assert stack.parameters.Tags['Project'] == 'demo'
+        assert stack.parameters.Tags['Test'] == 'test'
+        assert len(stack.parameters.Tags) == 3
 
         stack = c.get_stack('Staging', 'Vpc1')
 
-        assert stack.profile['Region'] == 'us-east-1'
-        assert stack.profile['Profile'] == 'ray'
-        assert stack.parameters['StackName'] == 'Vpc1'
-        assert stack.parameters['Template'] == data_dir.join('data/test.template.yaml')
-        assert stack.parameters['Capabilities'] == ['CAPABILITY_IAM']
-        assert stack.parameters['Tags']['Environment'] == 'dev'
-        assert stack.parameters['Tags']['Project'] == 'dummy'
-        assert len(stack.parameters['Tags']) == 2
+        assert stack.profile.Region == 'us-east-1'
+        assert stack.profile.Profile == 'ray'
+        assert stack.parameters.StackName == 'Vpc1'
+        assert stack.parameters.Template == data_dir.join('data/test.template.yaml')
+        assert stack.parameters.Capabilities == ['CAPABILITY_IAM']
+        assert stack.parameters.Tags['Environment'] == 'dev'
+        assert stack.parameters.Tags['Project'] == 'dummy'
+        assert len(stack.parameters.Tags) == 2
 
         stack = c.get_stack('Prod', 'Vpc0')
 
-        assert stack.profile['Region'] == 'cn-east-1'
-        assert stack.profile['Profile'] == 'ray'
-        assert stack.parameters['StackName'] == 'Vpc0'
-        assert stack.parameters['Template'] == data_dir.join('data/test.template.yaml')
-        assert stack.parameters['Capabilities'] == ['CAPABILITY_IAM']
-        assert stack.parameters['Tags']['Environment'] == 'prod'
-        assert stack.parameters['Tags']['Project'] == 'test'
-        assert len(stack.parameters['Tags']) == 2
+        assert stack.profile.Region == 'cn-east-1'
+        assert stack.profile.Profile == 'ray'
+        assert stack.parameters.StackName == 'Vpc0'
+        assert stack.parameters.Template == data_dir.join('data/test.template.yaml')
+        assert stack.parameters.Capabilities == ['CAPABILITY_IAM']
+        assert stack.parameters.Tags['Environment'] == 'prod'
+        assert stack.parameters.Tags['Project'] == 'test'
+        assert len(stack.parameters.Tags) == 2
 
     def test_query_stacks_with_extends(self, data_dir):
         configfile = data_dir.join('data/test.config.extends.yaml')

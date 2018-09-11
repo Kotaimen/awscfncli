@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
 
 import fnmatch
-from collections import OrderedDict, namedtuple
+import copy
+from collections import namedtuple
 
 
-class StackKey(namedtuple('StackKey', ['stage_key', 'stack_key'])):
-
-    @property
-    def qualified_name(self):
-        return '.'.join([self.stage_key, self.stack_key])
+def _extends(base, **kwargs):
+    for k, v in base.items():
+        base[k] = kwargs.get(k, v)
 
 
-class StackDeployment(object):
-    METADATA = dict(
-        Key=None,
+class StackDefaults(object):
+    STACK_KEY = dict(
+        StageKey=None,
+        StackKey=None
+    )
+
+    STACK_METADATA = dict(
+        StackKey=None,
         Order=None,
         Package=None,
         ArtifactStore=None
     )
 
-    PROFILE = dict(
+    STACK_PROFILE = dict(
         Region=None,
         Profile=None
     )
 
-    PARAMETERS = dict(
+    STACK_PARAMETERS = dict(
         StackName=None,
         Template=None,
         Parameters=None,
@@ -42,12 +46,59 @@ class StackDeployment(object):
         EnableTerminationProtection=None
     )
 
-    def __init__(self, stack_key):
+
+class StackKey(namedtuple('StackKey', StackDefaults.STACK_KEY)):
+
+    @property
+    def qualified_name(self):
+        return '.'.join([self.StageKey, self.StackKey])
+
+    @staticmethod
+    def from_dict(**params):
+        result = copy.deepcopy(StackDefaults.STACK_KEY)
+        _extends(result, **params)
+        return StackKey(**result)
+
+
+class StackMetadata(
+    namedtuple('StackMetadata', sorted(StackDefaults.STACK_METADATA))):
+    @staticmethod
+    def from_dict(**params):
+        result = copy.deepcopy(StackDefaults.STACK_METADATA)
+        _extends(result, **params)
+        return StackMetadata(**result)
+
+
+class StackProfile(
+    namedtuple('StackMetadata', sorted(StackDefaults.STACK_PROFILE))):
+    @staticmethod
+    def from_dict(**params):
+        result = copy.deepcopy(StackDefaults.STACK_PROFILE)
+        _extends(result, **params)
+        return StackProfile(**result)
+
+
+class StackParameters(
+    namedtuple('StackParameters', sorted(StackDefaults.STACK_PARAMETERS))):
+    @staticmethod
+    def from_dict(**params):
+        result = copy.deepcopy(StackDefaults.STACK_PARAMETERS)
+        _extends(result, **params)
+        return StackParameters(**result)
+
+
+class StackDeployment(object):
+
+    def __init__(self, stack_key, stack_metadata, stack_profile, stack_params):
+        assert isinstance(stack_key, StackKey)
+        assert isinstance(stack_metadata, StackMetadata)
+        assert isinstance(stack_profile, StackProfile)
+        assert isinstance(stack_params, StackParameters)
+
         self._stack_key = stack_key
-        self._metadata = self.METADATA.copy()
-        self._metadata['StackKey'] = stack_key.qualified_name
-        self._profile = self.PROFILE.copy()
-        self._parameters = self.PARAMETERS.copy()
+        self._metadata = stack_metadata
+        self._profile = stack_profile
+        self._parameters = stack_params
 
     @property
     def stack_key(self):
@@ -64,20 +115,6 @@ class StackDeployment(object):
     @property
     def parameters(self):
         return self._parameters
-
-    def update_metadata(self, **kwargs):
-        self._update(self._metadata, **kwargs)
-
-    def update_profile(self, **kwargs):
-        self._update(self._profile, **kwargs)
-
-    def update_parameters(self, **kwargs):
-        self._update(self._parameters, **kwargs)
-
-    def _update(self, properties, **kwargs):
-        for k, v in properties.items():
-            if k in kwargs:
-                properties[k] = kwargs[k]
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self.stack_key)

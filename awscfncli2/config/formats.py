@@ -5,7 +5,8 @@ import six
 import copy
 
 from .schema import validate_schema
-from .deployment import StackKey, StackDeployment, Deployment
+from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
+    StackParameters, Deployment
 
 
 class FormatError(Exception):
@@ -146,9 +147,13 @@ class FormatV2(ConfigParser):
             stack_config['Template'] = os.path.realpath(
                 os.path.join(self._basedir, template))
 
-        stack = StackDeployment(StackKey(stage_key, stack_key))
-        stack.update_metadata(**stack_config)
-        stack.update_profile(**stack_config)
-        stack.update_parameters(**stack_config)
+        key = StackKey(stage_key, stack_key)
+        stack_profile = StackProfile.from_dict(**stack_config)
+        stack_parameters = StackParameters.from_dict(**stack_config)
+        stack_metadata = StackMetadata.from_dict(
+            StackKey=key.qualified_name, **stack_config)
+
+        stack = StackDeployment(
+            key, stack_metadata, stack_profile, stack_parameters)
 
         return stack
