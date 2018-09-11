@@ -123,6 +123,7 @@ class StackDeploymentContext(object):
 
 
 class RunBook(object):
+    """Run command on selected stacks"""
     def __init__(self, cli_boto3_profile, stack_deployments):
         assert isinstance(cli_boto3_profile, Boto3Profile)
 
