@@ -4,43 +4,54 @@ import fnmatch
 from collections import OrderedDict, namedtuple
 
 
-class StackKey(namedtuple('StackKey', 'stage_key, stack_key')):
-    pass
+class StackKey(namedtuple('StackKey', ['stage_key', 'stack_key'])):
+
+    @property
+    def qualified_name(self):
+        return '.'.join([self.stage_key, self.stack_key])
 
 
 class StackDeployment(object):
+    METADATA = dict(
+        Key=None,
+        Order=None,
+        Package=None,
+        ArtifactStore=None
+    )
+
+    PROFILE = dict(
+        Region=None,
+        Profile=None
+    )
+
+    PARAMETERS = dict(
+        StackName=None,
+        Template=None,
+        Parameters=None,
+        DisableRollback=None,
+        RollbackConfiguration=None,
+        TimeoutInMinutes=None,
+        NotificationARNs=None,
+        Capabilities=None,
+        ResourceTypes=None,
+        RoleARN=None,
+        OnFailure=None,
+        StackPolicy=None,
+        Tags=None,
+        ClientRequestToken=None,
+        EnableTerminationProtection=None
+    )
 
     def __init__(self, stack_key):
         self._stack_key = stack_key
-        self._metadata = OrderedDict(
-            Order=None,
-            Package=None,
-            ArtifactStore=None
-        )
-        self._profile = OrderedDict(
-            Region=None,
-            Profile=None
-        )
-        self._parameters = OrderedDict(
-            StackName=None,
-            Template=None,
-            Parameters=None,
-            DisableRollback=None,
-            RollbackConfiguration=None,
-            TimeoutInMinutes=None,
-            NotificationARNs=None,
-            Capabilities=None,
-            ResourceTypes=None,
-            RoleARN=None,
-            OnFailure=None,
-            StackPolicy=None,
-            Tags=None,
-            ClientRequestToken=None,
-            EnableTerminationProtection=None)
+        self._metadata = self.METADATA.copy()
+        self._metadata['StackKey'] = stack_key.qualified_name
+        self._profile = self.PROFILE.copy()
+        self._parameters = self.PARAMETERS.copy()
 
     @property
     def stack_key(self):
-        return self._stack_key
+        return self._metadata['StackKey']
 
     @property
     def metadata(self):
