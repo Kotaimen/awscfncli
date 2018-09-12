@@ -4,3 +4,5 @@ from .runbook import RunBook, StackDeploymentContext
 
 from .commands.stack_deploy_command import StackDeployOptions, \
     StackDeployCommand
+from .commands.stack_status_command import StackStatusOptions, \
+    StackStatusCommand

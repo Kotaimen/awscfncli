@@ -3,7 +3,7 @@ from .main import cfn_cli
 
 from .context import ClickContext
 
-# from .commands.status import status
+from .commands.status import status
 # from .commands.validate import validate
 
 # from .stack.sync import sync

@@ -1,7 +1,7 @@
-import os
-from collections import namedtuple, OrderedDict
+import threading
+from collections import OrderedDict
 from .boto3_profile import Boto3Profile
-from ..config import StackKey, StackDeployment, ConfigError
+from ..config import ConfigError
 
 import six
 
@@ -110,20 +110,41 @@ class StackDeploymentContext(object):
     """Deployment context in boto3 ready format"""
 
     def __init__(self, cli_boto3_profile, stack_deployment):
-        self.boto3_profile = Boto3Profile(
+        self._boto3_profile = Boto3Profile(
             profile_name=stack_deployment.profile['Profile'],
             region_name=stack_deployment.profile['Region']
         )
-        self.boto3_profile.update(cli_boto3_profile)
-        self.boto3_session = self.boto3_profile.get_boto3_sessoin()
+        self._boto3_profile.update(cli_boto3_profile)
+        self._boto3_session = None
+        self._session_lock = threading.Lock()
 
-        self.metadata = stack_deployment.metadata.copy()
-        self.parameters = _make_boto3_parameters(
+        self._metadata = stack_deployment.metadata.copy()
+        self._parameters = _make_boto3_parameters(
             stack_deployment.parameters, self.metadata['Package'])
+
+    @property
+    def boto3_profile(self):
+        return self._boto3_profile
+
+    @property
+    def boto3_session(self):
+        with self._session_lock:
+            if self._boto3_session is None:
+                self._boto3_session = self.boto3_profile.get_boto3_session()
+        return self._boto3_session
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def parameters(self):
+        return self._parameters
 
 
 class RunBook(object):
     """Run command on selected stacks"""
+
     def __init__(self, cli_boto3_profile, stack_deployments):
         assert isinstance(cli_boto3_profile, Boto3Profile)
 
