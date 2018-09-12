@@ -1,7 +1,7 @@
 import threading
 from collections import OrderedDict
 from .boto3_profile import Boto3Profile
-from ..config import ConfigError
+from ..config import ConfigError, StackDeployment
 
 import six
 
@@ -143,20 +143,34 @@ class StackDeploymentContext(object):
 
 
 class RunBook(object):
-    """Run command on selected stacks"""
+    """Run command on specified deployments"""
 
     def __init__(self, cli_boto3_profile, stack_deployments):
         assert isinstance(cli_boto3_profile, Boto3Profile)
 
-        self.contexts = list(
-            StackDeploymentContext(cli_boto3_profile, d)
-            for d in stack_deployments
-        )
+        # XXX: properly move this to a separated factory
+        self._contexts = list()
 
-    def run(self, command):
-        for context in self.contexts:
+        for deployment in stack_deployments:
+            assert isinstance(deployment, StackDeployment)
+            context = StackDeploymentContext(cli_boto3_profile, deployment)
+            self._contexts.append(context)
+
+    def run(self, command, rev=False):
+        """Runs specified command"""
+        if rev:
+            runs = reversed(self.runs)
+        else:
+            runs = self.runs
+
+        for context in runs:
             command.run(
                 session=context.boto3_session,
                 parameters=context.parameters,
                 metadata=context.metadata
             )
+
+    @property
+    def runs(self):
+        """List of stack contexts to run"""
+        return self._contexts

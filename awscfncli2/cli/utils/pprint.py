@@ -84,18 +84,20 @@ class StackPrettyPrinter(object):
     def pprint_parameters(self, parameters):
         """Print stack parameters"""
         if self.verbosity > 0:
-            click.secho('--- Stack Creation Parameters ---', fg='white', dim=True)
+            click.secho('--- Stack Creation Parameters ---', fg='white',
+                        dim=True)
             click.secho(
                 yaml.safe_dump(parameters,
                                default_flow_style=False),
                 fg='white', dim=True
             )
 
-    def pprint_stack(self, stack):
+    def pprint_stack(self, stack, status=False):
         """Pretty print stack status"""
         # echo_pair('StackName', stack.stack_name)
-        echo_pair('Status', stack.stack_status,
-                  value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
+        if status:
+            echo_pair('Status', stack.stack_status,
+                    value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
 
         if stack.stack_status == 'STACK_NOT_FOUND':
             return
@@ -106,7 +108,11 @@ class StackPrettyPrinter(object):
         if stack.last_updated_time:
             echo_pair('Last Updated', stack.last_updated_time)
         echo_pair('Capabilities', stack.capabilities)
-        echo_pair('Termination Protection', stack.enable_termination_protection)
+        echo_pair('TerminationProtection',
+                  str(stack.enable_termination_protection),
+                  value_style={
+                      'fg': 'red'} if stack.enable_termination_protection else None
+                  )
 
     def pprint_stack_parameters(self, stack):
 
@@ -149,6 +155,14 @@ class StackPrettyPrinter(object):
         waiter = session.client('cloudformation').get_waiter(
             'stack_create_complete')
         waiter.wait(StackName=stack.stack_id)
+
+    def wait_until_delete_complete(self, session, stack):
+        start_tail_stack_events_daemon(session, stack)
+
+        waiter = session.client('cloudformation').get_waiter(
+            'stack_delete_complete')
+        waiter.wait(StackName=stack.stack_id)
+
 
     def wait_until_update_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack)

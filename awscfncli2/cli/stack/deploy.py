@@ -17,8 +17,8 @@ from ...runner import StackDeployOptions, StackDeployCommand
                    'fails. This must be one of: DO_NOTHING, ROLLBACK, or '
                    'DELETE. Note setting this option overwrites "OnFailure" '
                    'and "DisableRollback" in the stack configuration file.')
-@click.option('--ignore-existing', '-r', is_flag=True, default=False,
-              help='Don\'t report error if the stack already exists.')
+@click.option('--ignore-existing', '-i', is_flag=True, default=False,
+              help='Don\'t exit with error if the stack already exists.')
 
 @click.pass_context
 @command_exception_handler

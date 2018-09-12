@@ -26,29 +26,29 @@ class StackDeployCommand(object):
 
         self.ppt.pprint_session(session)
 
-        # force on failure option
+        # force on_failure option specified in cli
         if self.options.on_failure is not None:
             parameters.pop('DisableRollback', None)
             parameters['OnFailure'] = self.options.on_failure
 
         self.ppt.pprint_parameters(parameters)
 
-        # call boto3
+        # calling boto3...
         try:
             stack = cfn.create_stack(**parameters)
         except Exception as ex:
-            if ex.__class__.__name__ == 'AlreadyExistsException' and \
-                    self.options.ignore_existing:
+            # skip existing stack error
+            if self.options.ignore_existing and \
+                    ex.__class__.__name__ == 'AlreadyExistsException':
                 self.ppt.secho('Stack already exists.', fg='red')
                 return
             raise
 
         self.ppt.pprint_stack(stack)
 
-        # wait until deployment complete, when required
+        # wait until deployment complete
         if self.options.no_wait:
             self.ppt.secho('Stack deployment started.')
-            return
         else:
             self.ppt.wait_until_deploy_complete(session, stack)
             self.ppt.secho('Stack deployment complete.', fg='green')

@@ -6,3 +6,5 @@ from .commands.stack_deploy_command import StackDeployOptions, \
     StackDeployCommand
 from .commands.stack_status_command import StackStatusOptions, \
     StackStatusCommand
+from .commands.stack_delete_command import StackDeleteOptions, \
+    StackDeleteCommand
