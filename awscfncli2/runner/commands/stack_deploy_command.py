@@ -43,7 +43,7 @@ class StackDeployCommand(object):
                 return
             raise
 
-        self.ppt.pprint_stack(stack, detail=False)
+        self.ppt.pprint_stack(stack)
 
         # wait until deployment complete, when required
         if self.options.no_wait:
