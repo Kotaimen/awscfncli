@@ -16,7 +16,7 @@ class Boto3Profile(object):
         if other.region_name:
             self.region_name = other.region_name
 
-    def get_boto3_sessoin(self):
+    def get_boto3_session(self):
         # XXX: caching session object?
         return boto3.Session(
             profile_name=self.profile_name,

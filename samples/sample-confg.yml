@@ -59,11 +59,11 @@ Stages:
       Extends: DDB
       StackName: DynamoDbTable1
       Region: us-west-1
-      EnableTerminationProtection: True
+      EnableTerminationProtection: False
       Tags:
         Environment: staging
       Parameters:
-        ReadCapacityUnits: 5
+        ReadCapacityUnits: 10
 
     DDBTable2:
       Order: 1

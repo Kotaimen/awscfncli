@@ -1,16 +1,9 @@
-import os
-from collections import namedtuple, OrderedDict
+import threading
+from collections import OrderedDict
 from .boto3_profile import Boto3Profile
-from ..config import StackKey, StackDeployment, ConfigError
+from ..config import ConfigError, StackDeployment, CANNED_STACK_POLICIES
 
 import six
-
-CANNED_STACK_POLICIES = {
-    'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
-    'ALLOW_MODIFY': '{"Statement":[{"Effect":"Allow","Action":["Update:Modify"],"Principal":"*","Resource":"*"}]}',
-    'DENY_DELETE': '{"Statement":[{"Effect":"Allow","NotAction":"Update:Delete","Principal":"*","Resource":"*"}]}',
-    'DENY_ALL': '{"Statement":[{"Effect":"Deny","Action":"Update:*","Principal":"*","Resource":"*"}]}',
-}
 
 
 def _normalize_value(v):
@@ -24,9 +17,9 @@ def _normalize_value(v):
 
 def _make_boto3_parameters(parameters, is_packaging):
     # inject parameters
-    StackName = parameters['StackName']
+    StackName = parameters.StackName
 
-    Template = parameters['Template']
+    Template = parameters.Template
     if Template.startswith('https') or Template.startswith('http'):
         # s3 template
         TemplateURL, TemplateBody = Template, None
@@ -41,7 +34,7 @@ def _make_boto3_parameters(parameters, is_packaging):
             TemplateBody = fp.read()
 
     # lookup canned policy
-    StackPolicy = parameters['StackPolicy']
+    StackPolicy = parameters.StackPolicy
     if StackPolicy is not None:
         try:
             StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
@@ -54,7 +47,7 @@ def _make_boto3_parameters(parameters, is_packaging):
         StackPolicyBody = None
 
     # Normalize parameter config
-    Parameters = parameters['Parameters']
+    Parameters = parameters.Parameters
     normalized_params = None
     if Parameters and isinstance(Parameters, dict):
         normalized_params = list(
@@ -69,7 +62,7 @@ def _make_boto3_parameters(parameters, is_packaging):
         )
 
     # Normalize tag config
-    Tags = parameters['Tags']
+    Tags = parameters.Tags
     normalized_tags = None
     if Tags and isinstance(Tags, dict):
         normalized_tags = list(
@@ -84,20 +77,19 @@ def _make_boto3_parameters(parameters, is_packaging):
         StackName=StackName,
         TemplateURL=TemplateURL,
         TemplateBody=TemplateBody,
-        DisableRollback=parameters['DisableRollback'],
-        RollbackConfiguration=parameters['RollbackConfiguration'],
-        TimeoutInMinutes=parameters['TimeoutInMinutes'],
-        NotificationARNs=parameters['NotificationARNs'],
-        Capabilities=parameters['Capabilities'],
-        ResourceTypes=parameters['ResourceTypes'],
-        RoleARN=parameters['RoleARN'],
-        OnFailure=parameters['OnFailure'],
+        DisableRollback=parameters.DisableRollback,
+        RollbackConfiguration=parameters.RollbackConfiguration,
+        TimeoutInMinutes=parameters.TimeoutInMinutes,
+        NotificationARNs=parameters.NotificationARNs,
+        Capabilities=parameters.Capabilities,
+        ResourceTypes=parameters.ResourceTypes,
+        RoleARN=parameters.RoleARN,
+        OnFailure=parameters.OnFailure,
         StackPolicyBody=StackPolicyBody,
         Parameters=normalized_params,
         Tags=normalized_tags,
-        ClientRequestToken=parameters['ClientRequestToken'],
-        EnableTerminationProtection=parameters[
-            'EnableTerminationProtection'],
+        ClientRequestToken=parameters.ClientRequestToken,
+        EnableTerminationProtection=parameters.EnableTerminationProtection,
     )
 
     # drop all None and empty list
@@ -110,32 +102,68 @@ class StackDeploymentContext(object):
     """Deployment context in boto3 ready format"""
 
     def __init__(self, cli_boto3_profile, stack_deployment):
-        self.boto3_profile = Boto3Profile(
-            profile_name=stack_deployment.profile['Profile'],
-            region_name=stack_deployment.profile['Region']
+        self._boto3_profile = Boto3Profile(
+            profile_name=stack_deployment.profile.Profile,
+            region_name=stack_deployment.profile.Region
         )
-        self.boto3_profile.update(cli_boto3_profile)
-        self.boto3_session = self.boto3_profile.get_boto3_sessoin()
+        self._boto3_profile.update(cli_boto3_profile)
+        self._boto3_session = None
+        self._session_lock = threading.Lock()
 
-        self.metadata = stack_deployment.metadata.copy()
-        self.metadata['StackName'] = stack_deployment.stack_key.qualified_name
-        self.parameters = _make_boto3_parameters(
+        self._metadata = stack_deployment.metadata._asdict()
+        self._metadata['StackKey'] = stack_deployment.stack_key.qualified_name
+        self._parameters = _make_boto3_parameters(
             stack_deployment.parameters, self.metadata['Package'])
+
+    @property
+    def boto3_profile(self):
+        return self._boto3_profile
+
+    @property
+    def boto3_session(self):
+        with self._session_lock:
+            if self._boto3_session is None:
+                self._boto3_session = self.boto3_profile.get_boto3_session()
+        return self._boto3_session
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def parameters(self):
+        return self._parameters
 
 
 class RunBook(object):
+    """Run command on specified deployments"""
+
     def __init__(self, cli_boto3_profile, stack_deployments):
         assert isinstance(cli_boto3_profile, Boto3Profile)
 
-        self.contexts = list(
-            StackDeploymentContext(cli_boto3_profile, d)
-            for d in stack_deployments
-        )
+        # XXX: properly move this to a separated factory
+        self._contexts = list()
 
-    def run(self, command):
-        for context in self.contexts:
+        for deployment in stack_deployments:
+            assert isinstance(deployment, StackDeployment)
+            context = StackDeploymentContext(cli_boto3_profile, deployment)
+            self._contexts.append(context)
+
+    def run(self, command, rev=False):
+        """Runs specified command"""
+        if rev:
+            runs = reversed(self.runs)
+        else:
+            runs = self.runs
+
+        for context in runs:
             command.run(
                 session=context.boto3_session,
                 parameters=context.parameters,
                 metadata=context.metadata
             )
+
+    @property
+    def runs(self):
+        """List of stack contexts to run"""
+        return self._contexts

@@ -42,14 +42,23 @@ def echo_pair_if_exists(data, key, value, indent=2, key_style=None,
 
 
 class StackPrettyPrinter(object):
-    """Pretty print stack parameter, status and events"""
+    """Pretty print stack parameter, status and events
+
+    Calls click.secho to do the heavy lifting.
+    """
 
     def __init__(self, verbosity=0):
         self.verbosity = verbosity
 
-    def pprint_stack_name(self, qualified_name):
-        """Print stack qualifid name"""
+    def secho(self, text, nl=True, err=False, color=None, **styles):
+        click.secho(text, nl=nl, err=err, color=color, **styles)
+
+    def pprint_stack_name(self, qualified_name, stack_name, prefix=None):
+        """Print stack qualified name"""
+        if prefix:
+            click.secho(prefix, bold=True, nl=False)
         click.secho(qualified_name, bold=True)
+        echo_pair('StackName', stack_name)
 
     def pprint_session(self, session, retrieve_identity=True):
         """Print boto3 session"""
@@ -62,41 +71,50 @@ class StackPrettyPrinter(object):
             echo_pair('Account', identity['Account'])
             echo_pair('Identity', identity['Arn'])
 
-    def pprint_stack_metadata(self, metadata):
+    def pprint_metadata(self, metadata):
         """Print stack metadata"""
         if self.verbosity > 0:
+            click.secho('--- Stack Metadata ---', fg='white', dim=True)
             click.secho(
                 yaml.safe_dump(metadata,
                                default_flow_style=False),
                 fg='white', dim=True
             )
 
-    def pprint_stack_parameters(self, parameters):
+    def pprint_parameters(self, parameters):
         """Print stack parameters"""
         if self.verbosity > 0:
+            click.secho('--- Stack Creation Parameters ---', fg='white',
+                        dim=True)
             click.secho(
                 yaml.safe_dump(parameters,
                                default_flow_style=False),
                 fg='white', dim=True
             )
 
-    def pprint_stack(self, stack, detail=False):
+    def pprint_stack(self, stack, status=False):
         """Pretty print stack status"""
-        echo_pair('Stack ID', stack.stack_id)
+        # echo_pair('StackName', stack.stack_name)
+        if status:
+            echo_pair('Status', stack.stack_status,
+                    value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
 
-        if not detail:
+        if stack.stack_status == 'STACK_NOT_FOUND':
             return
 
-        # echo_pair('Name', stack.stack_name)
-        echo_pair('Description', stack.description)
-
-        echo_pair('Status', stack.stack_status,
-                  value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
+        echo_pair('StackID', stack.stack_id)
+        # echo_pair('Description', stack.description)
         echo_pair('Created', stack.creation_time)
         if stack.last_updated_time:
             echo_pair('Last Updated', stack.last_updated_time)
         echo_pair('Capabilities', stack.capabilities)
-        echo_pair('Termination Protection', stack.enable_termination_protection)
+        echo_pair('TerminationProtection',
+                  str(stack.enable_termination_protection),
+                  value_style={
+                      'fg': 'red'} if stack.enable_termination_protection else None
+                  )
+
+    def pprint_stack_parameters(self, stack):
 
         if stack.parameters:
             echo_pair('Parameters')
@@ -108,22 +126,47 @@ class StackPrettyPrinter(object):
                         p['ResolvedValue'], indent=2)
                 else:
                     echo_pair(p['ParameterKey'], p['ParameterValue'], indent=2)
+
         if stack.outputs:
             echo_pair('Outputs')
             for o in stack.outputs:
                 echo_pair(o['OutputKey'], o['OutputValue'], indent=2)
+
         if stack.tags:
             echo_pair('Tags')
             for t in stack.tags:
                 echo_pair(t['Key'], t['Value'], indent=2)
 
+    def pprint_stack_resources(self, stack):
+        echo_pair('Resources')
+        for r in stack.resource_summaries.all():
+            echo_pair(r.logical_resource_id,
+                      '(%s)' % r.resource_type,
+                      indent=2, sep=' ')
+            echo_pair('Status', r.resource_status,
+                      value_style=STACK_STATUS_TO_COLOR[r.resource_status],
+                      indent=4)
+            echo_pair('Physical ID', r.physical_resource_id, indent=4)
+            echo_pair('Last Updated', r.last_updated_timestamp, indent=4)
+
     def wait_until_deploy_complete(self, session, stack):
-        # start event tailing
         start_tail_stack_events_daemon(session, stack, latest_events=0)
 
-        # wait until update complete
         waiter = session.client('cloudformation').get_waiter(
             'stack_create_complete')
         waiter.wait(StackName=stack.stack_id)
 
-        click.secho('Stack deployment complete.', fg='green')
+    def wait_until_delete_complete(self, session, stack):
+        start_tail_stack_events_daemon(session, stack)
+
+        waiter = session.client('cloudformation').get_waiter(
+            'stack_delete_complete')
+        waiter.wait(StackName=stack.stack_id)
+
+
+    def wait_until_update_complete(self, session, stack):
+        start_tail_stack_events_daemon(session, stack)
+
+        waiter = session.client('cloudformation').get_waiter(
+            'stack_update_complete')
+        waiter.wait(StackName=stack.stack_id)

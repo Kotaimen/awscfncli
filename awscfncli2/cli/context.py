@@ -39,6 +39,8 @@ class ClickContext(object):
     @property
     def deployments(self):
         """Stack configurations"""
+        # lazy loading the deployments so we don't get error if user is just
+        # looking at command help
         with self._lock:
             if self._deployments is None:
                 self._deployments = load_config(self._config_filename)
