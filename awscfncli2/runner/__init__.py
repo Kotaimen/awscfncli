@@ -8,3 +8,5 @@ from .commands.stack_status_command import StackStatusOptions, \
     StackStatusCommand
 from .commands.stack_delete_command import StackDeleteOptions, \
     StackDeleteCommand
+from .commands.stack_update_command import StackUpdateOptions, \
+    StackUpdateCommand

@@ -10,7 +10,7 @@ from ...runner import StackDeleteOptions, StackDeleteCommand
 
 
 @stack.command()
-@click.option('--quiet', is_flag=True, default=False,
+@click.option('--quiet', '-q', is_flag=True, default=False,
               help='Suppress warning if more than one stack is being deleted.')
 @click.option('--no-wait', is_flag=True, default=False,
               help='Exit immediately after operation is started.')

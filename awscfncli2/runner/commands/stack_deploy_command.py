@@ -1,7 +1,7 @@
 from collections import namedtuple
 import botocore.errorfactory
 from ...cli.utils import StackPrettyPrinter
-
+from .utils import is_stack_already_exists_exception
 
 class StackDeployOptions(namedtuple('StackDeployOptions',
                                     ['no_wait',
@@ -20,7 +20,8 @@ class StackDeployCommand(object):
 
     def run(self, session, parameters, metadata):
         self.ppt.pprint_stack_name(metadata['StackKey'],
-                                   parameters['StackName'], 'Deploying stack ')
+                                   parameters['StackName'],
+                                   'Deploying stack ')
 
         cfn = session.resource('cloudformation')
 
@@ -39,14 +40,15 @@ class StackDeployCommand(object):
         except Exception as ex:
             # skip existing stack error
             if self.options.ignore_existing and \
-                    ex.__class__.__name__ == 'AlreadyExistsException':
-                self.ppt.secho('Stack already exists.', fg='red')
+                    is_stack_already_exists_exception(ex):
+                self.ppt.secho(str(ex), fg='red')
                 return
-            raise
+            else:
+                raise
 
         self.ppt.pprint_stack(stack)
 
-        # wait until deployment complete
+        # wait until deployment is complete
         if self.options.no_wait:
             self.ppt.secho('Stack deployment started.')
         else:

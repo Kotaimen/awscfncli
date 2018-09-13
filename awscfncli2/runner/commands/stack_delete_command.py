@@ -1,13 +1,11 @@
 from collections import namedtuple
 
-import botocore.exceptions
-
 from ...cli.utils import StackPrettyPrinter
 from .utils import update_termination_protection, \
     is_stack_does_not_exist_exception
 
 
-class StackDeleteOptions(namedtuple('StackDeployOptions',
+class StackDeleteOptions(namedtuple('StackDeleteOptions',
                                     ['no_wait',
                                      'ignore_missing'])):
     pass
@@ -34,10 +32,14 @@ class StackDeleteCommand(object):
         # call boto3
         stack = cfn.Stack(parameters['StackName'])
         try:
-            update_termination_protection(session, parameters, self.ppt)
+            update_termination_protection(
+                session,
+                parameters.pop('EnableTerminationProtection', None),
+                parameters['StackName'],
+                self.ppt)
             self.ppt.pprint_stack(stack)
             stack.delete()
-        except botocore.exceptions.ClientError as ex:
+        except Exception as ex:
             if self.options.ignore_missing and \
                     is_stack_does_not_exist_exception(ex):
                 self.ppt.secho(str(ex), fg='red')

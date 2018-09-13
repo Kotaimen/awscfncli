@@ -1,17 +1,9 @@
 import threading
 from collections import OrderedDict
 from .boto3_profile import Boto3Profile
-from ..config import ConfigError, StackDeployment
+from ..config import ConfigError, StackDeployment, CANNED_STACK_POLICIES
 
 import six
-
-CANNED_STACK_POLICIES = {
-    'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
-    'ALLOW_MODIFY': '{"Statement":[{"Effect":"Allow","Action":["Update:Modify"],"Principal":"*","Resource":"*"}]}',
-    'DENY_DELETE': '{"Statement":[{"Effect":"Allow","NotAction":"Update:Delete","Principal":"*","Resource":"*"}]}',
-    'DENY_ALL': '{"Statement":[{"Effect":"Deny","Action":"Update:*","Principal":"*","Resource":"*"}]}',
-}
-
 
 def _normalize_value(v):
     if isinstance(v, bool):
