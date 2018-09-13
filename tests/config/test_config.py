@@ -22,9 +22,9 @@ class TestConfig(object):
         assert c is not None
 
         stack = c.get_stack('Dev', 'Vpc')
-        assert 'Vpc' == stack.parameters['StackName']
+        assert 'Vpc' == stack.parameters.StackName
         assert data_dir.join('data/test.template.yaml') == \
-               stack.parameters['Template']
+               stack.parameters.Template
 
     def test_config_with_stages(self, data_dir):
         configfile = data_dir.join('data/test.config.stages.yaml')
@@ -48,12 +48,12 @@ class TestConfig(object):
 
         stack = c.get_stack('Staging', 'Vpc1')
 
-        assert stack.profile['Region'] == 'us-east-1'
-        assert stack.profile['Profile'] == 'bob'
-        assert stack.parameters['StackName'] == 'StackNameOfVpc1'
-        assert stack.parameters['Template'] == data_dir.join('data/test.template.yaml')
-        assert stack.parameters['Tags']['key1'] == 'value1'
-        assert stack.parameters['Tags']['key2'] == 'value2'
+        assert stack.profile.Region == 'us-east-1'
+        assert stack.profile.Profile == 'bob'
+        assert stack.parameters.StackName == 'StackNameOfVpc1'
+        assert stack.parameters.Template == data_dir.join('data/test.template.yaml')
+        assert stack.parameters.Tags['key1'] == 'value1'
+        assert stack.parameters.Tags['key2'] == 'value2'
 
     def test_config_with_extend(self, data_dir):
         configfile = data_dir.join('data/test.config.extends.yaml')

@@ -87,37 +87,10 @@ class StackParameters(
         return StackParameters(**result)
 
 
-class StackDeployment(object):
-
-    def __init__(self, stack_key, stack_metadata, stack_profile, stack_params):
-        assert isinstance(stack_key, StackKey)
-        assert isinstance(stack_metadata, StackMetadata)
-        assert isinstance(stack_profile, StackProfile)
-        assert isinstance(stack_params, StackParameters)
-
-        self._stack_key = stack_key
-        self._metadata = stack_metadata
-        self._profile = stack_profile
-        self._parameters = stack_params
-
-    @property
-    def stack_key(self):
-        return self._metadata['StackKey']
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @property
-    def profile(self):
-        return self._profile
-
-    @property
-    def parameters(self):
-        return self._parameters
-
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, self.stack_key)
+class StackDeployment(
+    namedtuple('StackDeployment',
+               ['stack_key', 'metadata', 'profile', 'parameters'])):
+    pass
 
 
 class Deployment(object):
@@ -141,10 +114,10 @@ class Deployment(object):
         """
         result = list()
         for key in self._index:
-            if fnmatch.fnmatchcase(key.stage_key, stage_pattern) \
-                    and fnmatch.fnmatchcase(key.stack_key, stack_pattern):
+            if fnmatch.fnmatchcase(key.StageKey, stage_pattern) \
+                    and fnmatch.fnmatchcase(key.StackKey, stack_pattern):
                 result.append(self._index[key])
 
-        result.sort(key=lambda stack: stack.metadata['Order'])
+        result.sort(key=lambda stack: stack.metadata.Order)
 
         return result

@@ -118,6 +118,7 @@ class StackDeploymentContext(object):
         self.boto3_session = self.boto3_profile.get_boto3_sessoin()
 
         self.metadata = stack_deployment.metadata.copy()
+        self.metadata['StackName'] = stack_deployment.stack_key.qualified_name
         self.parameters = _make_boto3_parameters(
             stack_deployment.parameters, self.metadata['Package'])
 

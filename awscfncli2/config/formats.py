@@ -150,8 +150,7 @@ class FormatV2(ConfigParser):
         key = StackKey(stage_key, stack_key)
         stack_profile = StackProfile.from_dict(**stack_config)
         stack_parameters = StackParameters.from_dict(**stack_config)
-        stack_metadata = StackMetadata.from_dict(
-            StackKey=key.qualified_name, **stack_config)
+        stack_metadata = StackMetadata.from_dict(**stack_config)
 
         stack = StackDeployment(
             key, stack_metadata, stack_profile, stack_parameters)
