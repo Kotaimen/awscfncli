@@ -7,7 +7,7 @@ from .commands.status import status
 # from .commands.validate import validate
 
 # from .stack.sync import sync
-# from .stack.describe import describe
+from .stack.describe import describe
 from .stack.deploy import deploy
 from .stack.delete import delete
 from .stack.update import update
