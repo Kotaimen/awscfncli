@@ -144,8 +144,11 @@ class FormatV2(ConfigParser):
         if template and \
                 not (template.startswith('https') and template.startswith(
                     'http')):
-            stack_config['Template'] = os.path.realpath(
+            template_path = os.path.realpath(
                 os.path.join(self._basedir, template))
+            if not os.path.exists(template_path):
+                raise FormatError('File Not Found %s' % template_path)
+            stack_config['Template'] = template_path
 
         key = StackKey(stage_key, stack_key)
         stack_profile = StackProfile.from_dict(**stack_config)

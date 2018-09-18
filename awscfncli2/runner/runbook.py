@@ -1,6 +1,8 @@
+import os
 import threading
 from collections import OrderedDict
 from .boto3_profile import Boto3Profile
+from ..cli.utils import package_template
 from ..config import ConfigError, StackDeployment, CANNED_STACK_POLICIES
 
 import six
@@ -98,6 +100,11 @@ def _make_boto3_parameters(parameters, is_packaging):
         v is not None)
 
 
+def is_local_path(path):
+    if os.path.exists(path):
+        return True
+
+
 class StackDeploymentContext(object):
     """Deployment context in boto3 ready format"""
 
@@ -134,6 +141,23 @@ class StackDeploymentContext(object):
     def parameters(self):
         return self._parameters
 
+    def run_packaging(self, verbosity=0):
+        """Package templates and resources and upload to artifact bucket"""
+        package = self.metadata["Package"]
+        artifact_store = self.metadata["ArtifactStore"]
+
+        if package and 'TemplateURL' in self.parameters:
+            template_path = self.parameters.get('TemplateURL')
+            if is_local_path(template_path):
+                packaged_template = package_template(
+                    self.boto3_session,
+                    template_path,
+                    bucket_region=self.boto3_session.region_name,
+                    bucket_name=artifact_store,
+                    prefix=self.parameters['StackName'])
+                self.parameters['TemplateBody'] = packaged_template
+                self.parameters.pop('TemplateURL')
+
 
 class RunBook(object):
     """Run command on specified deployments"""
@@ -147,6 +171,7 @@ class RunBook(object):
         for deployment in stack_deployments:
             assert isinstance(deployment, StackDeployment)
             context = StackDeploymentContext(cli_boto3_profile, deployment)
+            context.run_packaging()
             self._contexts.append(context)
 
     def run(self, command, rev=False):
