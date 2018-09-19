@@ -20,7 +20,7 @@ Blueprints:
 
     # Template file location, specify a local file using relative path,
     # or s3 location (recognized automatically).
-    Template: ./nested.yml
+    Template: ./template.yml
 
     # Canned stack policy, possible values are:
     #   - DENY_ALL : deny all modify/delete
