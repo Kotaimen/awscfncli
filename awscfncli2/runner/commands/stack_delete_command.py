@@ -19,15 +19,23 @@ class StackDeleteCommand(object):
         self.ppt = pretty_printer
         self.options = options
 
-    def run(self, session, parameters, metadata):
+    def run(self, stack_context):
+        # stack contexts
+        session = stack_context.boto3_session
+        parameters = stack_context.parameters
+        metadata = stack_context.metadata
+
         self.ppt.pprint_stack_name(metadata['StackKey'],
                                    parameters['StackName'],
                                    'Deleting stack ')
 
+        # create boto3 cfn resource
         cfn = session.resource('cloudformation')
-
         self.ppt.pprint_session(session)
         self.ppt.pprint_parameters(parameters)
+
+        # packaging if necessary
+        stack_context.run_packaging(self.ppt)
 
         # call boto3
         stack = cfn.Stack(parameters['StackName'])

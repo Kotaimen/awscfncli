@@ -1,8 +1,10 @@
 import os
 import threading
+import copy
 from collections import OrderedDict
+
 from .boto3_profile import Boto3Profile
-from ..cli.utils import package_template
+from .package import package_template
 from ..config import ConfigError, StackDeployment, CANNED_STACK_POLICIES
 
 import six
@@ -106,7 +108,7 @@ def is_local_path(path):
 
 
 class StackDeploymentContext(object):
-    """Deployment context in boto3 ready format"""
+    """Stack context in boto3 ready format"""
 
     def __init__(self, cli_boto3_profile, stack_deployment):
         self._boto3_profile = Boto3Profile(
@@ -141,7 +143,7 @@ class StackDeploymentContext(object):
     def parameters(self):
         return self._parameters
 
-    def run_packaging(self, verbosity=0):
+    def run_packaging(self, pretty_printer):
         """Package templates and resources and upload to artifact bucket"""
         package = self.metadata["Package"]
         artifact_store = self.metadata["ArtifactStore"]
@@ -150,6 +152,7 @@ class StackDeploymentContext(object):
             template_path = self.parameters.get('TemplateURL')
             if is_local_path(template_path):
                 packaged_template = package_template(
+                    pretty_printer,
                     self.boto3_session,
                     template_path,
                     bucket_region=self.boto3_session.region_name,
@@ -160,7 +163,7 @@ class StackDeploymentContext(object):
 
 
 class RunBook(object):
-    """Run command on specified deployments"""
+    """Run command on given deployments"""
 
     def __init__(self, cli_boto3_profile, stack_deployments):
         assert isinstance(cli_boto3_profile, Boto3Profile)
@@ -171,24 +174,19 @@ class RunBook(object):
         for deployment in stack_deployments:
             assert isinstance(deployment, StackDeployment)
             context = StackDeploymentContext(cli_boto3_profile, deployment)
-            context.run_packaging()
             self._contexts.append(context)
 
     def run(self, command, rev=False):
         """Runs specified command"""
         if rev:
-            runs = reversed(self.runs)
+            stack_contexts = reversed(self.contexts)
         else:
-            runs = self.runs
+            stack_contexts = self.contexts
 
-        for context in runs:
-            command.run(
-                session=context.boto3_session,
-                parameters=context.parameters,
-                metadata=context.metadata
-            )
+        for stack_context in stack_contexts:
+            command.run(stack_context)
 
     @property
-    def runs(self):
+    def contexts(self):
         """List of stack contexts to run"""
         return self._contexts

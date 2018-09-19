@@ -22,15 +22,25 @@ class StackUpdateCommand(object):
         self.ppt = pretty_printer
         self.options = options
 
-    def run(self, session, parameters, metadata):
+    def run(self, stack_context):
+        # stack contexts
+        session = stack_context.boto3_session
+        parameters = stack_context.parameters
+        metadata = stack_context.metadata
+
+        # print stack qualified name
         self.ppt.pprint_stack_name(
             metadata['StackKey'],
             parameters['StackName'],
             'Updating stack '
         )
 
+        # create boto3 cfn resource
         cfn = session.resource('cloudformation')
         self.ppt.pprint_session(session)
+
+        # packaging if necessary
+        stack_context.run_packaging(self.ppt)
 
         # manipulate stack parameters for update call
         if self.options.use_previous_template:

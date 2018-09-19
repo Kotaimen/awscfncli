@@ -1,6 +1,5 @@
 #  -*- encoding: utf-8 -*-
 
-import six
 import click
 
 from . import stack
@@ -22,8 +21,8 @@ def delete(ctx, quiet, no_wait, ignore_missing):
     """Delete stacks"""
     assert isinstance(ctx.obj, ClickContext)
 
-    # prompt user if more than
-    if len(ctx.obj.runner.runs) > 1:
+    # prompt user if more than one stack is being deleted
+    if len(ctx.obj.runner.contexts) > 1:
         if not quiet:
             click.confirm('Do you want to delete more than one stacks?  '
                           'Be more specific using --stack option.', abort=True)

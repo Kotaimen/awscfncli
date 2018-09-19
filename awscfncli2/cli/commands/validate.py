@@ -4,33 +4,38 @@ import click
 import boto3
 
 from ..main import cfn_cli
-from ..utils import boto3_exception_handler, ContextObject, run_packaging
-from ..utils import echo_pair, echo_pair_if_exists
+from ...cli import ClickContext
+from ..utils import command_exception_handler
+from ..utils import echo_pair_if_exists
 
 
 @cfn_cli.command()
 @click.pass_context
-@boto3_exception_handler
+@command_exception_handler
 def validate(ctx):
     """Validate templates"""
-    assert isinstance(ctx.obj, ContextObject)
+    assert isinstance(ctx.obj, ClickContext)
 
-    for qualified_name, stack_config in ctx.obj.stacks.items():
 
-        echo_pair(qualified_name, key_style=dict(bold=True), sep='')
-        session = ctx.obj.get_boto3_session(stack_config)
+    for stack_context in ctx.obj.runner.contexts:
+        ctx.obj.ppt.pprint_stack_name(
+            stack_context.metadata['StackKey'],
+            stack_context.parameters['StackName'],
+            'Validating '
+        )
 
+        session = stack_context.boto3_session
         client = session.client('cloudformation')
 
-        run_packaging(stack_config, session, ctx.obj.verbosity)
+        stack_context.run_packaging(ctx.obj.ppt)
 
         try:
-            template_body = stack_config['TemplateBody']
+            template_body = stack_context.parameters['TemplateBody']
             result = client.validate_template(
                 TemplateBody=template_body,
             )
         except KeyError:
-            template_url = stack_config['TemplateURL']
+            template_url = stack_context.parameters['TemplateURL']
             result = client.validate_template(
                 TemplateURL=template_url,
             )

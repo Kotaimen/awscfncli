@@ -22,7 +22,12 @@ class StackStatusCommand(object):
         self.ppt = pretty_printer
         self.options = options
 
-    def run(self, session, parameters, metadata):
+    def run(self, stack_context):
+        # stack contexts
+        session = stack_context.boto3_session
+        parameters = stack_context.parameters
+        metadata = stack_context.metadata
+
         self.ppt.pprint_stack_name(metadata['StackKey'],
                                    parameters['StackName'])
         # shortcut since dry run is already handled in cli package

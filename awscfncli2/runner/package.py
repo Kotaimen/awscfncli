@@ -2,7 +2,7 @@
 
 import os
 import yaml
-import click
+# import click
 import logging
 
 from botocore.exceptions import ClientError
@@ -16,10 +16,10 @@ except ImportError:
     # Fix import error for awscli version later than 1.11.161
     from awscli.customizations.s3uploader import S3Uploader
 
-from ...config import ConfigError
+from awscfncli2.config import ConfigError
 
 
-def package_template(session, template_path, bucket_region,
+def package_template(ppt, session, template_path, bucket_region,
                      bucket_name=None, prefix=None, kms_key_id=None):
     # validate template path
     if not os.path.isfile(template_path):
@@ -31,9 +31,9 @@ def package_template(session, template_path, bucket_region,
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         bucket_name = 'awscfncli-%s-%s' % (account_id, bucket_region)
-        click.echo('Using default artifact storage name "%s"' % bucket_name)
+        ppt.secho('Using default artifact bucket {}'.format(bucket_name))
     else:
-        click.echo('Using artifact storage name "%s"' % bucket_name)
+        ppt.secho('Using artifact bucket {}'.format(bucket_name))
 
     s3_client = session.client('s3')
 
@@ -53,8 +53,7 @@ def package_template(session, template_path, bucket_region,
                 s3_client.create_bucket(
                     Bucket=bucket_name
                 )
-            click.echo(
-                'Created artifact storage "%s"' % bucket_name)
+            ppt.secho('Created artifact bucket {}'.format(bucket_name))
         else:
             raise e
 
@@ -72,8 +71,8 @@ def package_template(session, template_path, bucket_region,
     exported_template = template.export()
     exported_str = yaml.safe_dump(exported_template)
 
-    click.echo("Successfully packaged artifacts and "
-               "uploaded file {template_path} to {bucket_name}".format(
+    ppt.secho('...successfully packaged artifacts and '
+              'uploaded file {template_path} to s3://{bucket_name}'.format(
         template_path=template_path, bucket_name=bucket_name))
 
     return exported_str

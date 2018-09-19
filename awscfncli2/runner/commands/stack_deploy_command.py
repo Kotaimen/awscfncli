@@ -1,5 +1,5 @@
 from collections import namedtuple
-import botocore.errorfactory
+
 from ...cli.utils import StackPrettyPrinter
 from .utils import is_stack_already_exists_exception
 
@@ -18,14 +18,23 @@ class StackDeployCommand(object):
         self.ppt = pretty_printer
         self.options = options
 
-    def run(self, session, parameters, metadata):
+    def run(self, stack_context):
+        # stack contexts
+        session = stack_context.boto3_session
+        parameters = stack_context.parameters
+        metadata = stack_context.metadata
+
+        # print qualified name
         self.ppt.pprint_stack_name(metadata['StackKey'],
                                    parameters['StackName'],
                                    'Deploying stack ')
 
+        # create boto3 cfn resource
         cfn = session.resource('cloudformation')
-
         self.ppt.pprint_session(session)
+
+        # packaging if necessary
+        stack_context.run_packaging(self.ppt)
 
         # force on_failure option specified in cli
         if self.options.on_failure is not None:
