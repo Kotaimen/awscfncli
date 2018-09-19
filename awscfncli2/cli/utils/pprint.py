@@ -1,10 +1,12 @@
 import click
 import yaml
 
+import botocore.exceptions
+
 from .colormaps import CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR, \
     STACK_STATUS_TO_COLOR
 from .events import start_tail_stack_events_daemon
-
+from .pager import custom_paginator
 
 def echo_pair(key, value=None, indent=0,
               value_style=None, key_style=None,
@@ -149,6 +151,24 @@ class StackPrettyPrinter(object):
             echo_pair('Physical ID', r.physical_resource_id, indent=4)
             echo_pair('Last Updated', r.last_updated_timestamp, indent=4)
 
+    def pprint_stack_exports(self, stack, session):
+        client = session.client('cloudformation')
+        echo_pair('Exports')
+        for export in custom_paginator(client.list_exports, 'Exports'):
+
+            if export['ExportingStackId'] == stack.stack_id:
+                echo_pair(export['Name'], export['Value'], indent=2)
+                try:
+                    for import_ in custom_paginator(client.list_imports,
+                                                    'Imports',
+                                                    ExportName=export[
+                                                        'Name']):
+                        echo_pair('Imported By', import_,
+                                  value_style=dict(fg='red'), indent=4)
+                except botocore.exceptions.ClientError as e:
+                    echo_pair('Export not used by any stack.',
+                              key_style=dict(fg='green'), indent=4,
+                              sep='')
     def wait_until_deploy_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack, latest_events=0)
 
