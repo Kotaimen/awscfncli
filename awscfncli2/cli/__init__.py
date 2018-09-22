@@ -11,4 +11,4 @@ from .stack.describe import describe
 from .stack.deploy import deploy
 from .stack.delete import delete
 from .stack.update import update
-# from .stack.tail import tail
+from .stack.tail import tail
