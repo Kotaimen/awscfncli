@@ -10,3 +10,4 @@ from .commands.stack_delete_command import StackDeleteOptions, \
     StackDeleteCommand
 from .commands.stack_update_command import StackUpdateOptions, \
     StackUpdateCommand
+from .commands.stack_sync_command import StackSyncOptions, StackSyncCommand

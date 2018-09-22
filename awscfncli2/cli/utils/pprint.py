@@ -8,6 +8,7 @@ from .colormaps import CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR, \
 from .events import start_tail_stack_events_daemon
 from .pager import custom_paginator
 
+
 def echo_pair(key, value=None, indent=0,
               value_style=None, key_style=None,
               sep=': '):
@@ -55,6 +56,9 @@ class StackPrettyPrinter(object):
     def secho(self, text, nl=True, err=False, color=None, **styles):
         click.secho(text, nl=nl, err=err, color=color, **styles)
 
+    def confirm(self, *args, **argv):
+        click.confirm(*args, **argv)
+
     def pprint_stack_name(self, qualified_name, stack_name, prefix=None):
         """Print stack qualified name"""
         if prefix:
@@ -99,7 +103,7 @@ class StackPrettyPrinter(object):
         # echo_pair('StackName', stack.stack_name)
         if status:
             echo_pair('Status', stack.stack_status,
-                    value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
+                      value_style=STACK_STATUS_TO_COLOR[stack.stack_status])
 
         if stack.stack_status == 'STACK_NOT_FOUND':
             return
@@ -169,6 +173,32 @@ class StackPrettyPrinter(object):
                     echo_pair('Export not used by any stack.',
                               key_style=dict(fg='green'), indent=4,
                               sep='')
+
+    def pprint_changeset(self, result):
+        echo_pair('ChangeSet Status', result['Status'],
+                  value_style=CHANGESET_STATUS_TO_COLOR[result['Status']])
+        echo_pair_if_exists(result, 'Status Reason', 'StatusReason')
+
+        echo_pair('Resource Changes')
+        for change in result['Changes']:
+            echo_pair(change['ResourceChange']['LogicalResourceId'],
+                      '(%s)' % change['ResourceChange']['ResourceType'],
+                      indent=2, sep=' ')
+
+            echo_pair('Action', change['ResourceChange']['Action'],
+                      value_style=ACTION_TO_COLOR[
+                          change['ResourceChange']['Action']],
+                      indent=4)
+            echo_pair_if_exists(change['ResourceChange'],
+                                'Physical Resource',
+                                'PhysicalResourceId', indent=4)
+            echo_pair_if_exists(change['ResourceChange'],
+                                'Replacement',
+                                'Replacement', indent=4)
+            echo_pair_if_exists(change['ResourceChange'],
+                                'Scope',
+                                'Scope', indent=4)
+
     def wait_until_deploy_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack, latest_events=0)
 
@@ -183,10 +213,18 @@ class StackPrettyPrinter(object):
             'stack_delete_complete')
         waiter.wait(StackName=stack.stack_id)
 
-
     def wait_until_update_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack)
 
         waiter = session.client('cloudformation').get_waiter(
             'stack_update_complete')
         waiter.wait(StackName=stack.stack_id)
+
+    def wait_until_changset_complete(self, client, changeset_id):
+        waiter = client.get_waiter('change_set_create_complete')
+        try:
+            waiter.wait(ChangeSetName=changeset_id)
+        except botocore.exceptions.WaiterError as e:
+            click.secho('ChangeSet create failed.', fg='red')
+        else:
+            click.secho('ChangeSet create complete.', fg='green')
