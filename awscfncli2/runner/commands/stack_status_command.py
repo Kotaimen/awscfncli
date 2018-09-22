@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import botocore.exceptions
 
-from ...cli.utils import StackPrettyPrinter
+from .command import Command
 from .utils import is_stack_does_not_exist_exception
 
 class StackStatusOptions(namedtuple('StackStatusOptions',
@@ -14,13 +14,7 @@ class StackStatusOptions(namedtuple('StackStatusOptions',
 dummy_stack = namedtuple('dummy_stack', ['stack_name', 'stack_status'])
 
 
-class StackStatusCommand(object):
-
-    def __init__(self, pretty_printer, options):
-        assert isinstance(pretty_printer, StackPrettyPrinter)
-        assert isinstance(options, StackStatusOptions)
-        self.ppt = pretty_printer
-        self.options = options
+class StackStatusCommand(Command):
 
     def run(self, stack_context):
         # stack contexts

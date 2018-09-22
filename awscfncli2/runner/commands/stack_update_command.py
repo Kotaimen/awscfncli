@@ -1,7 +1,7 @@
 from collections import namedtuple
-import botocore.errorfactory
-from ...cli.utils import StackPrettyPrinter
+
 from ...config import CANNED_STACK_POLICIES
+from .command import Command
 from .utils import update_termination_protection, \
     is_no_updates_being_performed_exception
 
@@ -14,13 +14,7 @@ class StackUpdateOptions(namedtuple('StackUpdateOptions',
     pass
 
 
-class StackUpdateCommand(object):
-
-    def __init__(self, pretty_printer, options):
-        assert isinstance(pretty_printer, StackPrettyPrinter)
-        assert isinstance(options, StackUpdateOptions)
-        self.ppt = pretty_printer
-        self.options = options
+class StackUpdateCommand(Command):
 
     def run(self, stack_context):
         # stack contexts
@@ -39,14 +33,14 @@ class StackUpdateCommand(object):
         cfn = session.resource('cloudformation')
         self.ppt.pprint_session(session)
 
-        # packaging if necessary
-        stack_context.run_packaging(self.ppt)
-
         # manipulate stack parameters for update call
         if self.options.use_previous_template:
             parameters.pop('TemplateBody', None)
             parameters.pop('TemplateURL', None)
             parameters['UsePreviousTemplate'] = True
+        else:
+            # packaging if necessary
+            stack_context.run_packaging(self.ppt)
 
         parameters.pop('DisableRollback', None)
         parameters.pop('OnFailure', None)

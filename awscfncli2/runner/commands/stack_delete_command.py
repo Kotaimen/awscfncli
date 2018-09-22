@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from ...cli.utils import StackPrettyPrinter
+from .command import Command
 from .utils import update_termination_protection, \
     is_stack_does_not_exist_exception
 
@@ -11,13 +11,7 @@ class StackDeleteOptions(namedtuple('StackDeleteOptions',
     pass
 
 
-class StackDeleteCommand(object):
-
-    def __init__(self, pretty_printer, options):
-        assert isinstance(pretty_printer, StackPrettyPrinter)
-        assert isinstance(options, StackDeleteOptions)
-        self.ppt = pretty_printer
-        self.options = options
+class StackDeleteCommand(Command):
 
     def run(self, stack_context):
         # stack contexts

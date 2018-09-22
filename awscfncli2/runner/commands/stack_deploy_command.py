@@ -1,7 +1,8 @@
 from collections import namedtuple
 
-from ...cli.utils import StackPrettyPrinter
+from .command import Command
 from .utils import is_stack_already_exists_exception
+
 
 class StackDeployOptions(namedtuple('StackDeployOptions',
                                     ['no_wait',
@@ -10,13 +11,7 @@ class StackDeployOptions(namedtuple('StackDeployOptions',
     pass
 
 
-class StackDeployCommand(object):
-
-    def __init__(self, pretty_printer, options):
-        assert isinstance(pretty_printer, StackPrettyPrinter)
-        assert isinstance(options, StackDeployOptions)
-        self.ppt = pretty_printer
-        self.options = options
+class StackDeployCommand(Command):
 
     def run(self, stack_context):
         # stack contexts
