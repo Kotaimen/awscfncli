@@ -24,7 +24,7 @@ class StackUpdateCommand(Command):
 
         # print stack qualified name
         self.ppt.pprint_stack_name(
-            metadata['StackKey'],
+            stack_context.stack_key,
             parameters['StackName'],
             'Updating stack '
         )

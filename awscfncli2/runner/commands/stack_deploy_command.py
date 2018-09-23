@@ -20,7 +20,7 @@ class StackDeployCommand(Command):
         metadata = stack_context.metadata
 
         # print qualified name
-        self.ppt.pprint_stack_name(metadata['StackKey'],
+        self.ppt.pprint_stack_name(stack_context.stack_key,
                                    parameters['StackName'],
                                    'Deploying stack ')
 

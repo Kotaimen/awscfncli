@@ -119,10 +119,14 @@ class StackDeploymentContext(object):
         self._boto3_session = None
         self._session_lock = threading.Lock()
 
+        self._stack_key = stack_deployment.stack_key.qualified_name
         self._metadata = stack_deployment.metadata._asdict()
-        self._metadata['StackKey'] = stack_deployment.stack_key.qualified_name
         self._parameters = _make_boto3_parameters(
             stack_deployment.parameters, self.metadata['Package'])
+
+    @property
+    def stack_key(self):
+        return self._stack_key
 
     @property
     def boto3_profile(self):
