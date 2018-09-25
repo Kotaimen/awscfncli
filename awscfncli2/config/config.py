@@ -13,7 +13,7 @@ class ConfigError(Exception):
 
 class ConfigParser(object):
 
-    def get_parser(self, config, **context):
+    def get_format(self, config, **context):
         # inspect version
         version = config.get('Version')
         if version == FormatV2.VERSION:
@@ -28,10 +28,10 @@ class ConfigParser(object):
             if config is None:
                 config = dict()
 
-        parser = self.get_parser(config, basedir=basedir)
-        parser.validate(config)
+        fmt = self.get_format(config, basedir=basedir)
+        fmt.validate(config)
 
-        deployment = parser.parse(config)
+        deployment = fmt.parse(config)
         return deployment
 
 
