@@ -25,7 +25,7 @@ def status(ctx, dry_run, stack_resources, stack_exports):
     # shortcut if we only print stack key (and names)
     if dry_run:
         for context in ctx.obj.runner.contexts:
-            ctx.obj.ppt.secho(context.metadata['StackKey'], bold=True)
+            ctx.obj.ppt.secho(context.stack_key, bold=True)
         return
 
     options = StackStatusOptions(

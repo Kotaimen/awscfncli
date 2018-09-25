@@ -1,12 +1,11 @@
 #  -*- encoding: utf-8 -*-
 
 import click
-import boto3
 
 from ..main import cfn_cli
-from ...cli import ClickContext
 from ..utils import command_exception_handler
 from ..utils import echo_pair_if_exists
+from ...cli import ClickContext
 
 
 @cfn_cli.command()
@@ -16,10 +15,9 @@ def validate(ctx):
     """Validate templates"""
     assert isinstance(ctx.obj, ClickContext)
 
-
     for stack_context in ctx.obj.runner.contexts:
         ctx.obj.ppt.pprint_stack_name(
-            stack_context.metadata['StackKey'],
+            stack_context.stack_key,
             stack_context.parameters['StackName'],
             'Validating '
         )
