@@ -5,6 +5,7 @@ from .context import ClickContext
 
 from .commands.status import status
 from .commands.validate import validate
+from .commands.generate import generate
 
 from .stack.sync import sync
 from .stack.describe import describe

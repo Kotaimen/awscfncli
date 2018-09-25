@@ -12,18 +12,19 @@ Features:
 - Single YAML configuration file for:
     - Deployment configuration.
     - Stack parameters.
-- Manage stacks in different regions and accounts.
+- Operate on stacks in different regions & accounts.
     - Group collection of stacks as stages.
     - Operate on a set of stacks using globs (eg: `dev.db*`).
     - Stack blueprint and YAML tags to ease configuration file writing.
 - Automatic packaging template resources:
-    - Lambda function packages
-    - Nested stacks
-    - SQL statements
-- Automatic applies template transform (SAM support).
-- Automatic ChangeSet synchronization.
+    - Lambda function.
+      - Also supports external packaging command.
+    - Nested stacks.
+    - SQL statements.
+- Push button SAM support using `stack sync` command.
 - Display and tracking stack events in the console.
 - Describe stack status and export values.
+- Cross-stack parameter reference.
  
 ## Install
 
@@ -50,8 +51,6 @@ Options:
     all stacks in all stages.
 - `--profile`: Override AWS profile specified in the config.
 - `--region`: Override AWS region specified in the config.
-- `-1, --one`: Select only the first matching stack if glob 
-    is used in `--stack` option.
 - `--verbose`: Be more verbose.
 
 Options can also be specified using environment variables:
@@ -76,25 +75,26 @@ If `.` is missing from stack selector, `cfn-cli` will assume
 stage name `*` is specfied, thus `*` is equivalent to 
 `*.*`, which means all stacks in all stages.
 
-> Be careful when executing `stack delete` command, as default 
-> behaviour is delete all stacks.
-
 ### Available Commands
+
+Use `--help` to see help on a particular command.
 
 - `validate` - Validate template.
 - `status` - List status of selected stacks.
+- `generate` - Generate a config.
 - `stack`
     - `sync` - Create ChangeSet and execute it (required by SAM).
     - `deploy` - Deploy new stacks.
     - `update` - Update stacks.
-    - `describe` - Describe stacks details.
+    - `describe` - Describe stacks details (same as `status`)
     - `tail` - Print stack events.
     - `delete` - Delete stacks.
+    - `cancel` - Cancel stack update.
 
 ## Automatic Packaging
 
 If a template contains property which requires a S3 url or text block,
-Set `Package` parameter to `True` so the resource is be automatically 
+Set `Package` parameter to `True` so the resource will be automatically 
 upload to a S3 bucket, and S3 object location is inserted into the 
 resource location.
 
@@ -122,20 +122,12 @@ The following resource property are supported by `awscfncli`:
 
 ## Config File
 
-`awscfncli` config is a YAML formatted text file with `.yaml` and `.yml`
-extension. `awscfncli` uses these files as instructions to manage and deploy 
-AWS CloudFormation templates. In a `awscfncli` config, you can describe how you
-are going to deploy your stack with parameters such as account profile, region,
-stack name, capabilities, teminal protections and etc. With `awscfncli` you can
-record the exact parameters used to deploy a stack and keep them under version
-control. You can also group your stacks into different stages in a more
-enterprise way such as DEV, QA and PROD. Every stack will be contained in one
-stage. You can specify your own stage name.
 
-For example, if you deploy a template with the following config file. `awscfncli`
-will deploy a stack named Test in region us-east-1 with your default
-aws credential. The stack will be in a stage called *`Default`* and identified
-by *`Stack1`*.
+Config file contains instructions to deploy *stacks* and group them by 
+*stages*.
+
+For example, the following config file deploys a stack named *Test* in `us-east-1` region. The stack will be in a stage called *Default* and identified
+by *Stack1*.
 
 
 ```yaml
@@ -149,10 +141,9 @@ Stages:
       Capabilities:      [CAPABILITY_IAM]
 ```
 
-You can also specify multiple stacks in different stage and configure these stacks
-with separate parameters. For example, in the following config file,
+You can also specify multiple stacks in different stages and configure these stacks with separate parameters. For example, in the following config file,
 two stacks are deployed with different parameters in different stages.
-The stacks in *"Dev"* stage are deployed using dev profile with
+The stacks in *Dev* stage are deployed using dev profile with
 small read/write capacities and the stacks in *"Prod"* are deployed using
 prod profile with large read/write capacities.
 
@@ -200,10 +191,8 @@ Stages:
         HashKeyElementName:     id
 ```
 
-In many cases, you may want to deploy stacks with a few parameters changes only. So to
-reuse stack configs and save your time of typing, you can use *config inheritance*.
-You can predefine a named template of stack config in the *Blueprints* section
-and extends it in your stages. Take the above config file as an example, by using Blueprints it
+Usually stacks in different stages are almost the same except a few parameters. You can use *config inheritance* to save some typing, 
+Define a named template in the *Blueprints* section then extends it in your stages. Take the above config file as an example, by using Blueprints it
 could be rewritten in the following way:
 
 ```yaml
@@ -280,31 +269,39 @@ Stages:
 The above config will deploy these stacks in the stage order first and
 then in stack order:
 
-1. Foundation.VPC
-2. Develop.Database
-3. Develop.Service
-4. Production.Database
-5. Production.Service
+1. `Foundation.VPC`
+2. `Develop.Database`
+3. `Develop.Service`
+4. `Production.Database`
+5. `Production.Service`
 
 ### Config Anatomy
 
 #### Version
-The version of the config file. Only support version 1 and 2. This
-field is optional. The default version is 2.
+The version of the config file. Only support version `1` and `2`. This
+field is optional. The default version is `2`.
 
 #### Blueprints
-In this section, you can define named templates of stack config that could
-be extended later. You could includes basic parameters
-that could be reused in the stack configuration in stages.
+Defines named templates of stack config that could be extended later. 
 
-#### Stages
-Stages are the most important part of cfn-cli configuration. It defines
-how and in which environment your templates will be deployed.
+#### Stages, stacks and qualifed names
+Logically group stack deployments and controlling order.
 
-You can define multiple stages in the `Stages` section. A stage is a
-dict of named stacks. You can reference these stacks with dict key in
-the cli command. If you does not specify `StackName` in your stack config.
-`awscfncli` will use its dict key as it's stack name.
+A stack in the configuration file is uniquelly defined by its _qualified name_, which is `StageName.StackName`. You can reference stacks with stack selector he cli command. 
+Note you can overwrite `StackName` in the stack configuration so you can have same StackNames in a stage:
+
+```yaml
+Stages:
+	us:
+		use1:
+			Tempalte: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+			Region: us-east-1
+			StackName: DDB
+		usw1:
+			Tempalte: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+			Region: us-west-1
+			StackName: DDB
+```
 
 ### Config Inheritance
 
@@ -312,6 +309,7 @@ You can extends or overrides the paramters defined in your blueprints.
 Here are the general rules that apply when you extends your config.
 
 Suppose we have base template:
+
 ```yaml
 Version: 2
 Blueprints:
@@ -325,18 +323,19 @@ Blueprints:
       Environment: Dev
     ResourceTypes:
       - AWS::IAM
-
 ```
 
 1. Paramters with scale value will be directly replaced. For example, in
 the following config, the `Region` will be replace with 'us-west-1'
-```yaml
-Stages:
-  Default:
-    Stack1:
-      Extends: Base
-      Region:  us-west-1
-```
+
+	```yaml
+	Stages:
+	  Default:
+	    Stack1:
+	      Extends: Base
+	      Region:  us-west-1
+   ```
+
 2. Paramters with dict value will be updated. Items with same key will be
 replaced and new item will be added to the dict. For example, in the
 following config, the 'Envrionment' will be replaced with 'Prod' and

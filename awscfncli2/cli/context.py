@@ -27,6 +27,11 @@ class ClickContext(object):
         self._lock = threading.Lock()
 
     @property
+    def config_filename(self):
+        """Config file name"""
+        return self._config_filename
+
+    @property
     def stack_selector(self):
         """Stack selector"""
         return self._stack_selector
