@@ -17,7 +17,6 @@ class StackDefaults(object):
     )
 
     STACK_METADATA = dict(
-        StackKey=None,
         Order=None,
         Package=None,
         ArtifactStore=None
