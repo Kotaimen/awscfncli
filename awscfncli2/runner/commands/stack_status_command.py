@@ -22,7 +22,7 @@ class StackStatusCommand(Command):
         parameters = stack_context.parameters
         metadata = stack_context.metadata
 
-        self.ppt.pprint_stack_name(metadata['StackKey'],
+        self.ppt.pprint_stack_name(stack_context.stack_key,
                                    parameters['StackName'])
         # shortcut since dry run is already handled in cli package
         if self.options.dry_run:
