@@ -11,8 +11,8 @@ from ...config import CANNED_STACK_POLICIES
 
 
 @stack.command()
-@click.option('--no-wait', is_flag=True, default=False,
-              help='Exit immediately after operation is started.')
+@click.option('--no-wait', '-w', is_flag=True, default=False,
+              help='Exit immediately after update is started.')
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')

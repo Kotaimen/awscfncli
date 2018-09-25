@@ -8,8 +8,8 @@ from ...cli import ClickContext
 from ...runner import StackDeployOptions, StackDeployCommand
 
 @stack.command()
-@click.option('--no-wait', is_flag=True, default=False,
-              help='Exit immediately after operation is started.')
+@click.option('--no-wait', '-w', is_flag=True, default=False,
+              help='Exit immediately after deploy is started.')
 @click.option('--on-failure',
               type=click.Choice(['DO_NOTHING', 'ROLLBACK', 'DELETE']),
               default=None,

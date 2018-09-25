@@ -8,8 +8,8 @@ from ...runner import StackSyncOptions, StackSyncCommand
 
 
 @stack.command()
-@click.option('--no-wait', is_flag=True, default=False,
-              help='Exit immediately after operation is started.')
+@click.option('--no-wait', '-w', is_flag=True, default=False,
+              help='Exit immediately after ChangeSet is created.')
 @click.option('--confirm', is_flag=True, default=False,
               help='Review changes before execute the ChangeSet')
 @click.option('--use-previous-template', is_flag=True, default=False,
