@@ -37,7 +37,7 @@ Stages:
       StackName: DynamoDbTable1
       Region: us-west-2
       Tags:
-        Environment: staging
+        Environment: Production
       Parameters:
         ReadCapacityUnits: 10
 
@@ -47,7 +47,7 @@ Stages:
       StackName: DynamoDbTable1
       Region: us-east-1
       Tags:
-        Environment: staging
+        Environment: Production
       Parameters:
         ReadCapacityUnits: 10
 
@@ -61,7 +61,7 @@ Stages:
       Region: us-west-1
       EnableTerminationProtection: False
       Tags:
-        Environment: staging
+        Environment: Staging
       Parameters:
         ReadCapacityUnits: 10
 
