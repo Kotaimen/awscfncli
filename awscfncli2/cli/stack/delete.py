@@ -37,5 +37,5 @@ def delete(ctx, quiet, no_wait, ignore_missing):
         options=options
     )
 
-    ctx.obj.runner.run(command)
+    ctx.obj.runner.run(command, rev=True)
 
