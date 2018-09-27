@@ -1,7 +1,5 @@
-import click
-import yaml
-
 import botocore.exceptions
+import click
 
 from .colormaps import CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR, \
     STACK_STATUS_TO_COLOR
@@ -81,22 +79,29 @@ class StackPrettyPrinter(object):
         """Print stack metadata"""
         if self.verbosity > 0:
             click.secho('--- Stack Metadata ---', fg='white', dim=True)
-            click.secho(
-                yaml.safe_dump(metadata,
-                               default_flow_style=False),
-                fg='white', dim=True
-            )
+            for k, v in metadata.items():
+                echo_pair(k, repr(v),
+                          key_style={'fg': 'white', 'dim': True},
+                          value_style={'fg': 'white', 'dim': True}
+                          )
 
     def pprint_parameters(self, parameters):
         """Print stack parameters"""
         if self.verbosity > 0:
             click.secho('--- Stack Creation Parameters ---', fg='white',
                         dim=True)
-            click.secho(
-                yaml.safe_dump(parameters,
-                               default_flow_style=False),
-                fg='white', dim=True
-            )
+            for k, v in parameters.items():
+                if k not in ('TemplateBody', 'StackPolicyBody'):
+                    echo_pair(k, repr(v),
+                              key_style={'fg': 'white', 'dim': True},
+                              value_style={'fg': 'white', 'dim': True}
+                              )
+                else:
+                    click.secho('--- start of {} ---'.format(k), fg='white',
+                                dim=True)
+                    click.secho(v, fg='white', dim=True)
+                    click.secho('--- end of {} ---'.format(k), fg='white',
+                                dim=True)
 
     def pprint_stack(self, stack, status=False):
         """Pretty print stack status"""
