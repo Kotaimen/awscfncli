@@ -1,5 +1,5 @@
 from collections import namedtuple
-
+import uuid
 from .command import Command
 from .utils import is_stack_already_exists_exception
 
@@ -40,7 +40,10 @@ class StackDeployCommand(Command):
 
         # calling boto3...
         try:
-            stack = cfn.create_stack(**parameters)
+            client_request_token = 'awscfncli-deploy-{}'.format(uuid.uuid1())
+            stack = cfn.create_stack(
+                ClientRequestToken=client_request_token,
+                **parameters)
         except Exception as ex:
             # skip existing stack error
             if self.options.ignore_existing and \

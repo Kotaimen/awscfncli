@@ -3,9 +3,9 @@ from collections import namedtuple
 
 import botocore.exceptions
 
-from ...cli.utils import echo_pair
 from .command import Command
 from .utils import update_termination_protection
+from ...cli.utils import echo_pair
 
 
 class StackSyncOptions(namedtuple('StackSyncOptions',
@@ -86,17 +86,14 @@ class StackSyncCommand(Command):
             self.ppt.secho('ChangeSet not executable.', fg='red')
             return
 
-        if is_new_stack:
-            waiter_model = 'stack_create_complete'
-        else:
-            waiter_model = 'stack_update_complete'
-
         if self.options.confirm:
             self.ppt.confirm('Do you want to execute ChangeSet?', abort=True)
 
+        client_request_token = 'awscfncli-sync-{}'.format(uuid.uuid1())
         client.execute_change_set(
             ChangeSetName=changeset_name,
             StackName=parameters['StackName'],
+            ClientRequestToken=client_request_token
         )
         self.ppt.secho('Executing ChangeSet...')
 
@@ -110,8 +107,6 @@ class StackSyncCommand(Command):
             else:
                 self.ppt.wait_until_update_complete(session, stack)
             self.ppt.secho('ChangeSet execution complete.', fg='green')
-
-
 
     def check_changeset_type(self, client, parameters):
         try:
