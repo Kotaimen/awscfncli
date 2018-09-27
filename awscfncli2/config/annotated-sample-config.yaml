@@ -52,9 +52,6 @@ Stages:
       #   - Local file: stack policy json file
       StackPolicy: ALLOW_ALL
 
-      # TODO : Not supported yet
-      #    StackPolicyURL:
-
       # List of stack capabilities, possible values are:
       #   - CAPABILITY_IAM: Access keys, IAM user&groups, IAM roles&policy
       #   - CAPABILITY_NAMED_IAM: IAM resources with custom names
@@ -65,15 +62,15 @@ Stages:
       # generated form caller's credentials
 #      RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
 
-      # TODO: Not supported yet
-      # A list of template resources which is allowed for stack creation:
+      # A list of template resources which is allowed for stack operation:
       #   - AWS::* : all AWS resource
       #   - Custom:* : all custom resources
       #   - AWS::EC2::* : all resources of EC2 service
       #   - AWS::EC2::Instance : specific AWS resource
-      # This value is used by IAM policy condition keys.
-      # By default, all resource types are allowed.
-      #    ResourceTypes: !!null
+      # If the list does not match what's working on, the operation fails.
+      # This value is used by IAM policy condition keys, by default, all
+      # resource types are allowed.
+#      ResourceTypes: []
 
       # List of SNS ARNs to publish stack related events.
       #    NotificationARNs: ['arn:aws:sns::xxxxx']
