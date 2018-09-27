@@ -13,7 +13,7 @@ class FormatError(Exception):
     pass
 
 
-class ConfigParser(object):
+class ConfigFormat(object):
     VERSION = None
 
     def validate(self, config):
@@ -23,7 +23,7 @@ class ConfigParser(object):
         raise NotImplementedError
 
 
-class FormatV1(ConfigParser):
+class FormatV1(ConfigFormat):
     VERSION = 1
 
     def __init__(self, **context):
@@ -36,7 +36,7 @@ class FormatV1(ConfigParser):
         raise NotImplementedError
 
 
-class FormatV2(ConfigParser):
+class FormatV2(ConfigFormat):
     VERSION = 2
 
     STAGE_CONFIG = dict(

@@ -18,7 +18,7 @@ def cancel(ctx, no_wait):
 
     for stack_context in ctx.obj.runner.contexts:
         ctx.obj.ppt.pprint_stack_name(
-            stack_context.metadata['StackKey'],
+            stack_context.stack_key,
             stack_context.parameters['StackName'],
             'Canceling update '
         )
