@@ -10,3 +10,5 @@ Stages:
     DDB2ndIdx:
       Template: DynamoDB_Secondary_Indexes.yaml
       Region: us-east-1
+      StackPolicy: stack_policy.json
+

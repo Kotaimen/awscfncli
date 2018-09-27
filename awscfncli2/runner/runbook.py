@@ -1,13 +1,12 @@
 import os
 import threading
-import copy
 from collections import OrderedDict
+
+import six
 
 from .boto3_profile import Boto3Profile
 from .package import package_template
 from ..config import ConfigError, StackDeployment, CANNED_STACK_POLICIES
-
-import six
 
 
 def _normalize_value(v):
@@ -43,12 +42,21 @@ def _make_boto3_parameters(parameters, is_packaging):
         try:
             StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
         except KeyError:
-            raise ConfigError(
-                'Invalid canned policy "%s", valid values are: %s.' % \
-                (StackPolicy, ', '.join(CANNED_STACK_POLICIES.keys())))
-
+            # treat as local file
+            if os.path.exists(StackPolicy) and os.path.isfile(StackPolicy):
+                try:
+                    with open(StackPolicy) as fp:
+                        StackPolicyBody = fp.read()
+                except Exception as ex:
+                    raise ConfigError(
+                        'Error reading stack policy {}'.format(StackPolicy))
+            else:
+                raise ConfigError(
+                    'Invalid stack policy, either specify a canned policy name '
+                    'or a local policy document.')
     else:
         StackPolicyBody = None
+    StackPolicyURL = None
 
     # Normalize parameter config
     Parameters = parameters.Parameters
@@ -90,6 +98,7 @@ def _make_boto3_parameters(parameters, is_packaging):
         RoleARN=parameters.RoleARN,
         OnFailure=parameters.OnFailure,
         StackPolicyBody=StackPolicyBody,
+        StackPolicyURL=StackPolicyURL,
         Parameters=normalized_params,
         Tags=normalized_tags,
         ClientRequestToken=parameters.ClientRequestToken,
