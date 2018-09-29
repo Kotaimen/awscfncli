@@ -37,13 +37,19 @@
           "type": "integer"
         },
         "NotificationARNs": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "Capabilities": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+            "enum": [
+              "CAPABILITY_IAM",
+              "CAPABILITY_NAMED_IAM"
+            ]
           },
           "minItems": 0,
           "maxItems": 2

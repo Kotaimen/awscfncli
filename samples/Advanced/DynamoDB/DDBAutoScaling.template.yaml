@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: DynamoDB Table with Auto Scaling, mimics console settings.
+
+Parameters:
+
+  MinReadCapacity:
+    Description: Minimum provisioned table read capacity units.
+    Type: Number
+    Default: 10
+    MinValue: 5
+    MaxValue: 40000
+
+  MaxReadCapacity:
+    Description: Maximum provisioned table read capacity units.
+    Type: Number
+    Default: 15
+    MinValue: 10
+    MaxValue: 40000
+
+  ReadCapacityUtilizationTarget:
+    Type: Number
+    Description: Target read capacity utlization.
+    Default: 70
+    MinValue: 50
+    MaxValue: 99
+
+  MinWriteCapacity:
+    Description: Minimum provisioned table write capacity units.
+    Type: Number
+    Default: 5
+    MinValue: 5
+    MaxValue: 40000
+
+  MaxWriteCapacity:
+    Description: Maximum provisioned table write capacity units.
+    Type: Number
+    Default: 50
+    MinValue: 10
+    MaxValue: 40000
+
+  WriteCapacityUtilizationTarget:
+    Description: Target write capacity utlization.
+    Type: Number
+    Default: 70
+    MinValue: 50
+    MaxValue: 99
+
+
+Resources:
+
+  DDBTable:
+    Type: "AWS::DynamoDB::Table"
+
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "ArtistId"
+          AttributeType: "S"
+        -
+          AttributeName: "Concert"
+          AttributeType: "S"
+        -
+          AttributeName: "TicketSales"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "ArtistId"
+          KeyType: "HASH"
+        -
+          AttributeName: "Concert"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref MinReadCapacity
+        WriteCapacityUnits: !Ref MinWriteCapacity
+      GlobalSecondaryIndexes:
+        -
+          IndexName: "GSI"
+          KeySchema:
+            -
+              AttributeName: "TicketSales"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "KEYS_ONLY"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+
+  TableReadCapacityScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    Properties:
+      MaxCapacity: !Ref MaxReadCapacity
+      MinCapacity: !Ref MinReadCapacity
+      ResourceId: !Join
+        - /
+        - - table
+          - !Ref DDBTable
+      RoleARN: !GetAtt ScalingRole.Arn
+      ScalableDimension: dynamodb:table:ReadCapacityUnits
+      ServiceNamespace: dynamodb
+
+  TableWriteCapacityScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    Properties:
+      MaxCapacity: !Ref MaxWriteCapacity
+      MinCapacity: !Ref MinWriteCapacity
+      ResourceId: !Join
+        - /
+        - - table
+          - !Ref DDBTable
+      RoleARN: !GetAtt ScalingRole.Arn
+      ScalableDimension: dynamodb:table:WriteCapacityUnits
+      ServiceNamespace: dynamodb
+
+  ScalingRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - application-autoscaling.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:UpdateTable"
+                  - "cloudwatch:PutMetricAlarm"
+                  - "cloudwatch:DescribeAlarms"
+                  - "cloudwatch:GetMetricStatistics"
+                  - "cloudwatch:SetAlarmState"
+                  - "cloudwatch:DeleteAlarms"
+                Resource: "*"
+
+  TableWriteScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    Properties:
+      PolicyName: WriteAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableWriteCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !Ref WriteCapacityUtilizationTarget
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+
+  TableReadScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    Properties:
+      PolicyName: ReadAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableReadCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !Ref ReadCapacityUtilizationTarget
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization

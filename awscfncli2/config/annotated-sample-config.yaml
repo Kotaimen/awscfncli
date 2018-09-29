@@ -72,8 +72,10 @@ Stages:
       # resource types are allowed.
 #      ResourceTypes: []
 
-      # List of SNS ARNs to publish stack related events.
-      #    NotificationARNs: ['arn:aws:sns::xxxxx']
+      # Amazon Simple Notification Service topic Amazon Resource Names (ARNs)
+      # that AWS CloudFormation associates with the stack. Specify an empty
+      # list to remove all notification topics.
+#     NotificationARNs: []
 
       # TODO: Not supported yet
       #    RollbackConfiguration:

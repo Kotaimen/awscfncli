@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Creates an SNS Topic with email suscription
+
+Parameters:
+  EmailAddress:
+    Description: Address of email subscription.
+    Type: String
+    Default: a@b.c
+
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref EmailAddress
+      Protocol: email
+      TopicArn: !Ref SNSTopic
+
+Outputs:
+  TopicArn:
+    Description: Topic ARN
+    Value: !Ref SNSTopic

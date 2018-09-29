@@ -1,0 +1,25 @@
+Version: 2
+
+Stages:
+
+  Default:
+    Topic:
+      Order: 1
+      Template: SNSTopic.template.yaml
+      Region: us-east-1
+      StackName: StackNotificationTopic
+      StackPolicy: DENY_ALL
+      ResourceTypes:
+        - AWS::SNS::*
+      Parameters:
+        EmailAddress: lcao@irobot.com
+
+    DDBAutoScaling:
+      Order: 2
+      Template: DDBAutoScaling.template.yaml
+      Region: us-east-1
+      StackName: DynamoDBWithAutoScaling
+      Capabilities: [CAPABILITY_IAM]
+      StackPolicy: stack_policy.json
+      NotificationARNs:
+        - ${Default.Topic.TopicArn}
