@@ -1,5 +1,5 @@
 import os
-from collections.__init__ import OrderedDict
+from collections import OrderedDict
 
 import six
 

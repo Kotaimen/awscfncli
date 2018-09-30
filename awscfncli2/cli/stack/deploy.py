@@ -7,6 +7,7 @@ from ..utils import command_exception_handler
 from ...cli import ClickContext
 from ...runner import StackDeployOptions, StackDeployCommand
 
+
 @stack.command()
 @click.option('--no-wait', '-w', is_flag=True, default=False,
               help='Exit immediately after deploy is started.')
@@ -15,20 +16,35 @@ from ...runner import StackDeployOptions, StackDeployCommand
               default=None,
               help='Determines what action will be taken if stack creation '
                    'fails. This must be one of: DO_NOTHING, ROLLBACK, or '
-                   'DELETE. Note setting this option overwrites "OnFailure" '
-                   'and "DisableRollback" in the stack configuration file.')
+                   'DELETE. Setting this option overwrites "OnFailure" '
+                   'in the stack configuration file.')
+@click.option('--disable-rollback',
+              is_flag=True, default=False,
+              help='Disable rollback if stack creation failed. You can specify '
+                   'either DisableRollback or OnFailure, but not both. '
+                   'Setting this option overwrites "DisableRollback" '
+                   'in the stack configuration file.')
+@click.option('--timeout-in-minutes',
+              type=click.IntRange(min=0, max=180),
+              help='The amount of time in minutes that can pass before the stack '
+                   'status becomes CREATE_FAILED; if DisableRollback is not set or '
+                   'is set to false , the stack will be rolled back.  ')
 @click.option('--ignore-existing', '-i', is_flag=True, default=False,
               help='Don\'t exit with error if the stack already exists.')
-
 @click.pass_context
 @command_exception_handler
-def deploy(ctx, no_wait, on_failure, ignore_existing):
+def deploy(ctx, no_wait, on_failure,
+           disable_rollback,
+           timeout_in_minutes,
+           ignore_existing, ):
     """Deploy a new stack"""
     assert isinstance(ctx.obj, ClickContext)
 
     options = StackDeployOptions(
         no_wait=no_wait,
         on_failure=on_failure,
+        disable_rollback=disable_rollback,
+        timeout_in_minutes=timeout_in_minutes,
         ignore_existing=ignore_existing
     )
 

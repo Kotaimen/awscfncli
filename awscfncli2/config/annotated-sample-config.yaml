@@ -77,6 +77,20 @@ Stages:
       # list to remove all notification topics.
 #     NotificationARNs: []
 
+      # Determines what action will be taken if stack creation fails. Must be
+      # one of: DO_NOTHING, ROLLBACK, or DELETE.
+      # This option can be overridden using cli option.
+#     OnFailure:
+
+      # Disable rollback if stack creation failed.  You can specify either
+      # DisableRollback or OnFailure, but not both.
+      # This option can be overridden using cli option.
+#     DisableRollback:
+
+      # Number of minutes can pass befor the stack status become CREATE_FAILED.
+      # This option can be overridden using cli option.
+#     TimeoutInMinutes:
+
       # TODO: Not supported yet
       #    RollbackConfiguration:
       #      RollbackTriggers: [ '' ]
@@ -106,7 +120,7 @@ Stages:
       # automatically created if its not exists.
       # The security credential awscfncli assume must have write permission to
       # the bucket and ability to create the bucket if its not exists.
-      #    ArtifactStore:
+#    ArtifactStore:
 
       # Whether to enable termination protection on the stack, default is false.
       EnableTerminationProtection: false

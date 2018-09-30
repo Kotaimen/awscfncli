@@ -1,13 +1,19 @@
-from collections import namedtuple
 import uuid
+from collections import namedtuple
+
 from .command import Command
 from .utils import is_stack_already_exists_exception
 
 
-class StackDeployOptions(namedtuple('StackDeployOptions',
-                                    ['no_wait',
-                                     'on_failure',
-                                     'ignore_existing'])):
+class StackDeployOptions(
+    namedtuple('StackDeployOptions',
+               [
+                   'no_wait',
+                   'on_failure',
+                   'disable_rollback',
+                   'timeout_in_minutes',
+                   'ignore_existing'
+               ])):
     pass
 
 
@@ -31,10 +37,13 @@ class StackDeployCommand(Command):
         # packaging if necessary
         stack_context.run_packaging(self.ppt)
 
-        # force on_failure option specified in cli
+        # overwrite using cli parameters
         if self.options.on_failure is not None:
-            parameters.pop('DisableRollback', None)
             parameters['OnFailure'] = self.options.on_failure
+        if self.options.disable_rollback:
+            parameters['DisableRollback'] = self.options.disable_rollback
+        if self.options.timeout_in_minutes:
+            parameters['TimeoutInMinutes'] = self.options.timeout_in_minutes
 
         self.ppt.pprint_parameters(parameters)
 
