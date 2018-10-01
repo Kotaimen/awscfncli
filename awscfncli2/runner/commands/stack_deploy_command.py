@@ -2,7 +2,7 @@ import uuid
 from collections import namedtuple
 
 from .command import Command
-from .utils import is_stack_already_exists_exception
+from .utils import is_stack_already_exists_exception, populate_stack_outputs
 
 
 class StackDeployOptions(
@@ -20,6 +20,8 @@ class StackDeployOptions(
 class StackDeployCommand(Command):
 
     def run(self, stack_context):
+        stack_context.update_reference()
+
         # stack contexts
         session = stack_context.boto3_session
         parameters = stack_context.parameters
@@ -70,3 +72,10 @@ class StackDeployCommand(Command):
         else:
             self.ppt.wait_until_deploy_complete(session, stack)
             self.ppt.secho('Stack deployment complete.', fg='green')
+
+        # Add stack outputs into context storage
+        stack.reload()
+        populate_stack_outputs(stack.outputs, stack_context, self.ppt)
+
+
+

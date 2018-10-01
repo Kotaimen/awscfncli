@@ -1,4 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  Admin:
+  AdminGroup:
     Type: AWS::IAM::Group
+Outputs:
+  AdminGroupName:
+    Description: Name of the AdminGroup
+    Value: !Ref AdminGroup
