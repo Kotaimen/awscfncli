@@ -8,6 +8,12 @@ from .schema import validate_schema
 from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
     StackParameters, Deployment
 
+CANNED_STACK_POLICIES = {
+    'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
+    'ALLOW_MODIFY': '{"Statement":[{"Effect":"Allow","Action":["Update:Modify"],"Principal":"*","Resource":"*"}]}',
+    'DENY_DELETE': '{"Statement":[{"Effect":"Allow","NotAction":"Update:Delete","Principal":"*","Resource":"*"}]}',
+    'DENY_ALL': '{"Statement":[{"Effect":"Deny","Action":"Update:*","Principal":"*","Resource":"*"}]}',
+}
 
 class FormatError(Exception):
     pass
@@ -149,6 +155,14 @@ class FormatV2(ConfigFormat):
             if not os.path.exists(template_path):
                 raise FormatError('File Not Found %s' % template_path)
             stack_config['Template'] = template_path
+
+        stack_policy = stack_config.get('StackPolicy')
+        if stack_policy and stack_policy not in CANNED_STACK_POLICIES:
+            stack_policy_path = os.path.realpath(
+                os.path.join(self._basedir, stack_policy))
+            if not os.path.exists(stack_policy_path):
+                raise FormatError('File Not Found %s' % stack_policy_path)
+            stack_config['StackPolicy'] = stack_policy_path
 
         key = StackKey(stage_key, stack_key)
         stack_profile = StackProfile.from_dict(**stack_config)
