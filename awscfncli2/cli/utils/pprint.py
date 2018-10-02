@@ -54,6 +54,12 @@ class StackPrettyPrinter(object):
     def secho(self, text, nl=True, err=False, color=None, **styles):
         click.secho(text, nl=nl, err=err, color=color, **styles)
 
+    def echo_pair(self, key, value=None, indent=0,
+                  value_style=None, key_style=None,
+                  sep=': '):
+        echo_pair(key, value=value, indent=indent, value_style=value_style,
+                  key_style=key_style, sep=sep)
+
     def confirm(self, *args, **argv):
         click.confirm(*args, **argv)
 

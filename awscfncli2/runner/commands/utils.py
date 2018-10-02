@@ -28,7 +28,9 @@ def populate_stack_outputs(stack_outputs, stack_context, ppt):
         outputs = dict(
             map(lambda o: (o['OutputKey'], o['OutputValue']), stack_outputs))
         stack_context.populate_outputs(**outputs)
-        ppt.secho('Stack output %s' % str(outputs))
+        ppt.secho('Stack outputs:')
+        for k, v in outputs.items():
+            ppt.echo_pair(k, v, indent=2)
 
 
 def is_stack_does_not_exist_exception(ex):

@@ -77,5 +77,3 @@ class StackDeployCommand(Command):
         stack.reload()
         populate_stack_outputs(stack.outputs, stack_context, self.ppt)
 
-
-
