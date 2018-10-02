@@ -31,7 +31,31 @@
           "type": "string"
         },
         "RollbackConfiguration": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "RollbackTriggers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["Type", "Arn"],
+                "properties": {
+                  "Type": {
+                    "type": "string",
+                    "enum": [
+                      "AWS::CloudWatch::Alarm"
+                    ]
+                  },
+                  "Arn": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "RollbackMonitoringTimeInMinutes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         },
         "TimeoutInMinutes": {
           "type": "integer"
@@ -64,7 +88,12 @@
           "type": "string"
         },
         "OnFailure": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "DO_NOTHING",
+            "ROLLBACK",
+            "DELETE"
+          ]
         },
         "StackPolicy": {
           "type": "string"

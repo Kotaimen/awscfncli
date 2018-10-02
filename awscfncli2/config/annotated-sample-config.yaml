@@ -91,10 +91,14 @@ Stages:
       # This option can be overridden using cli option.
 #     TimeoutInMinutes:
 
-      # TODO: Not supported yet
-      #    RollbackConfiguration:
-      #      RollbackTriggers: [ '' ]
-      #      MonitoringTimeInMinutes: 3
+      # The rollback triggers for AWS CloudFormation to monitor during stack
+      # creation and updating operations, and for the specified monitoring
+      # period afterwards.
+#      RollbackConfiguration:
+#        RollbackTriggers:
+#          - Type: AWS::CloudWatch::Alarm
+#            Arn:
+#        RollbackMonitoringTimeInMinutes: 3
 
       # Automatically package local resources to s3.
       # These are supported automatically by "aws cloudformation package" command:
