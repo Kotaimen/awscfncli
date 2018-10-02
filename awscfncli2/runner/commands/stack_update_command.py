@@ -3,7 +3,7 @@ from collections import namedtuple
 from ...config import CANNED_STACK_POLICIES
 from .command import Command
 from .utils import update_termination_protection, \
-    is_no_updates_being_performed_exception
+    is_no_updates_being_performed_exception, populate_stack_outputs
 
 
 class StackUpdateOptions(namedtuple('StackUpdateOptions',
@@ -17,6 +17,8 @@ class StackUpdateOptions(namedtuple('StackUpdateOptions',
 class StackUpdateCommand(Command):
 
     def run(self, stack_context):
+        stack_context.update_reference()
+
         # stack contexts
         session = stack_context.boto3_session
         parameters = stack_context.parameters
@@ -83,3 +85,7 @@ class StackUpdateCommand(Command):
         else:
             self.ppt.wait_until_update_complete(session, stack)
             self.ppt.secho('Stack update complete.', fg='green')
+
+        # Add stack outputs into context storage
+        stack.reload()
+        populate_stack_outputs(stack.outputs, stack_context, self.ppt)

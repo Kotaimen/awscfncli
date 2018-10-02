@@ -121,3 +121,9 @@ class TestConfig(object):
         stacks = c.query_stacks('*', '*')
         assert len(stacks) == 4
 
+    def test_output_reference(self, data_dir):
+        configfile = data_dir.join('data/test.config.reference.yaml')
+        c = config.load_config(configfile)
+
+        stacks = c.query_stacks('*', '*')
+        assert len(stacks) == 2

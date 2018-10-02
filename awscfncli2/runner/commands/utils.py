@@ -23,6 +23,14 @@ def update_termination_protection(session,
         EnableTerminationProtection=termination_protection)
 
 
+def populate_stack_outputs(stack_outputs, stack_context, ppt):
+    if stack_outputs:
+        outputs = dict(
+            map(lambda o: (o['OutputKey'], o['OutputValue']), stack_outputs))
+        stack_context.populate_outputs(**outputs)
+        ppt.secho('Stack output %s' % str(outputs))
+
+
 def is_stack_does_not_exist_exception(ex):
     """Check whether given exception is "stack does not exist",
     botocore doesn't throw a distinct exception class in this case.
@@ -34,6 +42,7 @@ def is_stack_does_not_exist_exception(ex):
     else:
         return False
 
+
 def is_no_updates_being_performed_exception(ex):
     """Check whether given exception is "no update to be performed"
     botocore doesn't throw a distinct exception class in this case.
@@ -44,6 +53,7 @@ def is_no_updates_being_performed_exception(ex):
         return error_message.endswith('No updates are to be performed.')
     else:
         return False
+
 
 def is_stack_already_exists_exception(ex):
     """Check whether given exception is "stack already exist"

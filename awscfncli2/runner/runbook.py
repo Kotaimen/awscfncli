@@ -1,5 +1,7 @@
 import os
 import threading
+import json
+import string
 
 from .boto3_params import make_boto3_parameters
 from .boto3_profile import Boto3Profile
@@ -12,10 +14,14 @@ def is_local_path(path):
         return True
 
 
+class StackReferenceTemplate(string.Template):
+    idpattern = r'(?a:[_a-z][._a-z0-9]*)'
+
+
 class StackDeploymentContext(object):
     """Stack context in boto3 ready format"""
 
-    def __init__(self, cli_boto3_profile, stack_deployment):
+    def __init__(self, cli_boto3_profile, stack_deployment, ouput_store):
         self._boto3_profile = Boto3Profile(
             profile_name=stack_deployment.profile.Profile,
             region_name=stack_deployment.profile.Region
@@ -28,6 +34,8 @@ class StackDeploymentContext(object):
         self._metadata = stack_deployment.metadata._asdict()
         self._parameters = make_boto3_parameters(
             stack_deployment.parameters, self.metadata['Package'])
+
+        self._output_store = ouput_store
 
     @property
     def stack_key(self):
@@ -51,6 +59,24 @@ class StackDeploymentContext(object):
     @property
     def parameters(self):
         return self._parameters
+
+    @property
+    def outputs(self):
+        return self._output_store
+
+    def populate_outputs(self, **outputs):
+        for k, v in outputs.items():
+            qualified_key = '.'.join((self.stack_key, k))
+            if qualified_key in self.outputs:
+                raise RuntimeError(
+                    'Duplicated Stack Output: %s' % qualified_key)
+            else:
+                self.outputs[qualified_key] = v
+
+    def update_reference(self):
+        d = json.dumps(self.parameters)
+        c = StackReferenceTemplate(d).safe_substitute(**self.outputs)
+        self._parameters = json.loads(c)
 
     def run_packaging(self, pretty_printer):
         """Package templates and resources and upload to artifact bucket"""
@@ -79,10 +105,12 @@ class RunBook(object):
 
         # XXX: properly move this to a separated factory
         self._contexts = list()
+        self._outputs = dict()
 
         for deployment in stack_deployments:
             assert isinstance(deployment, StackDeployment)
-            context = StackDeploymentContext(cli_boto3_profile, deployment)
+            context = StackDeploymentContext(cli_boto3_profile, deployment,
+                                             self._outputs)
             self._contexts.append(context)
 
     def run(self, command, rev=False):
