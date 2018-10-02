@@ -12,14 +12,14 @@ Stages:
       ResourceTypes:
         - AWS::SNS::*
       Parameters:
-        EmailAddress: lcao@irobot.com
+        EmailAddress: <replace with your email>
 
     DDBAutoScaling:
       Order: 2
       Template: DDBAutoScaling.template.yaml
       Region: us-east-1
       StackName: DynamoDBWithAutoScaling
+      # note you can't specify capabilities with ResourceTypes
       Capabilities: [CAPABILITY_IAM]
-      StackPolicy: stack_policy.json
       NotificationARNs:
         - ${Default.Topic.TopicArn}
