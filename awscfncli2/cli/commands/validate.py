@@ -22,7 +22,7 @@ def validate(ctx):
             'Validating '
         )
 
-        session = stack_context.boto3_session
+        session = stack_context.session
         client = session.client('cloudformation')
 
         stack_context.run_packaging(ctx.obj.ppt)

@@ -23,7 +23,7 @@ def cancel(ctx, no_wait):
             'Canceling update '
         )
 
-        session = stack_context.boto3_session
+        session = stack_context.session
         client = session.client('cloudformation')
         try:
             client.cancel_update_stack(StackName=stack_context.parameters['StackName'])
