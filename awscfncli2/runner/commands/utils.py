@@ -23,16 +23,6 @@ def update_termination_protection(session,
         EnableTerminationProtection=termination_protection)
 
 
-def populate_stack_outputs(stack_outputs, stack_context, ppt):
-    if stack_outputs:
-        outputs = dict(
-            map(lambda o: (o['OutputKey'], o['OutputValue']), stack_outputs))
-        stack_context.populate_outputs(**outputs)
-        ppt.secho('Stack outputs:')
-        for k, v in outputs.items():
-            ppt.echo_pair(k, v, indent=2)
-
-
 def is_stack_does_not_exist_exception(ex):
     """Check whether given exception is "stack does not exist",
     botocore doesn't throw a distinct exception class in this case.

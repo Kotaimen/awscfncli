@@ -4,7 +4,7 @@ from collections import namedtuple
 import botocore.exceptions
 
 from .command import Command
-from .utils import update_termination_protection, populate_stack_outputs
+from .utils import update_termination_protection
 from ...cli.utils import echo_pair
 
 
@@ -18,10 +18,8 @@ class StackSyncOptions(namedtuple('StackSyncOptions',
 class StackSyncCommand(Command):
 
     def run(self, stack_context):
-        stack_context.update_reference()
-
         # stack contexts
-        session = stack_context.boto3_session
+        session = stack_context.session
         parameters = stack_context.parameters
         metadata = stack_context.metadata
 
@@ -38,7 +36,7 @@ class StackSyncCommand(Command):
             parameters.pop('TemplateURL', None)
             parameters['UsePreviousTemplate'] = True
         else:
-            stack_context.run_packaging(self.ppt)
+            stack_context.run_packaging()
 
         # create cfn client
         client = session.client('cloudformation')
@@ -109,10 +107,6 @@ class StackSyncCommand(Command):
             else:
                 self.ppt.wait_until_update_complete(session, stack)
             self.ppt.secho('ChangeSet execution complete.', fg='green')
-
-        # Add stack outputs into context storage
-        stack.reload()
-        populate_stack_outputs(stack.outputs, stack_context, self.ppt)
 
 
     def check_changeset_type(self, client, parameters):

@@ -2,7 +2,6 @@
 
 import os
 import yaml
-# import click
 import logging
 
 from botocore.exceptions import ClientError

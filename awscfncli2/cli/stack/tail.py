@@ -28,7 +28,7 @@ def tail(ctx, timeout, events):
             'Stack events for '
         )
 
-        session = stack_context.boto3_session
+        session = stack_context.session
         cfn = session.resource('cloudformation')
         stack = cfn.Stack(stack_context.parameters['StackName'])
 

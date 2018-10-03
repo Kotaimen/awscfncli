@@ -15,7 +15,7 @@ class StackDeleteCommand(Command):
 
     def run(self, stack_context):
         # stack contexts
-        session = stack_context.boto3_session
+        session = stack_context.session
         parameters = stack_context.parameters
         metadata = stack_context.metadata
 
@@ -29,7 +29,7 @@ class StackDeleteCommand(Command):
         self.ppt.pprint_parameters(parameters)
 
         # packaging if necessary
-        stack_context.run_packaging(self.ppt)
+        stack_context.run_packaging()
 
         # call boto3
         stack = cfn.Stack(parameters['StackName'])

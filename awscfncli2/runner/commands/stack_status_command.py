@@ -18,7 +18,7 @@ class StackStatusCommand(Command):
 
     def run(self, stack_context):
         # stack contexts
-        session = stack_context.boto3_session
+        session = stack_context.session
         parameters = stack_context.parameters
         metadata = stack_context.metadata
 

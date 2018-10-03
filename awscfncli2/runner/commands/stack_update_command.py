@@ -3,7 +3,7 @@ from collections import namedtuple
 from ...config import CANNED_STACK_POLICIES
 from .command import Command
 from .utils import update_termination_protection, \
-    is_no_updates_being_performed_exception, populate_stack_outputs
+    is_no_updates_being_performed_exception
 
 
 class StackUpdateOptions(namedtuple('StackUpdateOptions',
@@ -17,10 +17,8 @@ class StackUpdateOptions(namedtuple('StackUpdateOptions',
 class StackUpdateCommand(Command):
 
     def run(self, stack_context):
-        stack_context.update_reference()
-
         # stack contexts
-        session = stack_context.boto3_session
+        session = stack_context.session
         parameters = stack_context.parameters
         metadata = stack_context.metadata
 
@@ -42,7 +40,7 @@ class StackUpdateCommand(Command):
             parameters['UsePreviousTemplate'] = True
         else:
             # packaging if necessary
-            stack_context.run_packaging(self.ppt)
+            stack_context.run_packaging()
 
         parameters.pop('DisableRollback', None)
         parameters.pop('OnFailure', None)
@@ -86,6 +84,3 @@ class StackUpdateCommand(Command):
             self.ppt.wait_until_update_complete(session, stack)
             self.ppt.secho('Stack update complete.', fg='green')
 
-        # Add stack outputs into context storage
-        stack.reload()
-        populate_stack_outputs(stack.outputs, stack_context, self.ppt)

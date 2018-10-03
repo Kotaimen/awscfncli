@@ -1,8 +1,7 @@
 import threading
-import click
 
-from ..runner import Boto3Profile, StackSelector, RunBook
-from ..config import load_config, ConfigError
+from ..runner import Boto3Profile, Boto3RunBook, StackSelector
+from ..config import load_config
 
 
 class ClickContext(object):
@@ -60,21 +59,11 @@ class ClickContext(object):
     def runner(self):
 
         if self._runner is None:
-            stack_deployments = self.deployments.query_stacks(
-                self._stack_selector.stage_pattern,
-                self._stack_selector.stack_pattern
-            )
-
-            if len(stack_deployments) == 0:
-                click.secho('No stack matches specified pattern.', fg='red')
-                click.secho('Available stacks are:')
-                for s in self.deployments.query_stacks():
-                    click.secho(' {}'.format(s.stack_key.qualified_name))
-                raise click.Abort
-
-            self._runner = RunBook(
+            self._runner = Boto3RunBook(
                 self.boto3_profile,
-                stack_deployments,
+                self.deployments,
+                self.stack_selector,
+                self.ppt
             )
 
         return self._runner
