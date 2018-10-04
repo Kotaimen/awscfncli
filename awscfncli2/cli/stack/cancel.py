@@ -17,6 +17,8 @@ def cancel(ctx, no_wait):
     assert isinstance(ctx.obj, ClickContext)
 
     for stack_context in ctx.obj.runner.contexts:
+        stack_context.make_boto3_parameters()
+
         ctx.obj.ppt.pprint_stack_name(
             stack_context.stack_key,
             stack_context.parameters['StackName'],

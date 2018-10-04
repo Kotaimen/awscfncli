@@ -25,10 +25,10 @@ class ParametersFormatter(object):
     def __init__(self, parameters):
         self._serialized_parameters = json.dumps(parameters)
 
-        self._attributes = map(
+        self._attributes = list(map(
             lambda attribute: attribute[2],
             _Template.pattern.findall(self._serialized_parameters)
-        )
+        ))
 
     def get_attributes(self):
         return self._attributes
@@ -37,7 +37,6 @@ class ParametersFormatter(object):
         s = _Template(self._serialized_parameters)\
             .safe_substitute(**attributes)
         return json.loads(s)
-
 
 
 class Boto3DeploymentContext(StackDeploymentContext):
@@ -52,8 +51,7 @@ class Boto3DeploymentContext(StackDeploymentContext):
 
         self._stack_key = deployment.stack_key.qualified_name
         self._metadata = deployment.metadata._asdict()
-        self._parameters = make_boto3_parameters(
-            deployment.parameters, self.metadata['Package'])
+        self._parameters = deployment.parameters._asdict()
 
         self._ppt = pretty_printer
         self._parameters_formatter = ParametersFormatter(self._parameters)
@@ -82,6 +80,10 @@ class Boto3DeploymentContext(StackDeploymentContext):
 
     def update_parameters_reference(self, **outputs):
         self._parameters = self._parameters_formatter.format(**outputs)
+
+    def make_boto3_parameters(self):
+        self._parameters = make_boto3_parameters(
+            self._parameters, self.metadata['Package'])
 
     def run_packaging(self):
         """Package templates and resources and upload to artifact bucket"""

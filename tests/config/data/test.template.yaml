@@ -6,3 +6,10 @@ Outputs:
   AdminGroupName:
     Description: Name of the AdminGroup
     Value: !Ref AdminGroup
+  AccountStatus:
+    Description: Status of the account
+    Value: !Join
+      - '-'
+      -
+        - !Sub '${AWS::Region}'
+        - !Sub '${AWS::AccountId}'

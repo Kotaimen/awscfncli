@@ -15,6 +15,7 @@ dummy_stack = namedtuple('dummy_stack', ['stack_name', 'stack_status'])
 
 
 class StackStatusCommand(Command):
+    SKIP_UPDATE_REFERENCES = True
 
     def run(self, stack_context):
         # stack contexts

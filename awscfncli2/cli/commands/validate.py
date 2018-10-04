@@ -16,6 +16,8 @@ def validate(ctx):
     assert isinstance(ctx.obj, ClickContext)
 
     for stack_context in ctx.obj.runner.contexts:
+        stack_context.make_boto3_parameters()
+
         ctx.obj.ppt.pprint_stack_name(
             stack_context.stack_key,
             stack_context.parameters['StackName'],
@@ -25,7 +27,7 @@ def validate(ctx):
         session = stack_context.session
         client = session.client('cloudformation')
 
-        stack_context.run_packaging(ctx.obj.ppt)
+        stack_context.run_packaging()
 
         try:
             template_body = stack_context.parameters['TemplateBody']

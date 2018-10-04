@@ -40,7 +40,9 @@ class Boto3RunBook(RunBook):
 
         self._output_store = Boto3OutputStore(whole_contexts, self._ppt)
 
-    def pre_run(self, context):
-        attributes = context.get_parameters_reference()
-        self._output_store.collect_stack_outputs(*attributes)
-        context.update_parameters_reference(**self._output_store.get_outputs())
+    def pre_run(self, command, context):
+        if not command.SKIP_UPDATE_REFERENCES:
+            attributes = context.get_parameters_reference()
+            self._output_store.collect_stack_outputs(*attributes)
+            context.update_parameters_reference(**self._output_store.get_outputs())
+        context.make_boto3_parameters()

@@ -17,9 +17,9 @@ def normalize_value(v):
 
 def make_boto3_parameters(parameters, is_packaging):
     # inject parameters
-    StackName = parameters.StackName
+    StackName = parameters['StackName']
 
-    Template = parameters.Template
+    Template = parameters['Template']
     if Template.startswith('https') or Template.startswith('http'):
         # s3 template
         TemplateURL, TemplateBody = Template, None
@@ -34,7 +34,7 @@ def make_boto3_parameters(parameters, is_packaging):
             TemplateBody = fp.read()
 
     # lookup canned policy
-    StackPolicy = parameters.StackPolicy
+    StackPolicy = parameters['StackPolicy']
     if StackPolicy is not None:
         try:
             StackPolicyBody = CANNED_STACK_POLICIES[StackPolicy]
@@ -56,7 +56,7 @@ def make_boto3_parameters(parameters, is_packaging):
     StackPolicyURL = None
 
     # Normalize parameter config
-    Parameters = parameters.Parameters
+    Parameters = parameters['Parameters']
     normalized_params = None
     if Parameters and isinstance(Parameters, dict):
         normalized_params = list(
@@ -71,7 +71,7 @@ def make_boto3_parameters(parameters, is_packaging):
         )
 
     # Normalize tag config
-    Tags = parameters.Tags
+    Tags = parameters['Tags']
     normalized_tags = None
     if Tags and isinstance(Tags, dict):
         normalized_tags = list(
@@ -86,19 +86,19 @@ def make_boto3_parameters(parameters, is_packaging):
         StackName=StackName,
         TemplateURL=TemplateURL,
         TemplateBody=TemplateBody,
-        DisableRollback=parameters.DisableRollback,
-        RollbackConfiguration=parameters.RollbackConfiguration,
-        TimeoutInMinutes=parameters.TimeoutInMinutes,
-        NotificationARNs=parameters.NotificationARNs,
-        Capabilities=parameters.Capabilities,
-        ResourceTypes=parameters.ResourceTypes,
-        RoleARN=parameters.RoleARN,
-        OnFailure=parameters.OnFailure,
+        DisableRollback=parameters['DisableRollback'],
+        RollbackConfiguration=parameters['RollbackConfiguration'],
+        TimeoutInMinutes=parameters['TimeoutInMinutes'],
+        NotificationARNs=parameters['NotificationARNs'],
+        Capabilities=parameters['Capabilities'],
+        ResourceTypes=parameters['ResourceTypes'],
+        RoleARN=parameters['RoleARN'],
+        OnFailure=parameters['OnFailure'],
         StackPolicyBody=StackPolicyBody,
         StackPolicyURL=StackPolicyURL,
         Parameters=normalized_params,
         Tags=normalized_tags,
-        EnableTerminationProtection=parameters.EnableTerminationProtection,
+        EnableTerminationProtection=parameters['EnableTerminationProtection'],
     )
 
     # drop all None and empty list

@@ -31,10 +31,10 @@ class RunBook(object):
     def contexts(self):
         return self._contexts
 
-    def pre_run(self, context):
+    def pre_run(self, command, context):
         pass
 
-    def post_run(self, context):
+    def post_run(self, command, context):
         pass
 
     def run(self, command, rev=False):
@@ -44,6 +44,6 @@ class RunBook(object):
             stack_contexts = self.contexts
 
         for context in stack_contexts:
-            self.pre_run(context)
+            self.pre_run(command, context)
             command.run(context)
-            self.post_run(context)
+            self.post_run(command, context)

@@ -11,7 +11,13 @@ class Boto3OutputStore(object):
 
     def collect_stack_outputs(self, *attributes):
         for attribute in attributes:
-            qualified_name, attribute_name = attribute.rsplit('.', 1)
+            try:
+                qualified_name, attribute_name = attribute.rsplit('.', 1)
+            except Exception as e:
+                self._ppt.secho(
+                    'Invalid Config Reference %s' % attribute,
+                    color='yellow')
+                raise e
 
             for context in self._contexts:
                 if context.stack_key != qualified_name:

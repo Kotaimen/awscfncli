@@ -12,6 +12,7 @@ class StackDeleteOptions(namedtuple('StackDeleteOptions',
 
 
 class StackDeleteCommand(Command):
+    SKIP_UPDATE_REFERENCES = True
 
     def run(self, stack_context):
         # stack contexts
