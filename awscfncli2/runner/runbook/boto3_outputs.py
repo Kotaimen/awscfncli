@@ -9,38 +9,47 @@ class Boto3OutputStore(object):
         self._outputs = dict()
         self._ppt = pretty_printer
 
-    def collect_stack_outputs(self):
-        for context in self._contexts:
-            cfn = context.session.resource('cloudformation')
+    def collect_stack_outputs(self, *attributes):
+        for attribute in attributes:
+            qualified_name, attribute_name = attribute.rsplit('.', 1)
 
-            stack_name = context.parameters['StackName']
-            stack = cfn.Stack(stack_name)
-
-            try:
-                stack.load()
-                status = stack.stack_status
-                if status not in (
-                        'CREATE_COMPLETE',
-                        'ROLLBACK_COMPLETE',
-                        'UPDATE_COMPLETE',
-                        'UPDATE_ROLLBACK_COMPLETE'):
-                    self._ppt.secho(
-                        'Collect Ouputs: Stack %s is not in COMPLETE status, skip' % stack_name,
-                        color='yellow')
+            for context in self._contexts:
+                if context.stack_key != qualified_name:
                     continue
-            except botocore.exceptions.ClientError:
-                self._ppt.secho(
-                    'Collect Ouputs: Stack %s is missing, skip' % stack_name,
-                    color='yellow')
-                continue
 
-            if stack.outputs:
-                outputs = dict(
-                    map(lambda o: (
-                        '.'.join((context.stack_key, o['OutputKey'])),
-                        o['OutputValue']),
-                        stack.outputs))
-                self._outputs.update(outputs)
+                try:
+                    cfn = context.session.resource('cloudformation')
+
+                    stack_name = context.parameters['StackName']
+                    stack = cfn.Stack(stack_name)
+
+                    stack.load()
+                    status = stack.stack_status
+                    if status not in (
+                            'CREATE_COMPLETE',
+                            'ROLLBACK_COMPLETE',
+                            'UPDATE_COMPLETE',
+                            'UPDATE_ROLLBACK_COMPLETE'):
+                        continue
+                except Exception as e:
+                    self._ppt.secho(
+                        'Collect Ouputs: Unable to access outputs from %s' % qualified_name,
+                        color='yellow')
+                    raise e
+
+                if stack.outputs:
+                    outputs = dict(
+                        map(lambda o: (
+                            '.'.join((context.stack_key, o['OutputKey'])),
+                            o['OutputValue']),
+                            stack.outputs))
+                    if attribute not in outputs:
+                        raise RuntimeError('Collect Ouputs: Attribute %s not found' % attribute)
+
+                    self._ppt.secho(
+                        'Collect Ouputs: Collected outputs from %s' % qualified_name,
+                        color='yellow')
+                    self._outputs.update(outputs)
 
     def get_outputs(self):
         return self._outputs

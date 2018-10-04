@@ -19,8 +19,8 @@ class Boto3RunBook(RunBook):
         selected_deployments = self._manager.query_stacks(
             self._selector.stage_pattern,
             self._selector.stack_pattern)
-        selected_stack_keys = map(
-            lambda d: d.stack_key.qualified_name, selected_deployments)
+        selected_stack_keys = list(map(
+            lambda d: d.stack_key.qualified_name, selected_deployments))
 
         if len(selected_deployments) == 0:
             self._ppt.secho('No stack matches specified pattern.', fg='red')
@@ -41,5 +41,6 @@ class Boto3RunBook(RunBook):
         self._output_store = Boto3OutputStore(whole_contexts, self._ppt)
 
     def pre_run(self, context):
-        self._output_store.collect_stack_outputs()
-        context.update_reference(**self._output_store.get_outputs())
+        attributes = context.get_parameters_reference()
+        self._output_store.collect_stack_outputs(*attributes)
+        context.update_parameters_reference(**self._output_store.get_outputs())

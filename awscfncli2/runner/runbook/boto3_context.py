@@ -16,8 +16,28 @@ def is_local_path(path):
         return True
 
 
-class ReferenceTemplate(string.Template):
-    idpattern = r'(?a:[_a-z][._a-z0-9]*)'
+class _Template(string.Template):
+    idpattern = r'[_a-z][._a-z0-9-]*'
+
+
+class ParametersFormatter(object):
+
+    def __init__(self, parameters):
+        self._serialized_parameters = json.dumps(parameters)
+
+        self._attributes = map(
+            lambda attribute: attribute[2],
+            _Template.pattern.findall(self._serialized_parameters)
+        )
+
+    def get_attributes(self):
+        return self._attributes
+
+    def format(self, **attributes):
+        s = _Template(self._serialized_parameters)\
+            .safe_substitute(**attributes)
+        return json.loads(s)
+
 
 
 class Boto3DeploymentContext(StackDeploymentContext):
@@ -36,6 +56,7 @@ class Boto3DeploymentContext(StackDeploymentContext):
             deployment.parameters, self.metadata['Package'])
 
         self._ppt = pretty_printer
+        self._parameters_formatter = ParametersFormatter(self._parameters)
 
     @property
     def stack_key(self):
@@ -56,10 +77,11 @@ class Boto3DeploymentContext(StackDeploymentContext):
     def parameters(self):
         return self._parameters
 
-    def update_reference(self, **outputs):
-        d = json.dumps(self.parameters)
-        c = ReferenceTemplate(d).safe_substitute(**outputs)
-        self._parameters = json.loads(c)
+    def get_parameters_reference(self):
+        return self._parameters_formatter.get_attributes()
+
+    def update_parameters_reference(self, **outputs):
+        self._parameters = self._parameters_formatter.format(**outputs)
 
     def run_packaging(self):
         """Package templates and resources and upload to artifact bucket"""
