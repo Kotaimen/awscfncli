@@ -28,7 +28,7 @@ class ParametersFormatter(object):
         self._attributes = list()
         for attribute in _Template.pattern.findall(self._serialized_parameters):
             if attribute[2]:
-                self._attributes.append(attribute)
+                self._attributes.append(attribute[2])
 
     def get_attributes(self):
         return self._attributes
