@@ -19,8 +19,8 @@ class Boto3RunBook(RunBook):
         selected_deployments = self._manager.query_stacks(
             self._selector.stage_pattern,
             self._selector.stack_pattern)
-        selected_stack_keys = list(map(
-            lambda d: d.stack_key.qualified_name, selected_deployments))
+        selected_stack_keys = list(
+            d.stack_key.qualified_name for d in selected_deployments)
 
         if len(selected_deployments) == 0:
             self._ppt.secho('No stack matches specified pattern.', fg='red')

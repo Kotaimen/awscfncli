@@ -25,10 +25,10 @@ class ParametersFormatter(object):
     def __init__(self, parameters):
         self._serialized_parameters = json.dumps(parameters)
 
-        self._attributes = list(map(
-            lambda attribute: attribute[2],
-            _Template.pattern.findall(self._serialized_parameters)
-        ))
+        self._attributes = list()
+        for attribute in _Template.pattern.findall(self._serialized_parameters):
+            if attribute[2]:
+                self._attributes.append(attribute)
 
     def get_attributes(self):
         return self._attributes
