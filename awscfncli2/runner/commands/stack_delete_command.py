@@ -29,9 +29,6 @@ class StackDeleteCommand(Command):
         self.ppt.pprint_session(session)
         self.ppt.pprint_parameters(parameters)
 
-        # packaging if necessary
-        stack_context.run_packaging()
-
         # call boto3
         stack = cfn.Stack(parameters['StackName'])
         try:
