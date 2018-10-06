@@ -39,7 +39,7 @@ class Boto3OutputStore(object):
                         continue
                 except Exception as e:
                     self._ppt.secho(
-                        'Collect Ouputs: Unable to access outputs from %s' % qualified_name,
+                        'Collect Outputs: Unable to access outputs from %s' % qualified_name,
                         color='yellow')
                     raise e
 
@@ -50,7 +50,7 @@ class Boto3OutputStore(object):
                             o['OutputValue']),
                             stack.outputs))
                     if attribute not in outputs:
-                        raise RuntimeError('Collect Ouputs: Attribute %s not found' % attribute)
+                        raise RuntimeError('Collect Outputs: Attribute %s not found' % attribute)
 
                     self._ppt.secho(
                         'Collect Ouputs: Collected outputs from %s' % qualified_name,
