@@ -1,0 +1,27 @@
+Version: 2
+Stages:
+  Base:
+    Order: 1
+    StackRole:
+      Order: 1
+      Template: StackRole.template.yaml
+      StackName: StaticSite-StackRole
+      Region: us-east-1
+      Capabilities: [CAPABILITY_IAM]
+
+  Default:
+    Order: 2
+    Main:
+      Order: 1
+      Template: stacks/master.json
+      StackName: StaticSite
+      Region: us-east-1
+      Package: True
+      Capabilities: [CAPABILITY_IAM, CAPABILITY_NAMED_IAM]
+      RoleARN: ${Base.StackRole.RoleArn}
+      Parameters:
+        HostedZone: Z2SLNEMG49HVE9
+        HostName: ray
+        AlternativeDomains: ""
+        CreatePipeline: "YES"
+
