@@ -1,0 +1,1 @@
+Sample taken from: https://github.com/awslabs/aws-cloudformation-templates/tree/master/aws/services/CloudFormation/MacrosExamples/ShortHand

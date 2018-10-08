@@ -1,0 +1,100 @@
+Version: 2
+
+#
+# account which hosts peer vpc
+#
+PeerAccount: &PeerAccount
+  Profile: <replace with peer account profile>
+
+PeerKey: &PeerKey
+  KeyPairName: <replace with peer account ec2 key>
+
+#
+# account which initiates vpc peering request
+#
+RequesterAccount: &RequesterAccount
+  Profile:  <replace with requester account profile>
+
+RequesterKey: &RequesterKey
+  KeyPairName: <replace with requester account ec2 key>
+
+
+Stages:
+
+  Peer:
+    Order: 1
+
+    Vpc:
+      Order: 1
+
+      <<: *PeerAccount
+      StackName: PeerVpc
+      Template: https://s3.amazonaws.com/quickstart-reference/aws/vpc/latest/templates/aws-vpc.template
+      Region: us-east-1
+      StackPolicy: DENY_ALL
+      Parameters:
+        <<: *PeerKey
+        AvailabilityZones: us-east-1a,us-east-1b
+        NumberOfAZs: 2
+        NATInstanceType: t2.micro
+        VPCCIDR: 10.180.0.0/16
+        PublicSubnet1CIDR: 10.180.128.0/20
+        PublicSubnet2CIDR: 10.180.144.0/20
+        PublicSubnet3CIDR: 10.180.160.0/20
+        PublicSubnet4CIDR: 10.180.176.0/20
+        PrivateSubnet1ACIDR: 10.180.0.0/19
+        PrivateSubnet2ACIDR: 10.180.32.0/19
+        PrivateSubnet3ACIDR: 10.180.64.0/19
+        PrivateSubnet4ACIDR: 10.180.96.0/19
+
+    PeerRole:
+      Order: 2
+      <<: *PeerAccount
+      StackName: PeerRequestRole
+      Template: PeerRole.yaml
+      Region: us-east-1
+      StackPolicy: DENY_ALL
+      Capabilities: [CAPABILITY_IAM]
+      Parameters:
+        PeerRequesterAccountId: <replace with request account id>
+
+  Requester:
+
+    Order: 2
+
+    Vpc:
+      <<: *RequesterAccount
+      Order: 1
+      StackName: LocalVpc
+      Template: https://s3.amazonaws.com/quickstart-reference/aws/vpc/latest/templates/aws-vpc.template
+      Region: us-west-2
+      StackPolicy: DENY_ALL
+      Parameters:
+        <<: *RequesterKey
+        AvailabilityZones: us-west-2a,us-west-2b
+        NumberOfAZs: 2
+        NATInstanceType: t2.micro
+        VPCCIDR: 10.200.0.0/16
+        PublicSubnet1CIDR: 10.200.128.0/20
+        PublicSubnet2CIDR: 10.200.144.0/20
+        PublicSubnet3CIDR: 10.200.160.0/20
+        PublicSubnet4CIDR: 10.200.176.0/20
+        PrivateSubnet1ACIDR: 10.200.0.0/19
+        PrivateSubnet2ACIDR: 10.200.32.0/19
+        PrivateSubnet3ACIDR: 10.200.64.0/19
+        PrivateSubnet4ACIDR: 10.200.96.0/19
+
+    VpcPeer:
+      <<: *RequesterAccount
+      Order: 2
+      StackName: LocalVpcPeer
+      Template: VpcPeer.yaml
+      Region: us-west-2
+      Parameters:
+        LocalVpc: ${Requester.Vpc.VPCID}
+        PeerVpcOwnerId: <replace with peer account id>
+        PeerVpcRegion: us-east-1
+        PeerVpc: ${Peer.Vpc.VPCID}
+        PeerRole: ${Peer.PeerRole.RoleARN}
+        PeerVpcCidr: ${Peer.Vpc.VPCCIDR}
+        LocalVpcSubnets: '${Requester.Vpc.PrivateSubnet1AID},${Requester.Vpc.PrivateSubnet2AID}'

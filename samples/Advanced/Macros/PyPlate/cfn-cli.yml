@@ -1,0 +1,18 @@
+Version: 2
+
+Stages:
+
+  Marcos:
+    Order: 1
+    PyPlate:
+      Order: 1
+      Template: python.yaml
+      Region: us-east-1
+      Capabilities: [CAPABILITY_IAM]
+
+  Default:
+    Order: 2
+    PyPlateExample:
+      Order: 1
+      Template: python_example.yaml
+      Region: us-east-1

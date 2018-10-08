@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Hello world SAM API with Route53 HealthCheck backed RollbackTrigger.
+
+Resources:
+
+  HelloWorld:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.get
+      Runtime: nodejs6.10
+      CodeUri: src/
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /{name}
+            Method: get
+
+  Route53HealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        FullyQualifiedDomainName: !Sub '${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com'
+        ResourcePath: '/Prod/Bob'
+        Type: HTTPS_STR_MATCH
+        SearchString: 'Hello world: Bob!'
+        RequestInterval: '30'
+        FailureThreshold: '3'
+      HealthCheckTags:
+        - Key: Name
+          Value: 'HelloWorld SAM API Health Check'
+
+  CloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Route53 Health Check
+      Namespace: AWS/Route53
+      MetricName: HealthCheckStatus
+      Dimensions:
+      - Name: HealthCheckId
+        Value: !Ref Route53HealthCheck
+      Statistic: Minimum
+      Period: '60'
+      EvaluationPeriods: '3'
+      Threshold: '1.0'
+      ComparisonOperator: LessThanThreshold
+
+Outputs:
+  ApiURL:
+    Description: "API endpoint URL for Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  AlarmARN:
+    Description: "CloudWatch Alarm ARN"
+    Value: !GetAtt CloudWatchAlarm.Arn

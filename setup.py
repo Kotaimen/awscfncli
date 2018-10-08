@@ -50,7 +50,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='2.0.1',
+    version='2.1-dev',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -89,7 +89,8 @@ setup(
 
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
-        'awscfncli2.config': '*.json'
+        'awscfncli2.config': ['*.json', '*.yaml']
+
     },
     install_requires=install_requires,
     extras_require={

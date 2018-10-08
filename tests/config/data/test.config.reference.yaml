@@ -1,0 +1,16 @@
+Version: 2
+Stages:
+  DEV:
+    IAMGroupStack1:
+      Order: 0
+      Template: "test.template.yaml"
+      Capabilities: [CAPABILITY_IAM]
+    IAMGroupStack2:
+      Order: 0
+      Template: "test.template.yaml"
+      Capabilities: [CAPABILITY_IAM]
+    StorageStack:
+      Order: 1
+      Template: "test.template.s3.yaml"
+      Tags:
+        user_group: ${DEV.IAMGroupStack1.AdminGroupName}-${DEV.IAMGroupStack2.AdminGroupName}

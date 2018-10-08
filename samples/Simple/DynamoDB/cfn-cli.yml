@@ -1,0 +1,17 @@
+Version: 2
+
+Stages:
+  Default:
+    DDB:
+      Template: DynamoDB_Table.yaml
+      Region: us-east-1
+      Parameters:
+        HashKeyElementName: id
+    DDB2ndIdx:
+      Template: DynamoDB_Secondary_Indexes.yaml
+      Region: us-east-1
+      StackPolicy: stack_policy.json
+      ResourceTypes:
+        - AWS::DynamoDB::Table
+      Parameters:
+        ReadCapacityUnits: 10
