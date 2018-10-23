@@ -1,9 +1,14 @@
 # Changelog
 
+## Version 2.0.3 (2018-10-23)
+
+Issues:
+- Fix package_data definition.
+
 ## Version 2.0.2 (2018-10-23)
 
 Issues:
-- Fixes awscli import error。
+- Fix awscli import error.
 
 ## Version 2.0.1 (2018-08-17)
 
