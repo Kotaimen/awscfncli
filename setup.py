@@ -89,7 +89,7 @@ setup(
 
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
-        'awscfncli2.config': '*.json'
+        'awscfncli2.config': ['*.json']
     },
     install_requires=install_requires,
     extras_require={
