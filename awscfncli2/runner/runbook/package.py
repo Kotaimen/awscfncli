@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import os
-import yaml
 import logging
+import os
 
-from botocore.exceptions import ClientError
+import yaml
 from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
-    Resource, EXPORT_DICT, make_abs_path
+    Resource, make_abs_path
+from botocore.exceptions import ClientError
 
 try:
-    from awscli.customizations.cloudformation.s3uploader import S3Uploader
+    from awscli.customizations.cloudformation.artifact_exporter import \
+        GLOBAL_EXPORT_DICT
 except ImportError:
-    # Fix import error for awscli version later than 1.11.161
-    from awscli.customizations.s3uploader import S3Uploader
+    # Fix import error before awscli version 1.16.36
+    from awscli.customizations.cloudformation.artifact_exporter import \
+        EXPORT_DICT as GLOBAL_EXPORT_DICT
+
+from awscli.customizations.s3uploader import S3Uploader
 
 from awscfncli2.config import ConfigError
 
@@ -25,7 +29,7 @@ def package_template(ppt, session, template_path, bucket_region,
         raise ConfigError('Invalid Template Path "%s"' % template_path)
 
     # if bucket name is not provided, create a default bucket with name
-    # awscfncli-{AWS::AccountId}-{AWS::Region}
+    # awscfncli-{AWS::AccountId}-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               {AWS::Region}
     if bucket_name is None:
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
@@ -66,7 +70,7 @@ def package_template(ppt, session, template_path, bucket_region,
     )
 
     template = Template(template_path, os.getcwd(), s3_uploader,
-                        resources_to_export=EXPORT_DICT)
+                        resources_to_export=GLOBAL_EXPORT_DICT)
     exported_template = template.export()
     exported_str = yaml.safe_dump(exported_template)
 
@@ -135,4 +139,4 @@ ADDITIONAL_EXPORT = {
     'AWS::StepFunctions::StateMachine': StepFunctionsDefinitionString
 }
 
-EXPORT_DICT.update(ADDITIONAL_EXPORT)
+GLOBAL_EXPORT_DICT.update(ADDITIONAL_EXPORT)
