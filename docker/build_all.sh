@@ -2,6 +2,8 @@
 
 set -e
 
+
+
 for PYTHON_VERSION in 3.7 3.6 2.7;
 do
 
@@ -10,9 +12,8 @@ do
         --tag awscfncli2-python-${PYTHON_VERSION} \
         . -f docker/Dockerfile-python.yml;
 
-    docker run --rm -v ~/.aws:/root/.aws:ro \
-        -e AWS_PROFILE=${AWS_PROFILE} \
-        awscfncli2-python-${PYTHON_VERSION}  \
+    docker run --rm \
+        awscfncli2-python-${PYTHON_VERSION} \
         -v \
         -f /usr/src/app/samples/Simple/DynamoDB/cfn-cli.yml \
         validate;
@@ -28,9 +29,7 @@ do
         --tag awscfncli2-amazonlinux-${AMAZON_LINUX_VERSION} \
         . -f docker/Dockerfile-amazonlinux.yml;
 
-    docker run --rm -v ~/.aws:/root/.aws:ro \
-        -e AWS_PROFILE=${AWS_PROFILE} \
-        awscfncli2-amazonlinux-${AMAZON_LINUX_VERSION}  \
+    docker run --rm  \
         -v \
         -f /usr/src/app/samples/Simple/DynamoDB/cfn-cli.yml \
         validate;
