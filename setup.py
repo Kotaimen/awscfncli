@@ -27,14 +27,17 @@ Features:
 
 """
 
+
 install_requires = [
+    # AWS dependency: after Jan-2018
+    'boto3>1.5.8,<2',
+    'botocore>1.8.22,<2',
+    'awscli>1.14.18,<2'
+    # Other: reasonably recent
     'six>=1.10.0',
-    'boto3>=1.6,<2',
-    'botocore>=1.9,<2',
-    'click>=6.0,<7',
+    'click>=6.0,<8',
     'PyYAML>=3.11,<4',
     'jsonschema>=2.6.0,<3',
-    'awscli>=1.14,<2'
 ]
 
 test_requires = [

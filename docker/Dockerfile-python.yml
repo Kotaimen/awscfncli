@@ -1,4 +1,5 @@
-FROM python:2.7
+ARG PYTHON_VERSION
+FROM python:${PYTHON_VERSION}
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
