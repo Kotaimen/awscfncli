@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.0.2 (2018-10-23)
+
+Issues:
+- Fixes awscli import error。
+
 ## Version 2.0.1 (2018-08-17)
 
 Issues:
