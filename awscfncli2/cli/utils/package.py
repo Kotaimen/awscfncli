@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import os
+import yaml
 import click
 import logging
-import os
 
-import yaml
+from botocore.exceptions import ClientError
 from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     Resource, make_abs_path
-from botocore.exceptions import ClientError
+# Before 1.11.161
+# from awscli.customizations.cloudformation.s3uploader import S3Uploader
+from awscli.customizations.s3uploader import S3Uploader
 
 try:
-    from awscli.customizations.cloudformation.artifact_exporter import \
-        GLOBAL_EXPORT_DICT
+    from awscli.customizations.cloudformation.artifact_exporter import EXPORT_LIST as EXPORTS
 except ImportError:
-    # Fix import error before awscli version 1.16.36
-    from awscli.customizations.cloudformation.artifact_exporter import \
-        EXPORT_DICT as GLOBAL_EXPORT_DICT
-
-from awscli.customizations.s3uploader import S3Uploader
+    # for awscli < 1.16.23
+    from awscli.customizations.cloudformation.artifact_exporter import EXPORT_DICT as EXPORTS
 
 from ...config import ConfigError
 
@@ -51,7 +50,7 @@ def package_template(session, template_path, bucket_region,
         raise ConfigError('Invalid Template Path "%s"' % template_path)
 
     # if bucket name is not provided, create a default bucket with name
-    # awscfncli-{AWS::AccountId}-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               {AWS::Region}
+    # awscfncli-{AWS::AccountId}-{AWS::Region}
     if bucket_name is None:
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
@@ -93,7 +92,7 @@ def package_template(session, template_path, bucket_region,
     )
 
     template = Template(template_path, os.getcwd(), s3_uploader,
-                        resources_to_export=GLOBAL_EXPORT_DICT)
+                        resources_to_export=EXPORTS)
     exported_template = template.export()
     exported_str = yaml.safe_dump(exported_template)
 
@@ -150,16 +149,22 @@ class ResourceWithInlineCode(Resource):
 
 
 class KinesisAnalysisApplicationCode(ResourceWithInlineCode):
+    RESOURCE_TYPE = 'AWS::KinesisAnalytics::Application'
     PROPERTY_NAME = 'ApplicationCode'
 
 
 class StepFunctionsDefinitionString(ResourceWithInlineCode):
+    RESOURCE_TYPE = 'AWS::StepFunctions::StateMachine'
     PROPERTY_NAME = 'DefinitionString'
 
 
 ADDITIONAL_EXPORT = {
-    'AWS::KinesisAnalytics::Application': KinesisAnalysisApplicationCode,
-    'AWS::StepFunctions::StateMachine': StepFunctionsDefinitionString
+    KinesisAnalysisApplicationCode.RESOURCE_TYPE: KinesisAnalysisApplicationCode,
+    StepFunctionsDefinitionString.RESOURCE_TYPE: StepFunctionsDefinitionString
 }
 
-GLOBAL_EXPORT_DICT.update(ADDITIONAL_EXPORT)
+
+if isinstance(EXPORTS, dict):
+    EXPORTS.update(ADDITIONAL_EXPORT)
+elif isinstance(EXPORTS, list):
+    EXPORTS.extend(ADDITIONAL_EXPORT.values())
