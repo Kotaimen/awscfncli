@@ -29,10 +29,10 @@ Features:
 
 
 install_requires = [
-    # AWS dependency: after Jan-2018
-    'boto3>1.5.8,<2',
-    'botocore>1.8.22,<2',
-    'awscli>1.14.18,<2'
+    # AWS dependency: as of Oct-2018
+    'boto3>=1.9.0,<2',
+    'botocore>=1.12.0,<2',
+    'awscli>=1.16.0,<2'
     # Other: reasonably recent
     'six>=1.10.0',
     'click>=6.0,<8',

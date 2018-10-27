@@ -102,21 +102,21 @@ Stages:
 
       # Automatically package local resources to s3.
       # These are supported automatically by "aws cloudformation package" command:
-      #   - BodyS3Location property for the AWS::ApiGateway::RestApi resource
-      #   - Code property for the AWS::Lambda::Function resource
-      #   - CodeUri property for the AWS::Serverless::Function resource
-      #   - DefinitionUri property for the AWS::Serverless::Api resource
-      #   - SourceBundle  property for the AWS::ElasticBeanstalk::Application-Version resource
-      #   - TemplateURL property for the AWS::CloudFormation::Stack resource
-      # These are supported by awscfncli:
-      #   - KinesisAnalysisApplicationCode for AWS::KinesisAnalytics::Application resource
-      #   - StepFunctionsDefinitionString for AWS::StepFunctions::StateMachine resource
-      # TODO: Following are planned but not implemented yet
-      # These are implemented using Transform::Include:
-      #   - DefinitionBody property for AWS::Serverless::Api resource
-      #   - PolicyDocument property for IAM resources
-      #   - DefinitionString property for AWS::StepFunctions::StateMachine resource
-      #   - Sql property for IoT, Kinesis analytics and Glue resource
+      # - `BodyS3Location` property for the `AWS::ApiGateway::RestApi` resource
+      # - `Code` property for the `AWS::Lambda::Function` resource
+      # - `CodeUri` property for the `AWS::Serverless::Function` resource
+      # - `DefinitionS3Location` property for the `AWS::AppSync::GraphQLSchema` resource
+      # - `RequestMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+      # - `ResponseMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+      # - `DefinitionUri` property for the `AWS::Serverless::Api` resource
+      # - `Location` parameter for the `AWS::Include` transform
+      # - `SourceBundle` property for the `AWS::ElasticBeanstalk::ApplicationVersion` resource
+      # - `TemplateURL` property for the `AWS::CloudFormation::Stack` resource
+      # The following resource property are supported by `awscfncli`:
+      # - `ApplicationCode` property for the `AWS::KinesisAnalytics::Application`
+      #   resource
+      # - `DefinitionString` property for the `AWS::StepFunctions::StateMachine`
+      #   resource
       Package:  false
 
       # S3 bucket name for packaging artifacts.

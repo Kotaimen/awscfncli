@@ -33,6 +33,9 @@ Install using [pip](https://pip.pypa.io/) from
 
     pip install awscfncli2
 
+To enable click supported auto-complete, add following line to `.bachrc`
+    
+    eval "$(_CFN_CLI_COMPLETE=source cfn-cli)"
 
 ## Usage
 
@@ -107,18 +110,24 @@ and the bucket will be created automatically.
 The following resource property are supported by `awscfncli` and official
 `aws cloudformation package` command:
 
-- `AWS::ApiGateway::RestApi->BodyS3Location`
-- `AWS::Lambda::Function->Code`
-- `AWS::Serverless::Function->CodeUri`
-- `AWS::Serverless::Api->DefinitionUri`
-- `AWS::ElasticBeanstalk::Application-Version->SourceBundle`
-- `AWS::CloudFormation::Stack->TemplateURL`
+- `BodyS3Location` property for the `AWS::ApiGateway::RestApi` resource
+- `Code` property for the `AWS::Lambda::Function` resource
+- `CodeUri` property for the `AWS::Serverless::Function` resource
+- `DefinitionS3Location` property for the `AWS::AppSync::GraphQLSchema`
+  resource
+- `RequestMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+- `ResponseMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+- `DefinitionUri` property for the `AWS::Serverless::Api` resource
+- `Location` parameter for the `AWS::Include` transform
+- `SourceBundle` property for the `AWS::ElasticBeanstalk::ApplicationVersion` resource
+- `TemplateURL` property for the `AWS::CloudFormation::Stack` resource
 
 The following resource property are supported by `awscfncli`:
 
-- `AWS::Transform->Location`
-- `AWS::KinesisAnalytics::Application->ApplicationCode`
-- `AWS::StepFunctions::StateMachine->DefinitionString`
+- `ApplicationCode` property for the `AWS::KinesisAnalytics::Application` 
+  resource
+- `DefinitionString` property for the `AWS::StepFunctions::StateMachine` 
+  resource
 
 ## Config File
 
