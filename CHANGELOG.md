@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.0.4 (2018-10-26)
+
+Issues:
+- Fix compatibility issue for awscli > 1.16.23
+
 ## Version 2.0.3 (2018-10-23)
 
 Issues:
