@@ -1,0 +1,13 @@
+Version: 2
+
+Stages:
+
+  Default:
+    Api:
+      Template: template.yaml
+      StackName: ApiSwaggerCors
+      Capabilities: [CAPABILITY_IAM]
+      Package: true
+      Region: us-east-1
+      Tags:
+        Stage: Develop
