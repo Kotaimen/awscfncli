@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
 import json
+import os
 import string
 import threading
 
+from .base import StackDeploymentContext
 from .boto3_params import make_boto3_parameters
 from .boto3_profile import Boto3Profile
 from .package import package_template
-from .base import StackDeploymentContext
-
-
-def is_local_path(path):
-    if os.path.exists(path):
-        return True
+from ...config import ConfigError
 
 
 class _Template(string.Template):
@@ -34,7 +30,7 @@ class ParametersFormatter(object):
         return self._attributes
 
     def format(self, **attributes):
-        s = _Template(self._serialized_parameters)\
+        s = _Template(self._serialized_parameters) \
             .safe_substitute(**attributes)
         return json.loads(s)
 
@@ -88,17 +84,32 @@ class Boto3DeploymentContext(StackDeploymentContext):
     def run_packaging(self):
         """Package templates and resources and upload to artifact bucket"""
         package = self.metadata["Package"]
+
+        if not package:
+            return
+
+        template_path = self.parameters.get('TemplateURL', None)
+
+        if not os.path.exists(template_path):
+            raise ConfigError('Package is supported for local template only')
+
         artifact_store = self.metadata["ArtifactStore"]
 
-        if package and 'TemplateURL' in self.parameters:
-            template_path = self.parameters.get('TemplateURL')
-            if is_local_path(template_path):
-                packaged_template = package_template(
-                    self._ppt,
-                    self.session,
-                    template_path,
-                    bucket_region=self.session.region_name,
-                    bucket_name=artifact_store,
-                    prefix=self.parameters['StackName'])
-                self.parameters['TemplateBody'] = packaged_template
-                self.parameters.pop('TemplateURL')
+        template_body, template_url = package_template(
+            self._ppt,
+            self.session,
+            template_path,
+            bucket_region=self.session.region_name,
+            bucket_name=artifact_store,
+            prefix=self.parameters['StackName']
+        )
+
+        if template_url is not None:
+            # packaged template is too large, use S3 pre-signed url
+            self.parameters['TemplateURL'] = template_url
+        else:
+            # packaged template is passed with request body
+            self.parameters['TemplateBody'] = template_body
+            self.parameters.pop('TemplateURL')
+
+

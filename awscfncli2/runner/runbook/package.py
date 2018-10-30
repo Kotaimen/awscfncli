@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
 
-
-import os
-import yaml
-
+import json
 import logging
+import os
+import tempfile
 
-from botocore.exceptions import ClientError
 from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     Resource, make_abs_path
-# Before 1.11.161
-# from awscli.customizations.cloudformation.s3uploader import S3Uploader
 from awscli.customizations.s3uploader import S3Uploader
+from botocore.exceptions import ClientError
+
+# Before 1.11.16, unsupported now
+# from awscli.customizations.cloudformation.s3uploader import S3Uploader
 
 try:
-    from awscli.customizations.cloudformation.artifact_exporter import EXPORT_LIST as EXPORTS
+    from awscli.customizations.cloudformation.artifact_exporter import \
+        EXPORT_LIST as EXPORTS
 except ImportError:
     # for awscli < 1.16.23
-    from awscli.customizations.cloudformation.artifact_exporter import EXPORT_DICT as EXPORTS
+    from awscli.customizations.cloudformation.artifact_exporter import \
+        EXPORT_DICT as EXPORTS
 
-from awscfncli2.config import ConfigError
+from ...config import ConfigError
+
+TEMPLATE_BODY_SIZE_LIMIT = 51200
 
 
 def package_template(ppt, session, template_path, bucket_region,
@@ -35,9 +39,9 @@ def package_template(ppt, session, template_path, bucket_region,
         sts = session.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         bucket_name = 'awscfncli-%s-%s' % (account_id, bucket_region)
-        ppt.secho('Using default artifact bucket {}'.format(bucket_name))
+        ppt.secho('Using default artifact bucket s3://{}'.format(bucket_name))
     else:
-        ppt.secho('Using artifact bucket {}'.format(bucket_name))
+        ppt.secho('Using specified artifact bucket s3://{}'.format(bucket_name))
 
     s3_client = session.client('s3')
 
@@ -72,14 +76,45 @@ def package_template(ppt, session, template_path, bucket_region,
 
     template = Template(template_path, os.getcwd(), s3_uploader,
                         resources_to_export=EXPORTS)
+
     exported_template = template.export()
-    exported_str = yaml.safe_dump(exported_template)
 
-    ppt.secho('...successfully packaged artifacts and '
-              'uploaded file {template_path} to s3://{bucket_name}'.format(
-        template_path=template_path, bucket_name=bucket_name))
+    ppt.secho('Successfully packaged artifacts and '
+              'uploaded to s3://{bucket_name}.'.format(bucket_name=bucket_name),
+              fg='green')
 
-    return exported_str
+    template_body = json.dumps(exported_template,
+                               ensure_ascii=True,
+                               indent=None,
+                               separators=(',', ':'))
+
+    template_data = template_body.encode('ascii')
+    if len(template_data) <= TEMPLATE_BODY_SIZE_LIMIT:
+        template_url = None
+    else:
+        ppt.secho('Template body is too large, uploading as artifact.',
+                  fg='red')
+        with tempfile.NamedTemporaryFile(mode='wb') as fp:
+            # write template body to local temp file
+            fp.write(template_data)
+            fp.flush()
+            # upload to s3
+            template_location = s3_uploader.upload_with_dedup(
+                fp.name,
+                extension='template.json')
+            ppt.secho('Template uploaded to %s' % template_location)
+
+        # get s3 object key ...upload_with_dedup() returns s3://bucket/key
+        template_key = template_location.replace('s3://%s/' % bucket_name, '')
+        # generate a pre-signed url for CloudFormation as the object in S3
+        # is private by default
+        template_url = s3_client.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': bucket_name, 'Key': template_key},
+            ExpiresIn=3600
+        )
+
+    return template_body, template_url
 
 
 # XXX: Hack, Register customized Resource in AWS Cli
@@ -141,7 +176,6 @@ ADDITIONAL_EXPORT = {
     KinesisAnalysisApplicationCode.RESOURCE_TYPE: KinesisAnalysisApplicationCode,
     StepFunctionsDefinitionString.RESOURCE_TYPE: StepFunctionsDefinitionString
 }
-
 
 if isinstance(EXPORTS, dict):
     EXPORTS.update(ADDITIONAL_EXPORT)
