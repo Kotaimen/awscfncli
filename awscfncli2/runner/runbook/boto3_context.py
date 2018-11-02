@@ -2,7 +2,6 @@
 
 import json
 import os
-import string
 import threading
 
 from .base import StackDeploymentContext
@@ -11,9 +10,7 @@ from .boto3_profile import Boto3Profile
 from .package import package_template
 from ...config import ConfigError
 
-
-class _Template(string.Template):
-    idpattern = r'[_a-z][._a-z0-9-]*'
+from awscfncli2.config import ParamReferenceTemplate
 
 
 class ParametersFormatter(object):
@@ -22,7 +19,7 @@ class ParametersFormatter(object):
         self._serialized_parameters = json.dumps(parameters)
 
         self._attributes = list()
-        for attribute in _Template.pattern.findall(self._serialized_parameters):
+        for attribute in ParamReferenceTemplate.pattern.findall(self._serialized_parameters):
             if attribute[2]:
                 self._attributes.append(attribute[2])
 
@@ -30,7 +27,7 @@ class ParametersFormatter(object):
         return self._attributes
 
     def format(self, **attributes):
-        s = _Template(self._serialized_parameters) \
+        s = ParamReferenceTemplate(self._serialized_parameters)\
             .safe_substitute(**attributes)
         return json.loads(s)
 

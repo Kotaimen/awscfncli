@@ -36,7 +36,7 @@ class FormatV1(ConfigFormat):
         self._context = context
 
     def validate(self, config):
-        return validate_schema(config, 1)
+        return validate_schema(config, self.VERSION)
 
     def parse(self, config):
         raise NotImplementedError
@@ -76,7 +76,7 @@ class FormatV2(ConfigFormat):
         self._basedir = basedir
 
     def validate(self, config):
-        return validate_schema(config, 2)
+        return validate_schema(config, self.VERSION)
 
     def parse(self, config):
         deployment = Deployment()
@@ -173,3 +173,7 @@ class FormatV2(ConfigFormat):
             key, stack_metadata, stack_profile, stack_parameters)
 
         return stack
+
+
+class FormatV21(FormatV2):
+    VERSION = 2.1
