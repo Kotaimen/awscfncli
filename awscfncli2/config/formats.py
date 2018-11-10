@@ -3,8 +3,13 @@
 import os
 import six
 import copy
+import string
+import json
+import jsonschema
+from semantic_version import Version
 
-from .schema import validate_schema
+
+from .schema import load_schema
 from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
     StackParameters, Deployment
 
@@ -19,6 +24,25 @@ class FormatError(Exception):
     pass
 
 
+def load_format(version):
+    if version is None:
+        return FormatV1
+
+    try:
+        v = Version(version, partial=True)
+    except ValueError:
+        raise FormatError('Invalid Version "%s"' % version)
+
+    if v == FormatV3.VERSION:
+        return FormatV3
+    elif v == FormatV2.VERSION:
+        return FormatV2
+    elif v == FormatV1.VERSION:
+        return FormatV1
+    else:
+        raise FormatError('Unspported config version')
+
+
 class ConfigFormat(object):
     VERSION = None
 
@@ -30,20 +54,21 @@ class ConfigFormat(object):
 
 
 class FormatV1(ConfigFormat):
-    VERSION = 1
+    VERSION = Version('1.0.0')
 
     def __init__(self, **context):
         self._context = context
 
     def validate(self, config):
-        return validate_schema(config, self.VERSION)
+        schema = load_schema(str(self.VERSION))
+        jsonschema.validate(config, schema)
 
     def parse(self, config):
         raise NotImplementedError
 
 
 class FormatV2(ConfigFormat):
-    VERSION = 2
+    VERSION = Version('2.0.0')
 
     STAGE_CONFIG = dict(
         Order=(six.integer_types, None),
@@ -76,7 +101,12 @@ class FormatV2(ConfigFormat):
         self._basedir = basedir
 
     def validate(self, config):
-        return validate_schema(config, self.VERSION)
+        schema = load_schema(str(self.VERSION))
+        jsonschema.validate(config, schema)
+
+        if have_parameter_reference_pattern(config):
+            raise jsonschema.SchemaError(
+                'Do not support parameter reference in config version <= 2')
 
     def parse(self, config):
         deployment = Deployment()
@@ -175,5 +205,19 @@ class FormatV2(ConfigFormat):
         return stack
 
 
-class FormatV21(FormatV2):
-    VERSION = 2.1
+class ParamReferenceTemplate(string.Template):
+    idpattern = r'[_a-z][._a-z0-9-]*'
+
+
+def have_parameter_reference_pattern(config):
+    m = ParamReferenceTemplate.pattern.search(json.dumps(config))
+    return m is not None
+
+
+class FormatV3(FormatV2):
+    VERSION = Version('3.0.0')
+
+    def validate(self, config):
+        schema = load_schema(str(FormatV2.VERSION)) # use same schema as v2
+        jsonschema.validate(config, schema)
+

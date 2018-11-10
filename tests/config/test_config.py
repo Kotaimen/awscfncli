@@ -126,4 +126,4 @@ class TestConfig(object):
         c = config.load_config(configfile)
 
         stacks = c.query_stacks('*', '*')
-        assert len(stacks) == 2
+        assert len(stacks) == 3

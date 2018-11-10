@@ -38,6 +38,7 @@ install_requires = [
     'click>=6.0,<8',
     'PyYAML>=3.11,<4',
     'jsonschema>=2.6.0,<3',
+    'semantic_version>=2.0.0'
 ]
 
 test_requires = [

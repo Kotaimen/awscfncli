@@ -112,7 +112,7 @@
   "properties": {
     "Version": {
       "title": "Version Number",
-      "type": "number"
+      "type": "integer"
     },
     "Blueprints": {
       "title": "A Collection of Template of Stack Config",
