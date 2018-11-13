@@ -1,5 +1,5 @@
 # Configuration file version, mandatory. 
-Version: 2
+Version: 3
 
 # Default values for all stacks in this configuration file, 
 # parameters are overwritten or extended (for dict and list types) in stacks.
@@ -10,7 +10,6 @@ Blueprints:
 
     Tags:
       Project: awscfncli
-
 
 
 # Stages, each stage at least 1 stack
