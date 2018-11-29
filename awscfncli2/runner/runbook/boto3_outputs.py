@@ -53,8 +53,7 @@ class Boto3OutputStore(object):
                         raise RuntimeError('Collect Outputs: Attribute %s not found' % attribute)
 
                     self._ppt.secho(
-                        'Collect Ouputs: Collected outputs from %s' % qualified_name,
-                        color='yellow')
+                        'Collected outputs from %s' % qualified_name, color='yellow')
                     self._outputs.update(outputs)
 
     def get_outputs(self):
