@@ -15,11 +15,13 @@ class ClickContext(object):
                  stack_selector,
                  profile_name,
                  region_name,
+                 artifact_store,
                  pretty_printer):
         self._config_filename = config_filename
         self._stack_selector = StackSelector(stack_selector)
         self._boto3_profile = Boto3Profile(profile_name=profile_name,
                                            region_name=region_name)
+        self._artifact_store = artifact_store
         self._deployments = None
         self._pretty_printer = pretty_printer
         self._runner = None
@@ -61,6 +63,7 @@ class ClickContext(object):
         if self._runner is None:
             self._runner = Boto3RunBook(
                 self.boto3_profile,
+                self._artifact_store,
                 self.deployments,
                 self.stack_selector,
                 self.ppt

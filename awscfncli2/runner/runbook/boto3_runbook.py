@@ -8,10 +8,11 @@ from .base import RunBook
 
 
 class Boto3RunBook(RunBook):
-    def __init__(self, profile, manager, selector, pretty_printer):
+    def __init__(self, profile, artifact_store, manager, selector, pretty_printer):
         RunBook.__init__(self)
 
         self._profile = profile
+        self._artifact_store = artifact_store
         self._manager = manager
         self._selector = selector
         self._ppt = pretty_printer
@@ -33,7 +34,7 @@ class Boto3RunBook(RunBook):
         whole_contexts = []
         for deployment in whole_deployments:
             context = Boto3DeploymentContext(
-                self._profile, deployment, self._ppt)
+                self._profile, self._artifact_store, deployment, self._ppt)
             if deployment.stack_key.qualified_name in selected_stack_keys:
                 self._contexts.append(context)
             whole_contexts.append(context)

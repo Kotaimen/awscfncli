@@ -33,7 +33,7 @@ class ParametersFormatter(object):
 
 
 class Boto3DeploymentContext(StackDeploymentContext):
-    def __init__(self, profile, deployment, pretty_printer):
+    def __init__(self, profile, artifact_store, deployment, pretty_printer):
         self._boto3_profile = Boto3Profile(
             profile_name=deployment.profile.Profile,
             region_name=deployment.profile.Region
@@ -46,6 +46,7 @@ class Boto3DeploymentContext(StackDeploymentContext):
         self._metadata = deployment.metadata._asdict()
         self._parameters = deployment.parameters._asdict()
 
+        self._artifact_store = artifact_store
         self._ppt = pretty_printer
         self._parameters_formatter = ParametersFormatter(self._parameters)
 
@@ -92,7 +93,8 @@ class Boto3DeploymentContext(StackDeploymentContext):
                 "Can'not find %s. Package is supported for local template only" %
                               (template_path))
 
-        artifact_store = self.metadata["ArtifactStore"]
+        artifact_store = self._artifact_store if self._artifact_store else \
+            self.metadata["ArtifactStore"]
 
         template_body, template_url = package_template(
             self._ppt,

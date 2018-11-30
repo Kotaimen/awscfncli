@@ -121,3 +121,6 @@ pip-selfcheck.json
 
 ### Pycharm
 .idea
+
+### Visual Studio Code
+.vscode
