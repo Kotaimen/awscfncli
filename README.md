@@ -50,6 +50,7 @@ Options:
     all stacks in all stages.
 - `--profile`: Override AWS profile specified in the config.
 - `--region`: Override AWS region specified in the config.
+- `--artifact-store`: Override ArtifactStore (AWS bucket name) specified in the config.
 - `-1, --one`: Select only the first matching stack if glob 
     is used in `--stack` option.
 - `--verbose`: Be more verbose.
