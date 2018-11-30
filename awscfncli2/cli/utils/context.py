@@ -18,6 +18,7 @@ class ContextObject(object):
                  stack_selector,
                  profile,
                  region,
+                 artifact_store,
                  first_stack,
                  verbosity):
 
@@ -38,6 +39,7 @@ class ContextObject(object):
         self.stack_pattern = stack_pattern
         self.profile = profile
         self.region = region
+        self.artifact_store = artifact_store
         self.first_stack = first_stack
         self.verbosity = verbosity
 
@@ -117,7 +119,9 @@ class ContextObject(object):
                 stack_config['Metadata']['Profile'] = self.profile
             if self.region is not None:
                 stack_config['Metadata']['Region'] = self.region
-
+            if self.artifact_store is not None:
+                stack_config['Metadata']['ArtifactStore'] = self.artifact_store
+                
             qualified_name = '.'.join([stage_id, stack_id])
             self._stacks[qualified_name] = stack_config
 

@@ -32,13 +32,16 @@ DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
 @click.option('-r', '--region',
               type=click.STRING, default=None,
               help='Override AWS region specified in the config.')
+@click.option('-a', '--artifact-store',
+              type=click.STRING, default=None,
+              help='Override ArtifactStore (AWS bucket name) specified in the config.')
 @click.option('-1', '--one',
               is_flag=True, default=False,
               help='Select only the first matching stack if glob is used '
                    'in --stack option.')
 @click.option('-v', '--verbose', count=True,
               help='Be more verbose.')
-def cfn_cli(ctx, file, stack, profile, region, one, verbose):
+def cfn_cli(ctx, file, stack, profile, region, artifact_store, one, verbose):
     """AWS CloudFormation stack management command line interface.
 
     Options can also be specified using environment variables:
@@ -87,6 +90,7 @@ def cfn_cli(ctx, file, stack, profile, region, one, verbose):
         stack_selector=stack,
         profile=profile,
         region=region,
+        artifact_store=artifact_store,
         first_stack=one,
         verbosity=verbose,
     )
