@@ -88,7 +88,9 @@ class Boto3DeploymentContext(StackDeploymentContext):
         template_path = self.parameters.get('TemplateURL', None)
 
         if not os.path.exists(template_path):
-            raise ConfigError('Package is supported for local template only')
+            raise ConfigError(
+                "Can'not find %s. Package is supported for local template only" %
+                              (template_path))
 
         artifact_store = self.metadata["ArtifactStore"]
 
