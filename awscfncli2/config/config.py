@@ -238,6 +238,10 @@ class StackConfig(object):
             # local template with package=on
             TemplateURL = os.path.realpath(
                 os.path.join(self._basedir, Template))
+            if not os.path.isfile(TemplateURL):
+                raise ConfigError(
+                    'Template file "%s" does not exists. Expected to find a file in "%s".' % \
+                    (Template, TemplateURL))
             TemplateBody = None
         else:
             # local template
