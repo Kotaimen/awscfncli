@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.0.5 (2018-11-30)
+
+Issues:
+- Check template existence before package
+- Enable setting arifactory store in command line
+
 ## Version 2.0.4 (2018-10-26)
 
 Issues:
