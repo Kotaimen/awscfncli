@@ -123,17 +123,115 @@ The following resource property are supported by `awscfncli`:
   
 ## Config File
 
+`awscfncli` uses a yaml config file to manage which stacks to deploy and
+how to deploy them. By default, it is cfn-cli.yml.
+
 ### Anatomy
-TODO
+The config is composed of the following elements, `Version`, `Stages`
+and `Blueprints`.
+
+- `Version` (required): Version of cfn-cli config, support 2 and 3 now.
+- `Stages` (required): Definition of the stack to be deployed.
+- `Blueprints` (optional): Template of the stack.
+
+The following is a simple example of a typical config:
+```yaml
+Version: 3
+
+Stages:
+  Default:
+    DDB:
+      Template: DynamoDB_Table.yaml
+      Region: us-east-1
+      Parameters:
+        HashKeyElementName: id
+    DDB2ndIdx:
+      Template: DynamoDB_Secondary_Indexes.yaml
+      Region: us-east-1
+      StackPolicy: stack_policy.json
+      ResourceTypes:
+        - AWS::DynamoDB::Table
+      Parameters:
+        ReadCapacityUnits: 10
+
+```
+
+A stage could have multiple stacks.
+In the above example, Stage `Default` have two stacks `DDB` and `DDB2ndIdx`.
+Stack name could be customized and should contain only alpha and numbers.
+
+Each stack may have the following attributes.
+
+- Attributes introduced by `awscfncli`:
+    - `Profile`: Profile name of your aws credential
+    - `Region`: Eg. us-east-1
+    - `Package`: Automatically package your template or not
+    - `ArtifactStore`: Name of S3 bucket to store packaged files
+    - `Order`: Deployment order of stacks
+    - `Extends`: Extend a blueprint
+- Attributes introduced by `boto3`:
+    - Please refer to [Boto3 Create Stack](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html#CloudFormation.Client.create_stack)
+
 
 ### Blueprints and Inheritance 
-TODO
+Blueprint serves as a template of a common stack. A stack could extends
+a stack and override its attributes with its own attributes.
+
+
+- Inheritance behaviors:
+    - scalar value: replace
+    - dict value: update
+    - list value: extend
+
+
+- Special attributes:
+    - `Capabilities`: replace
+
+For example, please refer to [Blueprints Example](samples/SAM/api_backend/cfn-cli.yaml)
 
 ### Stages and Ordering
-TODO
+Stage and stacks could be deployed according to the order you specified.
+Order numbers are positive integers. `cfn-cli` will deploy stacks in
+stages with lower order first and in each stage stacks with lower order will
+be deployed first
+
+- Stage Order
+- Stack Order
+
+```yaml
+    Stages:
+        Stage1:
+            Order: 1
+            Stack1:
+                Order: 1
+            Stack2:
+                Order: 2
+        Stage2:
+            Order: 2
+
+```
+
+For examples, please refer to [Order Example](samples/Nested/StaticWebSiteWithPipeline/cfn-cli.yaml)
+
 
 ### Cross Stack Reference
-TODO
+In config version 3, we support a new feature called cross stack reference.
+In many cases, stacks' input depends on outputs from other stacks during deployment,
+so this new feature will allow stacks collect their inputs as needed and be deployed
+without interruption.
+
+An attribute could reference ouputs of another stack by using
+the following syntax:
+```
+Stack1:
+    Parameters:
+        VpcId: ${StageName.StackName.OutputName}
+```
+
+For example, please refer to [Cross Stack Example](samples/Advanced/VpcPeering/cfn-cli.yml)
+
+*Please Note: You should take care of the order of deployment yourself so
+that referenced stack is deployed first*
 
 ## Migrate from 2.0.x
 
