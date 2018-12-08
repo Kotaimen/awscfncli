@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 2.1.0 (2018-12-08)
+
+Features:
+- Support Cross Stack Reference in config version 3
+- Refactor stack command and config
+
+## Version 2.0.5 (2018-11-30)
+
+Issues:
+- Check template existence before package
+- Enable setting arifactory store in command line
+
 ## Version 2.0.4 (2018-10-26)
 
 Issues:
