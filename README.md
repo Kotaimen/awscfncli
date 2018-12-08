@@ -105,8 +105,8 @@ The following resource property are supported by `awscfncli` and official
 - `BodyS3Location` property for the `AWS::ApiGateway::RestApi` resource
 - `Code` property for the `AWS::Lambda::Function` resource
 - `CodeUri` property for the `AWS::Serverless::Function` resource
-- `DefinitionS3Location` property for the `AWS::AppSync::GraphQLSchema`
-  resource
+- `ContentUri` property for the `AWS::Serverless::LayerVersion` resource
+- `DefinitionS3Location` property for the `AWS::AppSync::GraphQLSchema` resource
 - `RequestMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
 - `ResponseMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
 - `DefinitionUri` property for the `AWS::Serverless::Api` resource
@@ -116,9 +116,9 @@ The following resource property are supported by `awscfncli` and official
 
 The following resource property are supported by `awscfncli`:
 
-- `ApplicationCode` property for the `AWS::KinesisAnalytics::Application` 
+- `ApplicationCode` property for the `AWS::KinesisAnalytics::Application`
   resource
-- `DefinitionString` property for the `AWS::StepFunctions::StateMachine` 
+- `DefinitionString` property for the `AWS::StepFunctions::StateMachine`
   resource
   
 ## Config File
