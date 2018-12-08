@@ -5,6 +5,7 @@ import pytest
 import jsonschema
 import shutil
 from awscfncli2 import config
+from awscfncli2.config.exceptions import ConfigError
 
 
 @pytest.fixture
@@ -31,7 +32,7 @@ class TestConfig(object):
         assert c.version == 2
 
         stages = c.list_stages()
-        assert len(stages) == 1
+        assert len(stages) == 2
         assert 'Staging' in stages
 
     def test_list_stacks(self, data_dir):
@@ -47,7 +48,7 @@ class TestConfig(object):
         assert 'Vpc2' in stacks
         assert 'Vpc3' in stacks
 
-        stack = c.get_stack('Staging', 'Vpc1')
+        stack = c.get_stack('Staging', 'Vpc1').to_boto3_format()
         assert stack['Metadata']['Region'] == 'us-east-1'
         assert stack['Metadata']['Profile'] == 'bob'
         assert stack['StackName'] == 'StackNameOfVpc1'
@@ -57,7 +58,7 @@ class TestConfig(object):
         assert stack['Tags'][1]['Key'] == 'key2'
         assert stack['Tags'][1]['Value'] == 'value2'
 
-        stack = c.get_stack('Staging', 'Vpc2')
+        stack = c.get_stack('Staging', 'Vpc2').to_boto3_format()
         assert stack['Metadata']['Region'] == 'us-east-2'
         assert stack['Metadata']['Profile'] == 'ray'
         assert stack['StackName'] == 'Vpc2'
@@ -67,7 +68,7 @@ class TestConfig(object):
         assert stack['Tags'][1]['Key'] == 'key4'
         assert stack['Tags'][1]['Value'] == 'value4'
 
-        stack = c.get_stack('Staging', 'Vpc3')
+        stack = c.get_stack('Staging', 'Vpc3').to_boto3_format()
         assert stack['Metadata']['Region'] == 'cn-east-1'
         assert stack['Metadata']['Profile'] == 'ray'
         assert stack['StackName'] == 'Vpc3'
@@ -80,3 +81,21 @@ class TestConfig(object):
         assert stack['Tags'][2]['Value'] == 'demo'
         assert stack['Capabilities'] == ['CAPABILITY_NAMED_IAM']
 
+    def test_multiple_blueprint_inheritance(self, data_dir):
+        configfile = data_dir.join('data/test.config.yaml')
+        c = config.load_config(configfile)
+
+        stack = c.get_stack('Prod', 'Vpc1').to_boto3_format()
+        assert stack['Metadata']['Region'] == 'eu-west-1'
+        assert stack['Metadata']['Profile'] == 'prod'
+        assert next(tag['Value'] 
+                    for tag in stack['Tags']
+                    if tag['Key'] == 'Environment') == 'prod'
+
+    def test_multiple_blueprint_inheritance_for_nonexistent_blueprint(self, data_dir):
+        configfile = data_dir.join('data/test.config.missing_blueprint.yaml')
+
+        with pytest.raises(ConfigError) as e:
+            c = config.load_config(configfile)
+
+        assert 'not found' in str(e.value)

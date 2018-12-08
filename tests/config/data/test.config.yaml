@@ -8,6 +8,11 @@ Blueprints:
     Tags:
       Project: 'demo'
       Environment: 'dev'
+  Prod:
+    Region: "eu-west-1"
+    Profile: "prod"
+    Tags:
+      Environment: 'prod'   
 Stages:
   Staging:
     Vpc1:
@@ -33,3 +38,7 @@ Stages:
       Tags:
         Environment: 'prod'
         Department: 'cloud'
+  Prod:  
+    Vpc1:
+      Extends: [ 'Base', 'Prod' ]
+

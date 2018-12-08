@@ -102,7 +102,7 @@
               {
                 "properties": {
                   "Extends": {
-                    "type": "string"
+                    "type":  ["string", "array" ]
                   },
                   "Order": {
                     "type": "integer"

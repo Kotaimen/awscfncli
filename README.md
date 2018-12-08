@@ -248,6 +248,34 @@ Stages:
         WriteCapacityUnits:     100
 ```
 
+You can also extend your stack configuration by using multiple blueprints, like this:
+
+```yaml
+  Version: 2
+  Blueprints:
+    BaseDDB:
+      Template:          https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Parameters:
+        ReadCapacityUnits:      5
+        WriteCapacityUnits:     5
+        HashKeyElementName:     id
+    ProdOverrides:
+      Parameters:
+        ReadCapacityUnits:      100
+        WriteCapacityUnits:     100
+      
+  ...
+
+  Prod:
+    Stack1:
+      Extends:           [ BaseDDB, ProdOverrides ]
+      Region:            us-east-1
+      Profile:           prod
+      StackName:         DDB
+  
+  ... 
+  ```
+
 For details about rules of how parameters are extended, please see the
 following chapter `Config Inheritance`.
 
@@ -365,7 +393,8 @@ Stages:
       ResourceTypes:
         - AWS::EC2
 ```
-4. Special Case List:
+4. If multiple blueprints are specified in `Extends` clause, they are applied in order of appearance.
+5. Special Case List:
 
     Capabilities: Replace the original value.
 

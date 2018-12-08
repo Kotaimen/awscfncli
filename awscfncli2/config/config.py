@@ -89,9 +89,29 @@ class CfnCliConfig(object):
         logging.debug('Loading version %s' % version)
         return version
 
+    def _prepare_blueprints(self, stack_config, available_blueprints):
+
+        blueprints = []
+
+        blueprint_ids = stack_config.pop('Extends', None)
+        if type(blueprint_ids) == str:
+            blueprint_ids = [blueprint_ids]
+
+        if blueprint_ids:
+            for blueprint_id in blueprint_ids:
+                try:
+                    logging.debug('Extending with blueprint "%s"' % (
+                        blueprint_id))
+                    blueprints.append(available_blueprints[blueprint_id])
+                except KeyError:
+                    raise ConfigError(
+                        'Blueprint "%s" not found' % blueprint_id)
+
+        return blueprints
+
     def _load_config(self, config):
 
-        blueprints = config.get('Blueprints', dict())
+        available_blueprints = config.get('Blueprints', dict())
 
         stages = dict()
         for stage_id, stage_config in six.iteritems(config['Stages']):
@@ -104,17 +124,6 @@ class CfnCliConfig(object):
                 logging.debug('Loading stage "%s" stack "%s"' % (
                     stage_id, stack_id))
 
-                # find blueprint
-                blueprint_id = stack_config.pop('Extends', None)
-                if blueprint_id:
-                    try:
-                        blueprint = blueprints[blueprint_id]
-                    except KeyError:
-                        raise ConfigError(
-                            'Blueprint "%s" not found' % blueprint_id)
-                else:
-                    blueprint = dict()
-
                 # find stack stack_order, default
                 stack_order = stack_config.pop('Order', 0)
 
@@ -123,7 +132,12 @@ class CfnCliConfig(object):
                     stack_id,
                     (stage_order, stack_order),
                     self._basedir)
-                config.update(**blueprint)
+
+                blueprints = self._prepare_blueprints(stack_config,
+                                                      available_blueprints)
+                for blueprint in blueprints:
+                    config.update(**blueprint)
+
                 config.update(**stack_config)
 
                 stacks[stack_id] = config
@@ -241,7 +255,7 @@ class StackConfig(object):
             if not os.path.isfile(TemplateURL):
                 raise ConfigError(
                     'Template file "%s" does not exists. Expected to find a file in "%s".' % \
-                    (Template, TemplateURL))
+                    (Template, os.path.join(self._basedir, Template)))
             TemplateBody = None
         else:
             # local template
