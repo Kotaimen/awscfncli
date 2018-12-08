@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create a sample S3 Bucket"
+Resources:
+  Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "Private"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: "42891ce5-d508-4fed-9275-51a76c908e79"
+              SSEAlgorithm: "aws:kms"
+      VersioningConfiguration:
+          Status: "Enabled"
+      LifecycleConfiguration:
+        Rules:
+          - Status: "Enabled"
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+              - StorageClass: GLACIER
+                TransitionInDays: 90
+            ExpirationInDays: 120
+            NoncurrentVersionTransitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 60
+              - StorageClass: GLACIER
+                TransitionInDays: 90
+            NoncurrentVersionExpirationInDays: 120
