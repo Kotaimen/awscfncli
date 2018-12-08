@@ -3,8 +3,8 @@
 import click
 
 from . import stack
-from ..utils import boto3_exception_handler, ContextObject
-from ..utils import tail_stack_events
+from ..utils import command_exception_handler, tail_stack_events
+from ...cli import ClickContext
 
 
 @stack.command()
@@ -15,17 +15,24 @@ from ..utils import tail_stack_events
               help='number of latest stack events, 0 means fetch all'
                    'stack events')
 @click.pass_context
-@boto3_exception_handler
+@command_exception_handler
 def tail(ctx, timeout, events):
-    """Update stack with configuration"""
-    assert isinstance(ctx.obj, ContextObject)
+    """Wath stack events, not this command will only select first one
+    if mutable stacks matches stack selector."""
+    assert isinstance(ctx.obj, ClickContext)
 
-    qualified_name, stack_config = list(ctx.obj.stacks.items())[0]
+    for stack_context in ctx.obj.runner.contexts:
+        stack_context.make_boto3_parameters()
 
-    session = ctx.obj.get_boto3_session(stack_config)
+        ctx.obj.ppt.pprint_stack_name(
+            stack_context.stack_key,
+            stack_context.parameters['StackName'],
+            'Stack events for '
+        )
 
-    cloudformation = session.resource('cloudformation')
+        session = stack_context.session
+        cfn = session.resource('cloudformation')
+        stack = cfn.Stack(stack_context.parameters['StackName'])
 
-    stack = cloudformation.Stack(stack_config['StackName'])
-
-    tail_stack_events(session, stack, latest_events=events, time_limit=timeout)
+        tail_stack_events(session, stack, latest_events=events,
+                          time_limit=timeout)

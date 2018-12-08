@@ -1,0 +1,25 @@
+Version: 3
+
+Stages:
+
+  Default:
+    Topic:
+      Order: 1
+      Template: SNSTopic.template.yaml
+      Region: us-east-1
+      StackName: StackNotificationTopic
+      StackPolicy: DENY_ALL
+      ResourceTypes:
+        - AWS::SNS::*
+      Parameters:
+        EmailAddress: <replace with your email>
+
+    DDBAutoScaling:
+      Order: 2
+      Template: DDBAutoScaling.template.yaml
+      Region: us-east-1
+      StackName: DynamoDBWithAutoScaling
+      # note you can't specify capabilities with ResourceTypes
+      Capabilities: [CAPABILITY_IAM]
+      NotificationARNs:
+        - ${Default.Topic.TopicArn}

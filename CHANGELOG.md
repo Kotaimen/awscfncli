@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.1.0 (2018-12-08)
+
+Features:
+- Support Cross Stack Reference in config version 3
+- Refactor stack command and config
+
 ## Version 2.0.5 (2018-11-30)
 
 Issues:

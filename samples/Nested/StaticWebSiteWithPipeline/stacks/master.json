@@ -1,0 +1,124 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Cloud Formation Template for a complete AWS Static Web Site (S3 + Route53 + CloudFront + Repository + Build and Pipeline processes)",
+
+    "Parameters" : {
+
+        "HostedZone" : {
+          "Type" : "AWS::Route53::HostedZone::Id",
+          "Description" : "The ID of an existing Amazon Route 53 hosted zone"
+        },
+
+        "HostName" : {
+          "Type" : "String",
+          "Description" : "The HostName address",
+          "Default" : "www",
+          "AllowedPattern" : "(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)",
+          "ConstraintDescription" : "must be a valid host name for url."
+        },
+
+        "AlternativeDomains" : {
+          "Type" : "String",
+          "Description" : "Alternative Domains to be configured in the Certificate"
+        },
+
+        "CreatePipeline" : {
+            "Type" : "String",
+            "AllowedValues": ["YES", "NO"],
+            "Description" : "Must Create the Repositoty, Build project and Pipeline?",
+            "Default": "YES"
+        }
+
+    },
+
+    "Conditions" : {
+
+        "BuildPipeline" : {"Fn::Equals" : [{"Ref" : "CreatePipeline"}, "YES"]}
+
+    },
+
+    "Resources" : {
+
+        "Functions" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+               "TemplateURL" : "functions.json",
+               "TimeoutInMinutes" : 60
+            }
+        },
+
+        "HostedZoneNameFunction" : {
+            "Type": "Custom::AWSHostedZoneName",
+            "Version" : "1.0",
+            "Properties" : {
+               "ServiceToken": { "Fn::GetAtt" : [ "Functions", "Outputs.GetHostedZoneNameFunction" ] },
+               "hostedZoneId": {"Ref": "HostedZone"}
+            }
+        },
+
+        "Certificate" : {
+	       "Type" : "AWS::CloudFormation::Stack",
+	       "Properties" : {
+                "TemplateURL" : "certificate.json",
+                "Parameters" : {
+                    "HostedZone" : {"Ref":"HostedZone"},
+                    "HostName" : {"Ref":"HostName"},
+                    "AlternativeDomains" : {"Ref":"AlternativeDomains"},
+                    "CertificateRequestLambdaARN" : { "Fn::GetAtt" : [ "Functions", "Outputs.CertificateRequestFunction" ] },
+                    "CertificateApprovalLambdaARN" : { "Fn::GetAtt" : [ "Functions", "Outputs.CertificateApprovalFunction" ] },
+                    "CheckCertificateLambdaARN" : { "Fn::GetAtt" : [ "Functions", "Outputs.CheckCertificateFunction" ] }
+                },
+                "TimeoutInMinutes" : 60
+	       }
+        },
+
+        "Buckets" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                 "TemplateURL" : "s3buckets.json",
+                 "Parameters" : {
+                     "HostedZoneName" : { "Fn::GetAtt" : [ "HostedZoneNameFunction", "HostedZoneName" ] },
+                     "HostName" : {"Ref":"HostName"}
+                 },
+                 "TimeoutInMinutes" : 60
+            }
+        },
+
+        "Pipeline" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Condition": "BuildPipeline",
+            "Properties" : {
+                 "TemplateURL" : "pipeline.json",
+                 "Parameters" : {
+                     "S3BucketForWebSite" : { "Fn::GetAtt" : [ "Buckets", "Outputs.SiteBucketName" ] }
+                 },
+                 "TimeoutInMinutes" : 60
+            }
+        },
+
+        "Distribution" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : "distribution.json",
+                "Parameters" : {
+                    "HostedZoneName" : { "Fn::GetAtt" : [ "HostedZoneNameFunction", "HostedZoneName" ] },
+                    "HostName" : {"Ref":"HostName"},
+                    "HostBucket" : { "Fn::GetAtt" : [ "Buckets", "Outputs.SiteBucketUrl" ] },
+                    "LogBucket" : { "Fn::GetAtt" : [ "Buckets", "Outputs.LogBucketUrl" ] },
+                    "certificateARN" : { "Fn::GetAtt" : [ "Certificate", "Outputs.CertificateARN" ] }
+                },
+                "TimeoutInMinutes" : 60
+            }
+        }
+
+    },
+
+    "Outputs": {
+        "WebsiteURL" : {"Value" : { "Fn::GetAtt" : [ "Distribution", "Outputs.WebsiteURL" ] }},
+        "S3SiteBucket" : {"Value" : { "Fn::GetAtt" : [ "Buckets", "Outputs.SiteBucketName" ] }},
+        "RepositoryCloneHttpUrl" : {"Value" : { "Fn::GetAtt" : [ "Pipeline", "Outputs.RepoCloneHttpUrl" ] }, "Condition": "BuildPipeline"},
+        "RepositoryCloneSshUrl" : {"Value" : { "Fn::GetAtt" : [ "Pipeline", "Outputs.RepoCloneSSHUrl" ] }, "Condition": "BuildPipeline"}
+    }
+
+}

@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Vpc peering connection
+
+Parameters:
+  LocalVpc:
+    Description: Local vpc id
+    Type: AWS::EC2::VPC::Id
+
+  PeerVpcOwnerId:
+    Description: Peer vpc owner account id
+    Type: String
+
+  PeerVpcRegion:
+    Description: Peer vpc region
+    Type: String
+
+  PeerVpc:
+    Description: Peer vpc id
+    Type: String
+
+  PeerRole:
+    Description: Peer role ARN allows accept vpc peering in another account
+    Type: String
+
+  PeerVpcCidr:
+    Description: CIDR of the peer vpc
+    Type: String
+
+  LocalVpcSubnets:
+    Description: local vpc private subnets
+    Type: List<AWS::EC2::Subnet::Id>
+
+
+Resources:
+
+  VpcPeering:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      VpcId: !Ref LocalVpc
+      PeerVpcId: !Ref PeerVpc
+      PeerOwnerId: !Ref PeerVpcOwnerId
+      PeerRegion: !Ref PeerVpcRegion
+      PeerRoleArn:  !Ref PeerRole
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LocalVpc
+
+  PeeringRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: !Ref PeerVpcCidr
+      RouteTableId:
+        Ref: RouteTable
+      VpcPeeringConnectionId: !Ref VpcPeering
+
+  SubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:  !Select [0, !Ref LocalVpcSubnets]
+      RouteTableId: !Ref RouteTable
+
+  SubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:  !Select [1, !Ref LocalVpcSubnets]
+      RouteTableId: !Ref RouteTable

@@ -1,0 +1,28 @@
+Version: 3
+
+
+Stages:
+
+  Develop:
+
+    Order: 1
+
+    DDBTable1:
+
+      Order: 1
+
+      Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+      Region: us-east-1
+      StackPolicy: ALLOW_ALL
+#      Capabilities: [CAPABILITY_IAM]
+#      RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
+      Package:  false
+      EnableTerminationProtection: false
+
+      Tags:
+        CostUnit: 1B0
+
+      Parameters:
+        ReadCapacityUnits:      5
+        WriteCapacityUnits:     5
+        HashKeyElementName:     id

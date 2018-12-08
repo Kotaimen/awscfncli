@@ -1,0 +1,39 @@
+Version: 2
+
+
+KEY_PAIR_NAME: &KEY_PAIR_NAME
+  KeyPairName: <replace-with-your-ec2-key-pair-name>
+
+
+Stages:
+
+  Default:
+
+    Vpc:
+      Order: 1
+      StackName: AWSQuickStartVPC
+      Template: https://s3.amazonaws.com/quickstart-reference/aws/vpc/latest/templates/aws-vpc.template
+      Region: us-east-1
+      StackPolicy: DENY_ALL
+      EnableTerminationProtection: True
+      Tags:
+        Stage: DEV
+      Parameters:
+        AvailabilityZones: us-east-1a,us-east-1b
+        NumberOfAZs: 2
+        NATInstanceType: t2.micro
+        <<: *KEY_PAIR_NAME
+
+    Bastion:
+      Order: 2
+      StackName: AWSQuickStartBastionWrapper
+      Template: BastionWrapper.template.yaml
+      Region: us-east-1
+      Capabilities: [CAPABILITY_IAM]
+      EnableTerminationProtection: True
+      Tags:
+        Stage: DEV
+      Parameters:
+        VpcStack: AWSQuickStartVPC
+        RemoteAccessCIDR: 0.0.0.0/0
+        <<: *KEY_PAIR_NAME

@@ -1,0 +1,72 @@
+Version: 2
+
+Blueprints:
+  
+  DDB:
+
+    Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+    StackPolicy: DENY_ALL
+
+    Tags:
+      Project:  Booba
+      CostUnit: 1B0
+    Parameters:
+      ReadCapacityUnits:      5
+      WriteCapacityUnits:     5
+      HashKeyElementName:     id
+
+  DDB2Idx:
+
+    Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Secondary_Indexes.template
+    StackPolicy: DENY_ALL
+
+    Tags:
+      Project:  Booba
+      CostUnit: 1B0
+    Parameters:
+      ReadCapacityUnits:      5
+      WriteCapacityUnits:     5
+
+Stages:
+
+  Production:
+    Order: 2
+    DDBTable1:
+      Order: 1
+      Extends: DDB
+      StackName: DynamoDbTable1
+      Region: us-west-2
+      Tags:
+        Environment: Production
+      Parameters:
+        ReadCapacityUnits: 10
+
+    DDBTable2:
+      Order: 2
+      Extends: DDB2Idx
+      StackName: DynamoDbTable1
+      Region: us-east-1
+      Tags:
+        Environment: Production
+      Parameters:
+        ReadCapacityUnits: 10
+
+
+  Staging:
+    Order: 1
+    DDBTable1:
+      Order: 2
+      Extends: DDB
+      StackName: DynamoDbTable1
+      Region: us-west-1
+      EnableTerminationProtection: False
+      Tags:
+        Environment: Staging
+      Parameters:
+        ReadCapacityUnits: 10
+
+    DDBTable2:
+      Order: 1
+      Extends: DDB2Idx
+      StackName: DynamoDbTable2
+      Region: us-west-1

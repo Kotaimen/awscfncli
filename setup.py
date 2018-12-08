@@ -27,14 +27,18 @@ Features:
 
 """
 
+
 install_requires = [
+    # AWS dependency: as of Oct-2018
+    'boto3>=1.9.0,<2',
+    'botocore>=1.12.0,<2',
+    'awscli>=1.16.0,<2'
+    # Other: reasonably recent
     'six>=1.10.0',
-    'boto3>=1.6,<2',
-    'botocore>=1.9,<2',
-    'click>=6.0,<7',
+    'click>=6.0,<8',
     'PyYAML>=3.11,<4',
     'jsonschema>=2.6.0,<3',
-    'awscli>=1.14,<2'
+    'semantic_version>=2.0.0'
 ]
 
 test_requires = [
@@ -50,7 +54,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='2.0.5',
+    version='2.1.0',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -89,7 +93,8 @@ setup(
 
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
-        'awscfncli2.config': ['*.json']
+        'awscfncli2.config': ['*.json', '*.yaml']
+
     },
     install_requires=install_requires,
     extras_require={

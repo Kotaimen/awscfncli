@@ -1,4 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  Admin:
+  AdminGroup:
     Type: AWS::IAM::Group
+Outputs:
+  AdminGroupName:
+    Description: Name of the AdminGroup
+    Value: !Ref AdminGroup
+  AccountStatus:
+    Description: Status of the account
+    Value: !Join
+      - '-'
+      -
+        - !Sub '${AWS::Region}'
+        - !Sub '${AWS::AccountId}'

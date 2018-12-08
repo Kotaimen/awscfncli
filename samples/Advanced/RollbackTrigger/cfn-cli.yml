@@ -1,0 +1,16 @@
+Version: 3
+
+Stages:
+  Default:
+    HelloWorld:
+      Order: 1
+      Template: template.yaml
+      Region: us-east-1
+      StackName: SAMHelloWorldRollbackTrigger
+      Capabilities: [CAPABILITY_IAM]
+      Package: true
+      RollbackConfiguration:
+        RollbackTriggers:
+          - Type: AWS::CloudWatch::Alarm
+            Arn: ${Default.HelloWorld.AlarmARN}
+        MonitoringTimeInMinutes: 5

@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Wrapper template for Quickstart Bastian template
+
+Parameters:
+
+  VpcStack:
+    Description: Stack name of the AWS Quickstart VPC.
+    Type: String
+    MinLength: 1
+    MaxLength: 128
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: >
+      Stack name must start with an alphabetic character and can't be longer
+      than 128 characters
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Enter a Public/private key pair. If you do not have one in
+      this region, please create it before continuing
+
+  RemoteAccessCIDR:
+    Type: String
+    Description: Allowed CIDR block for external SSH access to the bastions
+    Default: 0.0.0.0/0
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$"
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+
+
+Resources:
+
+  BastionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/templates/linux-bastion.template
+      Parameters:
+        VPCID: {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}-VPCID"}}
+        PublicSubnet1ID: {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}-PublicSubnet1ID"}}
+        PublicSubnet2ID: {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}-PublicSubnet2ID"}}
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        KeyPairName: !Ref KeyPairName
+        BastionAMIOS: Amazon-Linux-HVM
+        BastionInstanceType: t2.micro
+        NumBastionHosts: 1
+        EnableBanner: "true"
+        EnableTCPForwarding: "true"
+
+Outputs:
+  EIP:
+    Description: Elastic IP for bastion
+    Value: !GetAtt BastionStack.Outputs.EIP1
+    Export:
+      Name: !Sub ${AWS::StackName}-EIP
+  CloudWatchLogs:
+    Description: SSH logs
+    Value: !GetAtt BastionStack.Outputs.CloudWatchLogs
+  BastionSecurityGroupID:
+    Description: Bastion Security Group ID
+    Value: !GetAtt BastionStack.Outputs.BastionSecurityGroupID
+    Export:
+      Name: !Sub ${AWS::StackName}-BastionSecurityGroupID
+

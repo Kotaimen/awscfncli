@@ -5,8 +5,7 @@ import threading
 import click
 import botocore.exceptions
 
-from .pprint import STACK_STATUS_TO_COLOR
-
+from .colormaps import STACK_STATUS_TO_COLOR
 
 def tail_stack_events(session,
                       stack,

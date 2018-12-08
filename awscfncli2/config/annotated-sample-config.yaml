@@ -1,0 +1,140 @@
+# Configuration file version, mandatory. 
+Version: 3
+
+# Default values for all stacks in this configuration file, 
+# parameters are overwritten or extended (for dict and list types) in stacks.
+Blueprints:
+
+  # Blueprint name
+  Default:
+
+    Tags:
+      Project: awscfncli
+
+
+# Stages, each stage at least 1 stack
+Stages:
+
+  # Stage name
+  Develop:
+
+    # Defines deployment order of the stage.
+    # By default, stages are deployed by definition order.
+#    Order: 1
+
+    # Stack name, each stack is qualified by stage_name.stack_name
+    DDBTable1:
+
+      # Blueprint name to extend
+      Extends: Default
+
+      # Defines deployment order of the stack.
+      # By default, stacks are deployed by definition order.
+#    Order: 1
+
+      # AWS CLI profile name. Use "default" profile if not specified.
+#      Profile: !!null
+
+      # AWS region name for the stack.
+      # Use region configured in the awscli profile if not specified.
+      Region: us-east-1
+
+      # Template file location.
+      # Specify a local file using relative path or s3 location using s3 url.
+      # (recognized automatically).
+      Template: https://s3.amazonaws.com/cloudformation-templates-us-east-1/DynamoDB_Table.template
+
+      # Canned stack policy, possible values are:
+      #   - DENY_ALL : deny all modify/delete
+      #   - DENY_DELETE: deny all delete
+      #   - ALLOW_ALL: allow all updates
+      #   - Local file: stack policy json file
+      StackPolicy: ALLOW_ALL
+
+      # List of stack capabilities, possible values are:
+      #   - CAPABILITY_IAM: Access keys, IAM user&groups, IAM roles&policy
+      #   - CAPABILITY_NAMED_IAM: IAM resources with custom names
+#      Capabilities: [CAPABILITY_IAM]
+
+      # ARN of an IAM role that CloudFormation assumes when operating the stack.
+      # If no value is specified, CloudFormation uses a temporary session which
+      # generated form caller's credentials
+#      RoleARN: 'arn:aws:iam::${AWS_ACCOUNT_ID}:role/StackRole'
+
+      # A list of template resources which is allowed for stack operation:
+      #   - AWS::* : all AWS resource
+      #   - Custom:* : all custom resources
+      #   - AWS::EC2::* : all resources of EC2 service
+      #   - AWS::EC2::Instance : specific AWS resource
+      # If the list does not match what's working on, the operation fails.
+      # This value is used by IAM policy condition keys, by default, all
+      # resource types are allowed.
+#      ResourceTypes: []
+
+      # Amazon Simple Notification Service topic Amazon Resource Names (ARNs)
+      # that AWS CloudFormation associates with the stack. Specify an empty
+      # list to remove all notification topics.
+#     NotificationARNs: []
+
+      # Determines what action will be taken if stack creation fails. Must be
+      # one of: DO_NOTHING, ROLLBACK, or DELETE.
+      # This option can be overridden using cli option.
+#     OnFailure:
+
+      # Disable rollback if stack creation failed.  You can specify either
+      # DisableRollback or OnFailure, but not both.
+      # This option can be overridden using cli option.
+#     DisableRollback:
+
+      # Number of minutes can pass befor the stack status become CREATE_FAILED.
+      # This option can be overridden using cli option.
+#     TimeoutInMinutes:
+
+      # The rollback triggers for AWS CloudFormation to monitor during stack
+      # creation and updating operations, and for the specified monitoring
+      # period afterwards.
+#      RollbackConfiguration:
+#        RollbackTriggers:
+#          - Type: AWS::CloudWatch::Alarm
+#            Arn:
+#        RollbackMonitoringTimeInMinutes: 3
+
+      # Automatically package local resources to s3.
+      # These are supported automatically by "aws cloudformation package" command:
+      # - `BodyS3Location` property for the `AWS::ApiGateway::RestApi` resource
+      # - `Code` property for the `AWS::Lambda::Function` resource
+      # - `CodeUri` property for the `AWS::Serverless::Function` resource
+      # - `ContentUri` property for the `AWS::Serverless::LayerVersion` resource
+      # - `DefinitionS3Location` property for the `AWS::AppSync::GraphQLSchema` resource
+      # - `RequestMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+      # - `ResponseMappingTemplateS3Location` property for the `AWS::AppSync::Resolver` resource
+      # - `DefinitionUri` property for the `AWS::Serverless::Api` resource
+      # - `Location` parameter for the `AWS::Include` transform
+      # - `SourceBundle` property for the `AWS::ElasticBeanstalk::ApplicationVersion` resource
+      # - `TemplateURL` property for the `AWS::CloudFormation::Stack` resource
+      # The following resource property are supported by `awscfncli`:
+      # - `ApplicationCode` property for the `AWS::KinesisAnalytics::Application`
+      #   resource
+      # - `DefinitionString` property for the `AWS::StepFunctions::StateMachine`
+      #   resource
+      Package:  false
+
+      # S3 bucket name for packaging artifacts.
+      # Default value is awscfncli-${AWS_ACCOUNT_ID}-${AWS_REGION} and will be
+      # automatically created if its not exists.
+      # The security credential awscfncli assume must have write permission to
+      # the bucket and ability to create the bucket if its not exists.
+#    ArtifactStore:
+
+      # Whether to enable termination protection on the stack, default is false.
+      EnableTerminationProtection: false
+
+      # Tags to associate with this stack.
+      Tags:
+        CostUnit: 1B0
+
+      # Input parameters for the stack.
+      Parameters:
+        ReadCapacityUnits:      5
+        WriteCapacityUnits:     5
+        HashKeyElementName:     id

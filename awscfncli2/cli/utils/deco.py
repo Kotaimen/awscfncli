@@ -7,7 +7,7 @@ import click
 from ...config import ConfigError
 
 
-def boto3_exception_handler(f):
+def command_exception_handler(f):
     """Capture and pretty print exceptions"""
 
     @wraps(f)

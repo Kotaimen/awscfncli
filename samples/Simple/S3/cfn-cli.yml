@@ -1,0 +1,7 @@
+Version: 2
+
+Stages:
+  Default:
+    SampleBucket:
+      Template: Life_Cycle_Management.yaml
+      Region: us-east-1

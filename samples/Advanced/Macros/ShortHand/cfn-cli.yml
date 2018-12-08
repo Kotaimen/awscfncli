@@ -1,0 +1,20 @@
+Version: 2
+
+Stages:
+
+  Marcos:
+    Order: 1
+    ShortHand:
+      Order: 1
+      Template: macro.template.yaml
+      Region: us-east-1
+      Capabilities: [CAPABILITY_IAM]
+      Package: True
+
+  Default:
+    Order: 2
+    ShortHandExample:
+      Order: 1
+      Template: example.template.yaml
+      Region: us-east-1
+

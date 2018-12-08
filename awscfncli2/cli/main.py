@@ -7,11 +7,13 @@ import os
 import click
 import pkg_resources
 
-from .utils.context import ContextObject
+from .context import ClickContext
+from .utils import StackPrettyPrinter
 
 VERSION = pkg_resources.require('awscfncli2')[0].version
 
 DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
+
 
 @click.group()
 @click.pass_context
@@ -35,13 +37,9 @@ DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
 @click.option('-a', '--artifact-store',
               type=click.STRING, default=None,
               help='Override ArtifactStore (AWS bucket name) specified in the config.')
-@click.option('-1', '--one',
-              is_flag=True, default=False,
-              help='Select only the first matching stack if glob is used '
-                   'in --stack option.')
 @click.option('-v', '--verbose', count=True,
-              help='Be more verbose.')
-def cfn_cli(ctx, file, stack, profile, region, artifact_store, one, verbose):
+              help='Be more verbose, can be specified multiple times.')
+def cfn_cli(ctx, file, stack, profile, region, artifact_store, verbose):
     """AWS CloudFormation stack management command line interface.
 
     Options can also be specified using environment variables:
@@ -65,10 +63,19 @@ def cfn_cli(ctx, file, stack, profile, region, artifact_store, one, verbose):
         cfn-cli -s Def*.DDB1 describe
 
     If "." is missing from stack selector, "cfn-cli" will assume
-    stage name "*" is specfied, thus "*" is equivalent to "*.*", which
+    stage name "*" is specified, thus "*" is equivalent to "*.*", which
     means all stacks in all stages.
     """
 
+    # Set logging level according to verbosity
+    if verbose == 2:
+        logging.getLogger().setLevel(logging.DEBUG)
+    elif verbose == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
+        logging.getLogger().setLevel(logging.WARNING)
+
+    # Find config file
     if file is None:
         # no config file is specified, try default names
         for fn in DEFAULT_CONFIG_FILE_NAMES:
@@ -83,25 +90,16 @@ def cfn_cli(ctx, file, stack, profile, region, artifact_store, one, verbose):
             if os.path.exists(file) and os.path.isfile(file):
                 break
 
-    # Builds the context object which contains config object and stack
-    # selection query parsers.
-    ctx_obj = ContextObject(
-        config_file=file,
+    # Builds the context object
+    ctx_obj = ClickContext(
+        config_filename=file,
         stack_selector=stack,
-        profile=profile,
-        region=region,
-        artifact_store=artifact_store,
-        first_stack=one,
-        verbosity=verbose,
-    )
+        profile_name=profile,
+        region_name=region,
+        artifact_store = artifact_store,
+        pretty_printer=StackPrettyPrinter(verbosity=verbose),
 
-    # Set logging level according to verbosity
-    if verbose == 2:
-        logging.getLogger().setLevel(logging.DEBUG)
-    elif verbose == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:
-        logging.getLogger().setLevel(logging.WARNING)
+    )
 
     # Assign context object
     ctx.obj = ctx_obj
