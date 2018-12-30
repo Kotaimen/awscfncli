@@ -15,12 +15,18 @@ from botocore.exceptions import ClientError
 # from awscli.customizations.cloudformation.s3uploader import S3Uploader
 
 try:
+
     from awscli.customizations.cloudformation.artifact_exporter import \
-        EXPORT_LIST as EXPORTS
+        RESOURCES_EXPORT_LIST as EXPORTS
 except ImportError:
-    # for awscli < 1.16.23
-    from awscli.customizations.cloudformation.artifact_exporter import \
-        EXPORT_DICT as EXPORTS
+    try:
+        # for awscli < 1.16.77
+        from awscli.customizations.cloudformation.artifact_exporter import \
+            EXPORT_LIST as EXPORTS
+    except ImportError:
+        # for awscli < 1.16.23
+        from awscli.customizations.cloudformation.artifact_exporter import \
+            EXPORT_DICT as EXPORTS
 
 from ...config import ConfigError
 
