@@ -206,12 +206,15 @@ class FormatV2(ConfigFormat):
 
 
 class ParamReferenceTemplate(string.Template):
-    idpattern = r'[_a-z][._a-z0-9-]*'
+    idpattern = 'a^'
+    braceidpattern = r'(?a:[_a-z]+[._a-z0-9-]*)'
 
 
 def have_parameter_reference_pattern(config):
     m = ParamReferenceTemplate.pattern.search(json.dumps(config))
-    return m is not None
+    return m.group('escaped') is not None or \
+           m.group('braced') is not None or \
+           m.group('named') is not None
 
 
 class FormatV3(FormatV2):
