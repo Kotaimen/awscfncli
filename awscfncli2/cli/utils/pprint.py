@@ -1,8 +1,8 @@
 import botocore.exceptions
 import click
 
-from .colormaps import CHANGESET_STATUS_TO_COLOR, ACTION_TO_COLOR, \
-    STACK_STATUS_TO_COLOR
+from .colormaps import CHANGESET_STATUS_TO_COLOR, CHANGESET_ACTION_TO_COLOR, \
+    CHANGESET_REPLACEMENT_TO_COLOR, STACK_STATUS_TO_COLOR
 from .events import start_tail_stack_events_daemon
 from .pager import custom_paginator
 
@@ -197,15 +197,20 @@ class StackPrettyPrinter(object):
                       indent=2, sep=' ')
 
             echo_pair('Action', change['ResourceChange']['Action'],
-                      value_style=ACTION_TO_COLOR[
+                      value_style=CHANGESET_ACTION_TO_COLOR[
                           change['ResourceChange']['Action']],
                       indent=4)
+
+            if 'Replacement' in change['ResourceChange']:
+                echo_pair('Replacement',
+                          change['ResourceChange']['Replacement'],
+                          value_style=CHANGESET_REPLACEMENT_TO_COLOR[
+                              change['ResourceChange'][
+                                  'Replacement']],
+                          indent=4)
             echo_pair_if_exists(change['ResourceChange'],
                                 'Physical Resource',
                                 'PhysicalResourceId', indent=4)
-            echo_pair_if_exists(change['ResourceChange'],
-                                'Replacement',
-                                'Replacement', indent=4)
             echo_pair_if_exists(change['ResourceChange'],
                                 'Scope',
                                 'Scope', indent=4)

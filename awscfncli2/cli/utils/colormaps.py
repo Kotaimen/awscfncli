@@ -39,8 +39,14 @@ CHANGESET_STATUS_TO_COLOR = {
     'FAILED': dict(fg='red'),
 }
 
-ACTION_TO_COLOR = {
+CHANGESET_ACTION_TO_COLOR = {
     'Add': dict(fg='green'),
     'Modify': dict(fg='yellow'),
     'Remove': dict(fg='red'),
+}
+
+CHANGESET_REPLACEMENT_TO_COLOR = {
+    'True': dict(fg='red'),
+    'Conditional': dict(fg='yellow'),
+    'False': dict(fg='green'),
 }
