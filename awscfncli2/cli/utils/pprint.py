@@ -1,5 +1,8 @@
+import json
+import difflib
 import botocore.exceptions
 import click
+import yaml
 
 from .colormaps import CHANGESET_STATUS_TO_COLOR, CHANGESET_ACTION_TO_COLOR, \
     CHANGESET_REPLACEMENT_TO_COLOR, DRIFT_STATUS_TO_COLOR, \
@@ -130,7 +133,8 @@ class StackPrettyPrinter(object):
                       value_style={'fg': 'yellow'})
         echo_pair('TerminationProtection',
                   str(stack.enable_termination_protection),
-                  value_style={'fg': 'red'} if stack.enable_termination_protection else None
+                  value_style={
+                      'fg': 'red'} if stack.enable_termination_protection else None
                   )
 
         drift_status = stack.drift_information['StackDriftStatus']
@@ -177,7 +181,7 @@ class StackPrettyPrinter(object):
                                                         None)
             last_updated = res.last_updated_timestamp
 
-            echo_pair('{} ({})'.format(logical_id, res_type))
+            echo_pair('{} ({})'.format(logical_id, res_type), indent=2)
             echo_pair('Physical ID', physical_id, indent=4)
             echo_pair('Last Updated', last_updated, indent=4)
             echo_pair('Status', status,
@@ -237,6 +241,63 @@ class StackPrettyPrinter(object):
                 echo_pair('Physical Resource', change_res_id, indent=4)
             if change_scope:
                 echo_pair('Change Scope', change_scope, indent=4)
+
+    def pprint_stack_drift(self, drift):
+        detection_status = drift['DetectionStatus']
+        drift_status = drift['StackDriftStatus']
+        drifted_resources = drift['DriftedStackResourceCount']
+        timestamp = drift['Timestamp']
+
+        echo_pair('Drift Detection Status',
+                  detection_status,
+                  value_style=DRIFT_STATUS_TO_COLOR[detection_status])
+        echo_pair('Stack Drift Status',
+                  drift_status,
+                  value_style=DRIFT_STATUS_TO_COLOR[drift_status])
+        echo_pair('Drifted resources',
+                  drifted_resources)
+        echo_pair('Timestamp', timestamp)
+
+    def pprint_resource_drift(self, status):
+        logical_id = status['LogicalResourceId']
+        res_type = status['ResourceType']
+        physical_id = status['PhysicalResourceId']
+        physical_resource_context = status.get('PhysicalResourceIdContext', [])
+        drift_status = status['StackResourceDriftStatus']
+        timestamp = status['Timestamp']
+
+        echo_pair('{} ({})'.format(logical_id, res_type), indent=2)
+        echo_pair('Physical Id', physical_id, indent=4)
+        for context in physical_resource_context:
+            echo_pair(context['Key'], context['Value'], indent=4)
+        echo_pair('Drift Status', drift_status,
+                  value_style=DRIFT_STATUS_TO_COLOR[drift_status], indent=4)
+        echo_pair('Timestamp', timestamp, indent=4)
+
+        if 'ExpectedProperties' not in status:
+            return
+
+        echo_pair('Property Diff', '>', indent=4)
+        expected = yaml.safe_dump(
+            json.loads(status['ExpectedProperties']),
+            default_flow_style=False)
+
+        actual= yaml.safe_dump(
+            json.loads(status['ActualProperties']),
+            default_flow_style=False)
+        diff = difflib.unified_diff(
+            expected.splitlines(), actual.splitlines(),
+            'Expected', 'Actual', n=5)
+
+        for n,line in enumerate(diff):
+            # skip file names and diff stat
+            if n<5: continue
+            if line.startswith('-'):
+                click.secho('      '+line, fg='red')
+            elif line.startswith('+'):
+                click.secho('      '+line, fg='green')
+            else:
+                click.secho('      '+line)
 
     def wait_until_deploy_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack, latest_events=0)

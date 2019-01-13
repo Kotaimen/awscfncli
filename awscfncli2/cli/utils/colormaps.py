@@ -52,10 +52,15 @@ CHANGESET_REPLACEMENT_TO_COLOR = {
 }
 
 DRIFT_STATUS_TO_COLOR = {
-    'DELETED' : dict(fg='red'),
-    'MODIFIED' : dict(fg='yellow'),
+    'DELETED': dict(fg='red'),
+    'MODIFIED': dict(fg='yellow'),
     'NOT_CHECKED': None,
     'IN_SYNC': dict(fg='green'),
     'UNKNOWN': dict(fg='white', dim=True),
-}
 
+    'DRIFTED': dict(fg='red'),
+
+    'DETECTION_IN_PROGRESS': dict(fg='yellow'),
+    'DETECTION_FAILED': dict(fg='red'),
+    'DETECTION_COMPLETE': dict(fg='green'),
+}
