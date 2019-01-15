@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import os
-import six
 import copy
-import string
 import json
+import os
+import string
+
 import jsonschema
+import six
 from semantic_version import Version
 
-
-from .schema import load_schema
 from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
     StackParameters, Deployment
+from .schema import load_schema
 
 CANNED_STACK_POLICIES = {
     'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
@@ -19,6 +19,7 @@ CANNED_STACK_POLICIES = {
     'DENY_DELETE': '{"Statement":[{"Effect":"Allow","NotAction":"Update:Delete","Principal":"*","Resource":"*"}]}',
     'DENY_ALL': '{"Statement":[{"Effect":"Deny","Action":"Update:*","Principal":"*","Resource":"*"}]}',
 }
+
 
 class FormatError(Exception):
     pass
@@ -211,16 +212,20 @@ class ParamReferenceTemplate(string.Template):
 
 
 def have_parameter_reference_pattern(config):
-    m = ParamReferenceTemplate.pattern.search(json.dumps(config))
-    return m.group('escaped') is not None or \
-           m.group('braced') is not None or \
-           m.group('named') is not None
+    string = json.dumps(config)
+    match = ParamReferenceTemplate.pattern.search(string)
+
+    if match is None:
+        return False
+
+    return match.group('escaped') is not None or \
+           match.group('braced') is not None or \
+           match.group('named') is not None
 
 
 class FormatV3(FormatV2):
     VERSION = Version('3.0.0')
 
     def validate(self, config):
-        schema = load_schema(str(FormatV2.VERSION)) # use same schema as v2
+        schema = load_schema(str(FormatV2.VERSION))  # use same schema as v2
         jsonschema.validate(config, schema)
-

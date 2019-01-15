@@ -9,8 +9,8 @@ STACK_STATUS_TO_COLOR = {
     'ROLLBACK_COMPLETE': dict(fg='red'),
     'DELETE_IN_PROGRESS': dict(fg='yellow'),
     'DELETE_FAILED': dict(fg='red'),
-    'DELETE_SKIPPED': dict(fg='white', dim=True),
-    'DELETE_COMPLETE': dict(fg='white', dim=True),
+    'DELETE_SKIPPED': dict(fg='red'),
+    'DELETE_COMPLETE': dict(fg='green'),
     'UPDATE_IN_PROGRESS': dict(fg='yellow'),
     'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': dict(fg='green'),
     'UPDATE_COMPLETE': dict(fg='green'),
@@ -25,17 +25,17 @@ STACK_STATUS_TO_COLOR = {
 }
 
 CHANGESET_STATUS_TO_COLOR = {
-    'UNAVAILABLE': dict(fg='white', dim=True),
+    'UNAVAILABLE': None,
     'AVAILABLE': dict(fg='green'),
     'EXECUTE_IN_PROGRESS': dict(fg='yellow'),
     'EXECUTE_COMPLETE': dict(fg='green'),
     'EXECUTE_FAILED': dict(fg='red'),
-    'OBSOLETE': dict(fg='white', dim=True),
+    'OBSOLETE': None,
 
-    'CREATE_PENDING': dict(fg='white', dim=True),
+    'CREATE_PENDING': None,
     'CREATE_IN_PROGRESS': dict(fg='yellow'),
     'CREATE_COMPLETE': dict(fg='green'),
-    'DELETE_COMPLETE': dict(fg='white', dim=True),
+    'DELETE_COMPLETE': None,
     'FAILED': dict(fg='red'),
 }
 
@@ -49,4 +49,18 @@ CHANGESET_REPLACEMENT_TO_COLOR = {
     'True': dict(fg='red'),
     'Conditional': dict(fg='yellow'),
     'False': dict(fg='green'),
+}
+
+DRIFT_STATUS_TO_COLOR = {
+    'DELETED': dict(fg='red'),
+    'MODIFIED': dict(fg='yellow'),
+    'NOT_CHECKED': None,
+    'IN_SYNC': dict(fg='green'),
+    'UNKNOWN': dict(fg='white', dim=True),
+
+    'DRIFTED': dict(fg='red'),
+
+    'DETECTION_IN_PROGRESS': dict(fg='yellow'),
+    'DETECTION_FAILED': dict(fg='red'),
+    'DETECTION_COMPLETE': dict(fg='green'),
 }
