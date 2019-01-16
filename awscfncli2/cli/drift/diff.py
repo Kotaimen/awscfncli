@@ -14,7 +14,7 @@ from ...runner import DriftDiffOptions, DriftDiffCommand
 @click.pass_context
 @command_exception_handler
 def diff(ctx):
-    """Cancel current stack update"""
+    """Show stack resource drifts."""
     assert isinstance(ctx.obj, ClickContext)
 
     options = DriftDiffOptions(

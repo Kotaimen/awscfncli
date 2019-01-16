@@ -72,10 +72,11 @@ stage name `*` is specfied, thus `*` is equivalent to
 
 Use `--help` to see help on a particular command.
 
-- `validate` - Validate template.
-- `status` - List status of selected stacks.
-- `generate` - Generate a config.
-- `stack`
+- `drift` - Drift detection.
+    - `detect` - Detect stack drifts.
+    - `diff` - Show stack resource drifts.
+- `generate` - Generate a sample configuration file.
+- `stack` - Stack operations.
     - `sync` - Create ChangeSet and execute it (required by SAM).
     - `deploy` - Deploy new stacks.
     - `update` - Update stacks.
@@ -83,6 +84,9 @@ Use `--help` to see help on a particular command.
     - `tail` - Print stack events.
     - `delete` - Delete stacks.
     - `cancel` - Cancel stack update.
+- `status` - Alias for `stack describe`.
+- `validate` - Validate templates
+
 
 ## Automatic Packaging
 
@@ -313,7 +317,4 @@ Is replaced by:
 
     cfn-cli -s sam.api sync
 
-`sync` uses `ChangeSet` interally which is required by the `Serverless` transform (aka: SAM). 
-
-> Note: SAM cannot be used together with nested stacks, this is a 
-AWS limit.
+`sync` uses `ChangeSet` internally which is usful when dealing with template transforms (eg: SAM or macros). 

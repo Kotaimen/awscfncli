@@ -1,5 +1,22 @@
 # Changelog
 
+## Version 2.1.2 (2019-1-13)
+
+Issues:
+- Fix failure when string template returns None as match object.
+- supports CAPABILITY_AUTO_EXPAND
+
+## Version 2.1.1 (2019-1-4)
+
+Issues:
+- Fix issue caused by awcli > 1.16.77
+- Fix issue that a plain '$' will accidentally match the cross stack reference patten
+
+Features:
+- Print changeset execution note before actually calling boto3
+- Colorize changeset replacement so user get alarmed when resource replacement happens
+
+
 ## Version 2.1.0 (2018-12-08)
 
 Features:

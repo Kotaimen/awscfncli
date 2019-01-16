@@ -15,7 +15,7 @@ from ...runner import DriftDetectOptions, DriftDetectCommand
 @click.pass_context
 @command_exception_handler
 def detect(ctx, no_wait):
-    """Cancel current stack update"""
+    """Detect stack drifts."""
     assert isinstance(ctx.obj, ClickContext)
 
     options = DriftDetectOptions(
