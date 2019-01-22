@@ -9,6 +9,7 @@ from awscli.customizations.cloudformation import exceptions
 from awscli.customizations.cloudformation.artifact_exporter import Template, \
     Resource, make_abs_path
 from awscli.customizations.s3uploader import S3Uploader
+from awscli.customizations.cloudformation.yamlhelper import yaml_dump
 from botocore.exceptions import ClientError
 
 # Before 1.11.16, unsupported now
@@ -89,10 +90,7 @@ def package_template(ppt, session, template_path, bucket_region,
               'uploaded to s3://{bucket_name}.'.format(bucket_name=bucket_name),
               fg='green')
 
-    template_body = json.dumps(exported_template,
-                               ensure_ascii=True,
-                               indent=None,
-                               separators=(',', ':'))
+    template_body = yaml_dump(exported_template)
 
     template_data = template_body.encode('ascii')
     if len(template_data) <= TEMPLATE_BODY_SIZE_LIMIT:
