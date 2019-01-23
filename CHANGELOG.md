@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.3 (2019-1-23)
+
+Issues:
+- Fixes json dump error caused by template contains complex types (datetime objects).
+
 ## Version 2.1.2 (2019-1-13)
 
 Issues:
