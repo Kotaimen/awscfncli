@@ -207,8 +207,7 @@ class FormatV2(ConfigFormat):
 
 
 class ParamReferenceTemplate(string.Template):
-    idpattern = 'a^'
-    braceidpattern = r'(?a:[_a-z]+[._a-z0-9-]*)'
+    idpattern = r'\{(?a:[_a-z]+[._a-z0-9-]*)\}'
 
 
 def have_parameter_reference_pattern(config):
