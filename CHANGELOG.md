@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.5 (2019-2-9)
+
+Issues:
+- Fix compatibility problem with string.Teamplate
+
 ## Version 2.1.4 (2019-1-23)
 
 Issues:
