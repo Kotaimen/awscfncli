@@ -206,12 +206,8 @@ class FormatV2(ConfigFormat):
         return stack
 
 
-PARAMETER_LABEL = r'[_a-z]+[_a-z0-9-]*'
-
-
 class ParamReferenceTemplate(string.Template):
-    idpattern = r'(?a:%(label)s\.%(label)s\.%(label)s)' % \
-                dict(label=PARAMETER_LABEL)
+    idpattern = r'(?-i:[a-zA-Z_][-a-zA-Z0-9_]*\.[a-zA-Z_][-a-zA-Z0-9_]*\.[a-zA-Z_][-a-zA-Z0-9_]*)'
 
 
 def have_parameter_reference_pattern(config):
