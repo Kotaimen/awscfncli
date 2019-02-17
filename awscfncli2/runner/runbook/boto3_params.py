@@ -20,7 +20,9 @@ def make_boto3_parameters(parameters, is_packaging):
     StackName = parameters['StackName']
 
     Template = parameters['Template']
-    if Template.startswith('https') or Template.startswith('http'):
+    if Template is None:
+        raise ConfigError('No template found, specify Template as a local file or S3 url.')
+    elif Template.startswith('https') or Template.startswith('http'):
         # s3 template
         TemplateURL, TemplateBody = Template, None
     elif is_packaging:

@@ -16,7 +16,7 @@ from ...config import ANNOTATED_SAMPLE_CONFIG, SAMPLE_CONFIG
 @click.pass_context
 @command_exception_handler
 def generate(ctx, annotated):
-    """Generate a sample configuration file"""
+    """Generate a sample configuration file."""
     assert isinstance(ctx.obj, ClickContext)
 
     if os.path.exists(ctx.obj.config_filename):

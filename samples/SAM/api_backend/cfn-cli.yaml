@@ -4,7 +4,7 @@ Blueprints:
 
   ApiBackend:
     Template: template.yaml
-    Capabilities: [CAPABILITY_IAM]
+    Capabilities: [CAPABILITY_IAM, CAPABILITY_AUTO_EXPAND]
     Package: true
 
 Stages:
@@ -12,6 +12,7 @@ Stages:
   Develop:
     ApiBackend-Develop:
       Extends: ApiBackend
+      Capabilities: [CAPABILITY_IAM, CAPABILITY_AUTO_EXPAND]
       Region: us-east-1
       Tags:
         Stage: Develop

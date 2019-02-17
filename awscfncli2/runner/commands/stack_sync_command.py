@@ -90,12 +90,12 @@ class StackSyncCommand(Command):
             self.ppt.confirm('Do you want to execute ChangeSet?', abort=True)
 
         client_request_token = 'awscfncli-sync-{}'.format(uuid.uuid1())
+        self.ppt.secho('Executing ChangeSet...')
         client.execute_change_set(
             ChangeSetName=changeset_name,
             StackName=parameters['StackName'],
             ClientRequestToken=client_request_token
         )
-        self.ppt.secho('Executing ChangeSet...')
 
         cfn = session.resource('cloudformation')
         stack = cfn.Stack(parameters['StackName'])

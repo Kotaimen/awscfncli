@@ -14,3 +14,6 @@ from .stack.delete import delete
 from .stack.update import update
 from .stack.tail import tail
 from .stack.cancel import cancel
+
+from .drift.detect import detect
+from .drift.diff import diff
