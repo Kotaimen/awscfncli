@@ -1,0 +1,507 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Automated pipeline to release awscfncli to PIP
+Parameters:
+
+  PyPiUsername:
+    Type: String
+    Description: Parameter name storing PyPi username
+
+  PyPiPassword:
+    Type: String
+    Description: Parameter name storing PyPi password
+
+  UseTestPyPi:
+    Type: String
+    Default: "true"
+    Description: Use Test PyPi for package upload
+    AllowedValues: ["true", "false"]
+
+  InputArtifactPrefix:
+    Type: String
+    Description: S3 prefix of input code package
+    MinLength: 1
+    MaxLength: 256
+
+Conditions:
+
+  UseTestPyPiCondition: !Equals [!Ref UseTestPyPi, "true"]
+
+Resources:
+
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: aws/s3
+              SSEAlgorithm: aws:kms
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: aws/s3
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ApprovalTopic:
+    Type: AWS::SNS::Topic
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: SNSPublish
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                - !Ref ApprovalTopic
+
+  # See https://docs.aws.amazon.com/codepipeline/latest/userguide/how-to-custom-role.html#view-default-service-role-policy
+  CodePipelineCannedPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-CodePipelineCannedPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:GetBucketVersioning
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - s3:PutObject
+            Effect: Allow
+            Resource:
+              - arn:aws:s3:::codepipeline*
+              - arn:aws:s3:::elasticbeanstalk*
+          - Action:
+              - codedeploy:CreateDeployment
+              - codedeploy:GetApplicationRevision
+              - codedeploy:GetDeployment
+              - codedeploy:GetDeploymentConfig
+              - codedeploy:RegisterApplicationRevision
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - elasticbeanstalk:*
+              - autoscaling:*
+              - autoscaling:DescribeLaunchConfigurations
+              - autoscaling:DescribeScalingActivities
+              - autoscaling:ResumeProcesses
+              - autoscaling:SuspendProcesses
+              - cloudformation:GetTemplate
+              - cloudformation:DescribeStackResource
+              - cloudformation:DescribeStackResources
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStacks
+              - cloudformation:UpdateStack
+              - ec2:DescribeInstances
+              - ec2:DescribeImages
+              - ec2:DescribeAddresses
+              - ec2:DescribeSubnets
+              - ec2:DescribeVpcs
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeKeyPairs
+              - elasticloadbalancing:DescribeLoadBalancers
+              - rds:DescribeDBInstances
+              - rds:DescribeOrderableDBInstanceOptions
+              - sns:ListSubscriptionsByTopic
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - lambda:invokefunction
+              - lambda:listfunctions
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - s3:ListBucket
+              - s3:GetBucketPolicy
+              - s3:GetObjectAcl
+              - s3:PutObjectAcl
+              - s3:DeleteObject
+            Effect: Allow
+            Resource: arn:aws:s3:::elasticbeanstalk*
+          - Action:
+              - codecommit:GetBranch
+              - codecommit:GetCommit
+              - codecommit:UploadArchive
+              - codecommit:GetUploadArchiveStatus
+              - codecommit:CancelUploadArchive
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+            Effect: Allow
+            Resource: '*'
+      Roles:
+        - !Ref CodePipelineServiceRole
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+      Policies:
+        - PolicyName: CloudWatchLogsAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: SSMAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:Get*
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${PyPiUsername}
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${PyPiPassword}
+
+  SharedDeployPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:PutObject
+              - s3:PutObjectVersion
+            Resource:
+              - !Join ["/", [ "Fn::GetAtt": ArtifactBucket.Arn , "*" ]]
+              - !Join ["/", [ "Fn::GetAtt": SourceBucket.Arn , "*" ]]
+      Roles:
+        - !Ref CodePipelineServiceRole
+        - !Ref CodeBuildServiceRole
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn:
+      - CodePipelineCannedPolicy
+      - SharedDeployPolicy
+    Properties:
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Name: !Sub ${AWS::StackName}-Pipeline
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+      Stages:
+
+        - Name: Source
+          Actions:
+            - Name: S3Source
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              Configuration:
+                S3Bucket: !Ref SourceBucket
+                S3ObjectKey: !Ref InputArtifactPrefix
+                # XXX: not recommended by aws but saves a trail and cw events
+                PollForSourceChanges: true
+              OutputArtifacts:
+                - Name: SourceArtifact
+
+        - Name: Test
+          Actions:
+            - Name: TestPY37
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref TestProjectPY37
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: TestPY36
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref TestProjectPY36
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: TestPY27
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref TestProjectPY27
+              InputArtifacts:
+                - Name: SourceArtifact
+
+        - Name: Deploy
+          Actions:
+            - Name: Approve
+              RunOrder: 1
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                NotificationArn: !Ref ApprovalTopic
+                ExternalEntityLink: https://github.com/Kotaimen/awscfncli
+                CustomData: Upload to PyPi
+
+            - Name: PyPiRelease
+              RunOrder: 2
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref ReleaseProject
+              InputArtifacts:
+                - Name: SourceArtifact
+
+  TestProjectPY37:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-TestProjectPY37
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/python:3.7.1
+        ComputeType: BUILD_GENERAL1_SMALL
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - echo Entered the install phase...
+                - pip3 install -U .
+              finally:
+                - echo Leaving install phase...
+            pre_build:
+              commands:
+                - echo Entered the pre_build phase...
+              finally:
+                - echo Leaving pre_build phrase..
+            build:
+              commands:
+                - echo Entered the build phase...
+                - cfn-cli --version
+                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
+              finally:
+                - echo Leaving build phase...
+            post_build:
+              commands:
+                - echo Entered the post_build phase...
+              finally:
+                - echo Leaving post_build phase...
+
+  TestProjectPY36:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-TestProjectPY36
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/python:3.6.5
+        ComputeType: BUILD_GENERAL1_SMALL
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - echo Entered the install phase...
+                - pip3 install -U .
+              finally:
+                - echo Leaving install phase...
+            pre_build:
+              commands:
+                - echo Entered the pre_build phase...
+              finally:
+                - echo Leaving pre_build phrase..
+            build:
+              commands:
+                - echo Entered the build phase...
+                - cfn-cli --version
+                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
+              finally:
+                - echo Leaving build phase...
+            post_build:
+              commands:
+                - echo Entered the post_build phase...
+              finally:
+                - echo Leaving post_build phase...
+
+  TestProjectPY27:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-TestProjectPY27
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/ubuntu-base:14.04
+        ComputeType: BUILD_GENERAL1_SMALL
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - echo Entered the install phase...
+                - apt update -q
+                - apt install -yq python-pip
+                - pip install -U .
+              finally:
+                - echo Leaving install phase...
+            pre_build:
+              commands:
+                - echo Entered the pre_build phase...
+              finally:
+                - echo Leaving pre_build phrase..
+            build:
+              commands:
+                - echo Entered the build phase...
+                - cfn-cli --version
+                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
+              finally:
+                - echo Leaving build phase...
+            post_build:
+              commands:
+                - echo Entered the post_build phase...
+              finally:
+                - echo Leaving post_build phase...
+
+  ReleaseProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ReleaseProject
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/python:3.7.1
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+        - Name: TWINE_USERNAME
+          Type: PARAMETER_STORE
+          Value: !Ref PyPiUsername
+        - Name: TWINE_PASSWORD
+          Type: PARAMETER_STORE
+          Value: !Ref PyPiPassword
+        - Name: TWINE_REPOSITORY
+          Type: PLAINTEXT
+          Value: pypi
+        - Name: TWINE_REPOSITORY_URL
+          Type: PLAINTEXT
+          Value:
+            Fn::If:
+              - UseTestPyPiCondition
+              - https://test.pypi.org/legacy/
+              - ""
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - echo Entered the install phase...
+                - pip install -U twine wheel
+              finally:
+                - echo Leaving install phase...
+            pre_build:
+              commands:
+                - echo Entered the pre_build phase...
+                - python3 --version
+              finally:
+                - echo Leaving pre_build phrase..
+            build:
+              commands:
+                - echo Entered the build phase...
+                - python3 setup.py sdist bdist_wheel
+              finally:
+                - echo Leaving build phase...
+            post_build:
+              commands:
+                - echo Entered the post_build phase...
+                - python3 -m twine upload --verbose dist/*
+              finally:
+                - echo Leaving post_build phase...
+
+Outputs:
+
+  ApprovalTopicArn:
+    Description: ARN of approve SNS topic
+    Value: !Ref ApprovalTopic
