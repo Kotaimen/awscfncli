@@ -2,7 +2,7 @@ Version: 3
 
 
 KEY_PAIR_NAME: &KEY_PAIR_NAME
-  KeyPairName: <your-key-here>
+  KeyPairName: <your-key-pair-name-here>
 
 TEST_ACCOUNT: &TEST_ACCOUNT
   Profile: default
@@ -21,7 +21,6 @@ Stages:
       Order: 1
       StackName: AWSQuickStartVPC
       Template: https://s3.amazonaws.com/quickstart-reference/aws/vpc/latest/templates/aws-vpc.template
-      Package: True
       Region: us-east-1
       StackPolicy: ALLOW_ALL
       EnableTerminationProtection: false
@@ -31,12 +30,12 @@ Stages:
       Parameters:
         AvailabilityZones: us-east-1a,us-east-1b
         NumberOfAZs: 2
-        NATInstanceType: t2.micro
         <<: *KEY_PAIR_NAME
+
 
     Bastion:
       Order: 2
-      StackName: AWSQuickStartBastion2
+      StackName: AWSQuickStartBastion
       Template: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/templates/linux-bastion.template
       Region: us-east-1
       Capabilities: [CAPABILITY_IAM]
@@ -73,8 +72,6 @@ Stages:
       Parameters:
         AvailabilityZones: us-east-1a,us-east-1b
         NumberOfAZs: 2
-        NATInstanceType: t2.micro
-        <<: *KEY_PAIR_NAME
 
     Bastion:
       Order: 2
