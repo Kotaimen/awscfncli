@@ -10,14 +10,14 @@ from ...runner import StackSyncOptions, StackSyncCommand
 @stack.command()
 @click.option('--no-wait', '-w', is_flag=True, default=False,
               help='Exit immediately after ChangeSet is created.')
-@click.option('--confirm', is_flag=True, default=False,
-              help='Review changes before execute the ChangeSet')
+@click.option('--no-confirm', is_flag=True, default=False,
+              help='Do not wait for confirmation before executing the ChangeSet')
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')
 @click.pass_context
 @command_exception_handler
-def sync(ctx, no_wait, confirm, use_previous_template):
+def sync(ctx, no_wait, no_confirm, use_previous_template):
     """Create and execute ChangeSets (SAM)
 
     Combines "aws cloudformation package" and "aws cloudformation deploy" command
@@ -29,7 +29,7 @@ def sync(ctx, no_wait, confirm, use_previous_template):
 
     options = StackSyncOptions(
         no_wait=no_wait,
-        confirm=confirm,
+        no_confirm=no_confirm,
         use_previous_template=use_previous_template,
     )
 
