@@ -45,6 +45,12 @@ CHANGESET_ACTION_TO_COLOR = {
     'Remove': dict(fg='red'),
 }
 
+CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR = {
+    'Never': dict(fg='green'),
+    'Conditionally': dict(fg='yellow'),
+    'Always': dict(fg='red'),
+}
+
 CHANGESET_REPLACEMENT_TO_COLOR = {
     'True': dict(fg='red'),
     'Conditional': dict(fg='yellow'),
