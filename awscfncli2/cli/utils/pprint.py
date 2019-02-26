@@ -6,7 +6,7 @@ import yaml
 
 from .colormaps import CHANGESET_STATUS_TO_COLOR, CHANGESET_ACTION_TO_COLOR, \
     CHANGESET_REPLACEMENT_TO_COLOR, DRIFT_STATUS_TO_COLOR, \
-    STACK_STATUS_TO_COLOR
+    STACK_STATUS_TO_COLOR, CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR
 from .events import start_tail_stack_events_daemon
 from .pager import custom_paginator
 
@@ -228,6 +228,11 @@ class StackPrettyPrinter(object):
             change_res_id = change['ResourceChange'].get('PhysicalResourceId',
                                                          None)
             change_scope = change['ResourceChange'].get('Scope', None)
+            change_details = {}
+            for detail in change['ResourceChange'].get('Details', None):
+                if detail['Target'].get('Name', None):
+                    if detail['Target']['Name'] not in change_details or detail['Evaluation'] == 'Static':
+                        change_details[detail['Target']['Name']] = detail
 
             echo_pair('{} ({})'.format(logical_id, res_type), indent=2)
             echo_pair('Action', action,
@@ -240,7 +245,17 @@ class StackPrettyPrinter(object):
             if change_res_id:
                 echo_pair('Physical Resource', change_res_id, indent=4)
             if change_scope:
-                echo_pair('Change Scope', change_scope, indent=4)
+                echo_pair('Change Scope', ','.join(change_scope), indent=4)
+            if len(change_details):
+                echo_pair('Changed Properties', '', indent=4)
+                for k,v in change_details.items():
+                    echo_pair('Name', k, indent=8)
+                    echo_pair('Requires Recreation', v['Target']['RequiresRecreation'], 
+                        value_style=CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR[v['Target']['RequiresRecreation']], indent=12)
+                    if v['Evaluation'] == 'Static':
+                        echo_pair('Causing Entity', v['CausingEntity'], indent=12)   
+                    echo_pair('Change Source', v['ChangeSource'], indent=12)
+
 
     def pprint_stack_drift(self, drift):
         detection_status = drift['DetectionStatus']
