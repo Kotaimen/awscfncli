@@ -252,7 +252,7 @@ class StackPrettyPrinter(object):
                     echo_pair('Name', k, indent=8)
                     echo_pair('Requires Recreation', v['Target']['RequiresRecreation'], 
                         value_style=CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR[v['Target']['RequiresRecreation']], indent=12)
-                    if v['Evaluation'] == 'Static':
+                    if v.get('CausingEntity', None):
                         echo_pair('Causing Entity', v['CausingEntity'], indent=12)   
                     echo_pair('Change Source', v['ChangeSource'], indent=12)
 
