@@ -54,6 +54,7 @@ Stages:
       # List of stack capabilities, possible values are:
       #   - CAPABILITY_IAM: Access keys, IAM user&groups, IAM roles&policy
       #   - CAPABILITY_NAMED_IAM: IAM resources with custom names
+      #   - CAPABILITY_AUTO_EXPAND:
 #      Capabilities: [CAPABILITY_IAM]
 
       # ARN of an IAM role that CloudFormation assumes when operating the stack.

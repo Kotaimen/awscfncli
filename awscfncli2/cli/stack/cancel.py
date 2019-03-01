@@ -14,6 +14,7 @@ from ...cli import ClickContext
 @click.pass_context
 @command_exception_handler
 def cancel(ctx, no_wait):
+    """Cancel current stack update"""
     assert isinstance(ctx.obj, ClickContext)
 
     for stack_context in ctx.obj.runner.contexts:

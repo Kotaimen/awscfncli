@@ -19,7 +19,7 @@ from ...runner import StackStatusOptions, StackStatusCommand
 @click.pass_context
 @command_exception_handler
 def status(ctx, dry_run, stack_resources, stack_exports):
-    """List deployment status, resources and  of selected stacks"""
+    """Alias for `stack describe`."""
     assert isinstance(ctx.obj, ClickContext)
 
     # shortcut if we only print stack key (and names)

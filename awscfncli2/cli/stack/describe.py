@@ -15,8 +15,8 @@ from ...runner import StackStatusOptions, StackStatusCommand
 @click.pass_context
 @command_exception_handler
 def describe(ctx, stack_resources, stack_exports):
-    """List deployment status, resources and of stacks (please use
-    "status" command instead)"""
+    """List deployment status, resources and of stacks, identical with stack
+    status command but defaults to print all information"""
     assert isinstance(ctx.obj, ClickContext)
 
     options = StackStatusOptions(
