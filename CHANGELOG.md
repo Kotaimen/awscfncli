@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.7 (2019-3-1)
+
+Features:
+- Add change details to pretty print of ChangeSets (contributed by Andy)
+
 ## Version 2.1.6 (2019-2-17)
 
 Issues:
