@@ -1,12 +1,13 @@
-import json
 import difflib
+import json
+
 import botocore.exceptions
 import click
 import yaml
 
 from .colormaps import CHANGESET_STATUS_TO_COLOR, CHANGESET_ACTION_TO_COLOR, \
     CHANGESET_REPLACEMENT_TO_COLOR, DRIFT_STATUS_TO_COLOR, \
-    STACK_STATUS_TO_COLOR
+    STACK_STATUS_TO_COLOR, CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR
 from .events import start_tail_stack_events_daemon
 from .pager import custom_paginator
 
@@ -228,6 +229,12 @@ class StackPrettyPrinter(object):
             change_res_id = change['ResourceChange'].get('PhysicalResourceId',
                                                          None)
             change_scope = change['ResourceChange'].get('Scope', None)
+            change_details = {}
+            for detail in change['ResourceChange'].get('Details', None):
+                if detail['Target'].get('Name', None):
+                    if detail['Target']['Name'] not in change_details or detail[
+                        'Evaluation'] == 'Static':
+                        change_details[detail['Target']['Name']] = detail
 
             echo_pair('{} ({})'.format(logical_id, res_type), indent=2)
             echo_pair('Action', action,
@@ -240,7 +247,21 @@ class StackPrettyPrinter(object):
             if change_res_id:
                 echo_pair('Physical Resource', change_res_id, indent=4)
             if change_scope:
-                echo_pair('Change Scope', change_scope, indent=4)
+                echo_pair('Change Scope', ','.join(change_scope), indent=4)
+            if len(change_details):
+                echo_pair('Changed Properties', '', indent=4)
+                for k, v in change_details.items():
+                    echo_pair(k, indent=6)
+                    echo_pair('Requires Recreation',
+                              v['Target']['RequiresRecreation'],
+                              value_style=
+                              CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR[
+                                  v['Target']['RequiresRecreation']], indent=8)
+                    if v.get('CausingEntity', None):
+                        echo_pair('Causing Entity', v['CausingEntity'],
+                                  indent=8)
+                    self.pair = echo_pair('Change Source', v['ChangeSource'],
+                                          indent=8)
 
     def pprint_stack_drift(self, drift):
         detection_status = drift['DetectionStatus']
@@ -282,22 +303,22 @@ class StackPrettyPrinter(object):
             json.loads(status['ExpectedProperties']),
             default_flow_style=False)
 
-        actual= yaml.safe_dump(
+        actual = yaml.safe_dump(
             json.loads(status['ActualProperties']),
             default_flow_style=False)
         diff = difflib.unified_diff(
             expected.splitlines(), actual.splitlines(),
             'Expected', 'Actual', n=5)
 
-        for n,line in enumerate(diff):
+        for n, line in enumerate(diff):
             # skip file names and diff stat
-            if n<5: continue
+            if n < 5: continue
             if line.startswith('-'):
-                click.secho('      '+line, fg='red')
+                click.secho('      ' + line, fg='red')
             elif line.startswith('+'):
-                click.secho('      '+line, fg='green')
+                click.secho('      ' + line, fg='green')
             else:
-                click.secho('      '+line)
+                click.secho('      ' + line)
 
     def wait_until_deploy_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack, latest_events=0)

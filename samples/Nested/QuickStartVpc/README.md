@@ -7,3 +7,5 @@ disable them in the config file or in console before delete the stacks.
 `cfn-cli` does _not_ support overwriting `EnableTerminationProtection` on
 command line and this is by design.
   
+Added Test stage which demonstrates using crossing stack reference to deploy 
+the bastion stack.

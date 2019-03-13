@@ -1,0 +1,20 @@
+Version: 3
+
+Stages:
+
+  Default:
+
+    ReleasePipeline:
+      Order: 1
+      StackName: awscfncli2-PyPiRelease
+      Template: PyPiRelease.template.yaml
+      Region: us-west-2
+      StackPolicy: ALLOW_ALL
+      Capabilities: [CAPABILITY_IAM]
+      Tags:
+        Project: awscfncli
+      Parameters:
+        PyPiUsername: MyPyPiUsername
+        PyPiPassword: MyPyPiPassword
+        UseTestPyPi: false
+        InputArtifactPrefix: SourceArtifact/awscfncli2.zip

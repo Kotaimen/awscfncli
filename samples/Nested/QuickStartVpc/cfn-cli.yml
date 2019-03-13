@@ -1,13 +1,63 @@
-Version: 2
+Version: 3
 
 
 KEY_PAIR_NAME: &KEY_PAIR_NAME
-  KeyPairName: <replace-with-your-ec2-key-pair-name>
+  KeyPairName: <your-key-pair-name-here>
+
+TEST_ACCOUNT: &TEST_ACCOUNT
+  Profile: default
+
+PROD_ACCOUNT: &PROD_ACCOUNT
+  Profile: default
 
 
 Stages:
 
-  Default:
+  Test:
+
+    Order: 1
+
+    Vpc:
+      Order: 1
+      StackName: AWSQuickStartVPC
+      Template: https://s3.amazonaws.com/quickstart-reference/aws/vpc/latest/templates/aws-vpc.template
+      Region: us-east-1
+      StackPolicy: ALLOW_ALL
+      EnableTerminationProtection: false
+      <<: *TEST_ACCOUNT
+      Tags:
+        Stage: Test
+      Parameters:
+        AvailabilityZones: us-east-1a,us-east-1b
+        NumberOfAZs: 2
+        <<: *KEY_PAIR_NAME
+
+
+    Bastion:
+      Order: 2
+      StackName: AWSQuickStartBastion
+      Template: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/templates/linux-bastion.template
+      Region: us-east-1
+      Capabilities: [CAPABILITY_IAM]
+      EnableTerminationProtection: false
+      <<: *TEST_ACCOUNT
+      Tags:
+        Stage: Test
+      Parameters:
+        VPCID: ${Test.Vpc.VPCID}
+        PublicSubnet1ID: ${Test.Vpc.PublicSubnet1ID}
+        PublicSubnet2ID: ${Test.Vpc.PublicSubnet2ID}
+        RemoteAccessCIDR: 0.0.0.0/0
+        BastionAMIOS: Amazon-Linux-HVM
+        BastionInstanceType: t2.micro
+        NumBastionHosts: 1
+        EnableBanner: "false"
+        EnableTCPForwarding: "true"
+        <<: *KEY_PAIR_NAME
+
+  Production:
+
+    Order: 2
 
     Vpc:
       Order: 1
@@ -16,13 +66,12 @@ Stages:
       Region: us-east-1
       StackPolicy: DENY_ALL
       EnableTerminationProtection: True
+      <<: *PROD_ACCOUNT
       Tags:
-        Stage: DEV
+        Stage: Production
       Parameters:
         AvailabilityZones: us-east-1a,us-east-1b
         NumberOfAZs: 2
-        NATInstanceType: t2.micro
-        <<: *KEY_PAIR_NAME
 
     Bastion:
       Order: 2
@@ -31,8 +80,9 @@ Stages:
       Region: us-east-1
       Capabilities: [CAPABILITY_IAM]
       EnableTerminationProtection: True
+      <<: *PROD_ACCOUNT
       Tags:
-        Stage: DEV
+        Stage: Production
       Parameters:
         VpcStack: AWSQuickStartVPC
         RemoteAccessCIDR: 0.0.0.0/0
