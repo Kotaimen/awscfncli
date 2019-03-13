@@ -47,7 +47,7 @@ class StackDefaults(object):
     )
 
 
-class StackKey(namedtuple('StackKey', StackDefaults.STACK_KEY)):
+class StackKey(namedtuple('StackKey', sorted(StackDefaults.STACK_KEY))):
 
     @property
     def qualified_name(self):

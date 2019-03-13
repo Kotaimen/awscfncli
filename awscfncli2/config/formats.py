@@ -194,7 +194,7 @@ class FormatV2(ConfigFormat):
                 raise FormatError('File Not Found %s' % stack_policy_path)
             stack_config['StackPolicy'] = stack_policy_path
 
-        key = StackKey(stage_key, stack_key)
+        key = StackKey(StageKey=stage_key, StackKey=stack_key)
         stack_profile = StackProfile.from_dict(**stack_config)
         stack_parameters = StackParameters.from_dict(**stack_config)
         stack_metadata = StackMetadata.from_dict(**stack_config)
