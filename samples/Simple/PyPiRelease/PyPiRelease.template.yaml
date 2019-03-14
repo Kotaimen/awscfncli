@@ -264,7 +264,7 @@ Resources:
               InputArtifacts:
                 - Name: SourceArtifact
             - Name: TestPY36
-              RunOrder: 1
+              RunOrder: 2
               ActionTypeId:
                 Category: Test
                 Owner: AWS
@@ -275,7 +275,7 @@ Resources:
               InputArtifacts:
                 - Name: SourceArtifact
             - Name: TestPY27
-              RunOrder: 1
+              RunOrder: 3
               ActionTypeId:
                 Category: Test
                 Owner: AWS
