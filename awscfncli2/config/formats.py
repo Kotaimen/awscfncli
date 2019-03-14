@@ -207,7 +207,7 @@ class FormatV2(ConfigFormat):
 
 def have_parameter_reference_pattern(config):
     match = find_references(config)
-    return match.count() > 0
+    return len(match) > 0
 
 
 class FormatV3(FormatV2):
