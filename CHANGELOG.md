@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.1.9 (2019-3-14)
+
+Hotfix
+
 ## Version 2.1.8 (2019-3-14)
 
 Issues:
