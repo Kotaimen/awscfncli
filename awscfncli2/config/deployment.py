@@ -3,6 +3,7 @@
 import fnmatch
 import copy
 from collections import namedtuple
+from .template import find_references, substitute_references
 
 
 def _extends(base, **kwargs):
@@ -46,7 +47,7 @@ class StackDefaults(object):
     )
 
 
-class StackKey(namedtuple('StackKey', StackDefaults.STACK_KEY)):
+class StackKey(namedtuple('StackKey', sorted(StackDefaults.STACK_KEY))):
 
     @property
     def qualified_name(self):
@@ -84,6 +85,13 @@ class StackParameters(
         result = copy.deepcopy(StackDefaults.STACK_PARAMETERS)
         _extends(result, **params)
         return StackParameters(**result)
+
+    def find_references(self):
+        # TODO Need refactor to reduce duplicated ParameterTemplate construction
+        return find_references(self._asdict())
+
+    def substitute_references(self, **args):
+        return substitute_references(self._asdict(), **args)
 
 
 class StackDeployment(

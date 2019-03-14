@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import os
 import threading
 
@@ -9,27 +8,6 @@ from .boto3_params import make_boto3_parameters
 from .boto3_profile import Boto3Profile
 from .package import package_template
 from ...config import ConfigError
-
-from awscfncli2.config import ParamReferenceTemplate
-
-
-class ParametersFormatter(object):
-
-    def __init__(self, parameters):
-        self._serialized_parameters = json.dumps(parameters)
-
-        self._attributes = list()
-        for attribute in ParamReferenceTemplate.pattern.findall(self._serialized_parameters):
-            if attribute[2]:
-                self._attributes.append(attribute[2])
-
-    def get_attributes(self):
-        return self._attributes
-
-    def format(self, **attributes):
-        s = ParamReferenceTemplate(self._serialized_parameters)\
-            .safe_substitute(**attributes)
-        return json.loads(s)
 
 
 class Boto3DeploymentContext(StackDeploymentContext):
@@ -42,13 +20,14 @@ class Boto3DeploymentContext(StackDeploymentContext):
         self._session = None
         self._session_lock = threading.Lock()
 
+        self._deployment = deployment
+
         self._stack_key = deployment.stack_key.qualified_name
         self._metadata = deployment.metadata._asdict()
         self._parameters = deployment.parameters._asdict()
 
         self._artifact_store = artifact_store
         self._ppt = pretty_printer
-        self._parameters_formatter = ParametersFormatter(self._parameters)
 
     @property
     def stack_key(self):
@@ -70,10 +49,10 @@ class Boto3DeploymentContext(StackDeploymentContext):
         return self._parameters
 
     def get_parameters_reference(self):
-        return self._parameters_formatter.get_attributes()
+        return self._deployment.parameters.find_references()
 
     def update_parameters_reference(self, **outputs):
-        self._parameters = self._parameters_formatter.format(**outputs)
+        self._parameters = self._deployment.parameters.substitute_references(**outputs)
 
     def make_boto3_parameters(self):
         self._parameters = make_boto3_parameters(
@@ -91,7 +70,7 @@ class Boto3DeploymentContext(StackDeploymentContext):
         if not os.path.exists(template_path):
             raise ConfigError(
                 "Can'not find %s. Package is supported for local template only" %
-                              (template_path))
+                (template_path))
 
         artifact_store = self._artifact_store if self._artifact_store else \
             self.metadata["ArtifactStore"]
@@ -112,5 +91,3 @@ class Boto3DeploymentContext(StackDeploymentContext):
             # packaged template is passed with request body
             self.parameters['TemplateBody'] = template_body
             self.parameters.pop('TemplateURL')
-
-

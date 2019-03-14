@@ -3,7 +3,7 @@ import os.path
 
 from .config import load_config, ConfigError
 from .deployment import StackKey, StackDeployment
-from .formats import CANNED_STACK_POLICIES, ParamReferenceTemplate
+from .formats import CANNED_STACK_POLICIES
 
 
 with open(os.path.join(os.path.dirname(__file__),

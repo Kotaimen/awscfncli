@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import json
 import os
-import string
 
 import jsonschema
 import six
@@ -12,6 +10,7 @@ from semantic_version import Version
 from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
     StackParameters, Deployment
 from .schema import load_schema
+from .template import find_references
 
 CANNED_STACK_POLICIES = {
     'ALLOW_ALL': '{"Statement":[{"Effect":"Allow","Action":"Update:*","Principal":"*","Resource":"*"}]}',
@@ -195,7 +194,7 @@ class FormatV2(ConfigFormat):
                 raise FormatError('File Not Found %s' % stack_policy_path)
             stack_config['StackPolicy'] = stack_policy_path
 
-        key = StackKey(stage_key, stack_key)
+        key = StackKey(StageKey=stage_key, StackKey=stack_key)
         stack_profile = StackProfile.from_dict(**stack_config)
         stack_parameters = StackParameters.from_dict(**stack_config)
         stack_metadata = StackMetadata.from_dict(**stack_config)
@@ -206,20 +205,9 @@ class FormatV2(ConfigFormat):
         return stack
 
 
-class ParamReferenceTemplate(string.Template):
-    idpattern = r'(?-i:[a-zA-Z_][-a-zA-Z0-9_]*\.[a-zA-Z_][-a-zA-Z0-9_]*\.[a-zA-Z_][-a-zA-Z0-9_]*)'
-
-
 def have_parameter_reference_pattern(config):
-    string = json.dumps(config)
-    match = ParamReferenceTemplate.pattern.search(string)
-
-    if match is None:
-        return False
-
-    return match.group('escaped') is not None or \
-           match.group('braced') is not None or \
-           match.group('named') is not None
+    match = find_references(config)
+    return match.count() > 0
 
 
 class FormatV3(FormatV2):
