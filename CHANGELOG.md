@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.8 (2019-3-14)
+
+Issues:
+- Refactor cross stack reference, and fixed Python 2.7 bug. 
+
 ## Version 2.1.7 (2019-3-1)
 
 Features:
