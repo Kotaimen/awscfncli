@@ -178,7 +178,7 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+        - arn:aws:iam::aws:policy/AdministratorAccess
       Policies:
         - PolicyName: CloudWatchLogsAccess
           PolicyDocument:
@@ -346,6 +346,12 @@ Resources:
                 - echo Entered the build phase...
                 - cfn-cli --version
                 - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
+                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack deploy
+                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack delete -qi
+                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack sync
+                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift detect
+                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift diff
+                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack delete -qi
               finally:
                 - echo Leaving build phase...
             post_build:
