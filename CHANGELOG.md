@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.10 (2019-5-1)
+
+Issues:
+- Fixes package error after awscli `1.16.145`
+
 ## Version 2.1.9 (2019-3-14)
 
 Hotfix
