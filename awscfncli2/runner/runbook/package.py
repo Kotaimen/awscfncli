@@ -72,14 +72,25 @@ def package_template(ppt, session, template_path, bucket_region,
         else:
             raise e
 
-    s3_uploader = S3Uploader(
-        s3_client,
-        bucket_name,
-        bucket_region,
-        prefix,
-        kms_key_id,
-        force_upload=False
-    )
+    try:
+        s3_uploader = S3Uploader(
+            s3_client,
+            bucket_name,
+            bucket_region,
+            prefix,
+            kms_key_id,
+            force_upload=False
+        )
+    except TypeError:
+        # HACK: since awscli 1.16.145+ the bucket region parameter is removed
+        s3_uploader = S3Uploader(
+            s3_client,
+            bucket_name,
+            prefix,
+            kms_key_id,
+            force_upload=False
+        )
+
 
     template = Template(template_path, os.getcwd(), s3_uploader,
                         resources_to_export=EXPORTS)
