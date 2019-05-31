@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.get
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       CodeUri: src/
       Policies: AmazonDynamoDBReadOnlyAccess
       Environment:
@@ -23,7 +23,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.put
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       CodeUri: src/
       Policies: AmazonDynamoDBFullAccess
       Environment:
@@ -40,7 +40,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.delete
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       CodeUri: src/
       Policies: AmazonDynamoDBFullAccess
       Environment:
