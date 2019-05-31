@@ -21,7 +21,7 @@ Resources:
     Properties:
       CodeUri: ./index.js
       Handler: index.handler
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       Events:
         ProxyApiRoot:
           Type: Api

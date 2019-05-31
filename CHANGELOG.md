@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.12 (2019-5-31)
+
+Issues:
+- Fix deployment error in samples caused nodejs 6 lambda runtime is EOL.
+  
 ## Version 2.1.11 (2019-5-31)
 
 Issues:
