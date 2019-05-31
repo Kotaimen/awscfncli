@@ -117,13 +117,7 @@ The following resource property are supported by `awscfncli` and official
 - `Location` parameter for the `AWS::Include` transform
 - `SourceBundle` property for the `AWS::ElasticBeanstalk::ApplicationVersion` resource
 - `TemplateURL` property for the `AWS::CloudFormation::Stack` resource
-
-The following resource property are supported by `awscfncli`:
-
-- `ApplicationCode` property for the `AWS::KinesisAnalytics::Application`
-  resource
-- `DefinitionString` property for the `AWS::StepFunctions::StateMachine`
-  resource
+- `Command.ScriptLocation` property for the `AWS::Glue::Job` resource
   
 ## Config File
 

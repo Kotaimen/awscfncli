@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.1.11 (2019-5-31)
+
+Issues:
+- Disable custom packed resources to keep template compatiable with awscfncli
+  and samcli.
+
 ## Version 2.1.10 (2019-5-1)
 
 Issues:
