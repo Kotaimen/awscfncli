@@ -188,8 +188,8 @@ class StepFunctionsDefinitionString(ResourceWithInlineCode):
 
 
 ADDITIONAL_EXPORT = {
-    KinesisAnalysisApplicationCode.RESOURCE_TYPE: KinesisAnalysisApplicationCode,
-    StepFunctionsDefinitionString.RESOURCE_TYPE: StepFunctionsDefinitionString
+    # KinesisAnalysisApplicationCode.RESOURCE_TYPE: KinesisAnalysisApplicationCode,
+    # StepFunctionsDefinitionString.RESOURCE_TYPE: StepFunctionsDefinitionString
 }
 
 if isinstance(EXPORTS, dict):
