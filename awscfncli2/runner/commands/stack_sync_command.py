@@ -10,7 +10,7 @@ from ...cli.utils import echo_pair
 
 class StackSyncOptions(namedtuple('StackSyncOptions',
                                   ['no_wait',
-                                   'confirm',
+                                   'no_confirm',
                                    'use_previous_template'])):
     pass
 
@@ -86,7 +86,7 @@ class StackSyncCommand(Command):
             self.ppt.secho('ChangeSet not executable.', fg='red')
             return
 
-        if self.options.confirm:
+        if not self.options.no_confirm:
             self.ppt.confirm('Do you want to execute ChangeSet?', abort=True)
 
         client_request_token = 'awscfncli-sync-{}'.format(uuid.uuid1())
