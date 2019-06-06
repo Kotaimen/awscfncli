@@ -87,7 +87,8 @@ class StackSyncCommand(Command):
             return
 
         if self.options.confirm:
-            self.ppt.confirm('Do you want to execute ChangeSet?', abort=True)
+            if not self.ppt.confirm('Do you want to execute ChangeSet?'):
+                return
 
         client_request_token = 'awscfncli-sync-{}'.format(uuid.uuid1())
         self.ppt.secho('Executing ChangeSet...')
