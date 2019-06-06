@@ -66,7 +66,7 @@ class StackPrettyPrinter(object):
                   key_style=key_style, sep=sep)
 
     def confirm(self, *args, **argv):
-        click.confirm(*args, **argv)
+        return click.confirm(*args, **argv)
 
     def pprint_stack_name(self, qualified_name, stack_name, prefix=None):
         """Print stack qualified name"""
