@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.1.13 (2019-6-6)
+
+Issues:
+- Changed sync to not abort if a single Change Set is declined. (contributed by 
+  Andrew Lytle)
+s
 ## Version 2.1.12 (2019-5-31)
 
 Issues:
