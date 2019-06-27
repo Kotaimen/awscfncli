@@ -315,56 +315,30 @@ Resources:
   TestProjectPY37:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name:
-        Fn::Sub: ${AWS::StackName}-TestProjectPY37
+
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/python:3.7.1
+        Image: aws/codebuild/standard:2.0
         ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: PYTHON_VERSION
+            Type: PLAINTEXT
+            Value: 3.7
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - echo Entered the install phase...
-                - pip3 install -U .
-              finally:
-                - echo Leaving install phase...
-            pre_build:
-              commands:
-                - echo Entered the pre_build phase...
-              finally:
-                - echo Leaving pre_build phrase..
-            build:
-              commands:
-                - echo Entered the build phase...
-                - cfn-cli --version
-                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
-                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack deploy
-                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack delete -qi
-                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack sync
-                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift detect
-                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift diff
-                - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack delete -qi
-              finally:
-                - echo Leaving build phase...
-            post_build:
-              commands:
-                - echo Entered the post_build phase...
-              finally:
-                - echo Leaving post_build phase...
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: buildspec-snippet.yml
+
 
   TestProjectPY36:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name:
-        Fn::Sub: ${AWS::StackName}-TestProjectPY36
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
@@ -405,8 +379,6 @@ Resources:
   TestProjectPY27:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name:
-        Fn::Sub: ${AWS::StackName}-TestProjectPY27
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
@@ -449,15 +421,13 @@ Resources:
   ReleaseProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name:
-        Fn::Sub: ${AWS::StackName}-ReleaseProject
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/python:3.7.1
+        Image: aws/codebuild/standard:2.0
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
         - Name: TWINE_USERNAME
@@ -482,6 +452,8 @@ Resources:
           version: 0.2
           phases:
             install:
+              runtime-versions:
+                python: 3.7
               commands:
                 - echo Entered the install phase...
                 - pip install -U twine wheel

@@ -37,7 +37,7 @@ install_requires = [
     'six>=1.10.0',
     'click>=6.0,<8',
     'PyYAML>=3.10,<4', # following awscli's requirements
-    'jsonschema>=2.6.0,<3',
+    'jsonschema>=2.6.0',
     'semantic_version>=2.0.0'
 ]
 
@@ -54,7 +54,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='2.1.14',
+    version='2.1.15',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
