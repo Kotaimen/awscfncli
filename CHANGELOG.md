@@ -1,6 +1,10 @@
 # Changelog
 
+## Version 2.1.15 (2019-6-27)
 
+Issues:
+- Relax `jsonschema` version limit. 
+  
 ## Version 2.1.14 (2019-6-7)
 
 Issues:
