@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.17 (2019-7-20)
+
+Issues:
+- Fix `pyyaml` version conflict with `awscli`. 
+
 ## Version 2.1.16 (2019-7-20)
 
 Issues:
