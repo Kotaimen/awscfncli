@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.1.16 (2019-7-20)
+
+Issues:
+- Relax `pyyaml` version limit. 
+
+
 ## Version 2.1.15 (2019-6-27)
 
 Issues:
