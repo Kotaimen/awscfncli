@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.18 (2019-9-2)
+Issues
+- Don't use semantic_version for parsing config version, fixes 
+  compatibly issue.
+
 ## Version 2.1.17 (2019-7-20)
 
 Issues:
