@@ -15,7 +15,7 @@ class ConfigParser(object):
 
     def get_format(self, config, **context):
         # inspect version
-        version = str(config.get('Version'))
+        version = config.get('Version')
         config_format = load_format(version)
         return config_format(**context)
 
