@@ -5,7 +5,6 @@ import os
 
 import jsonschema
 import six
-from semantic_version import Version
 
 from .deployment import StackKey, StackDeployment, StackMetadata, StackProfile, \
     StackParameters, Deployment
@@ -25,22 +24,14 @@ class FormatError(Exception):
 
 
 def load_format(version):
-    if version is None:
-        return FormatV1
-
-    try:
-        v = Version(version, partial=True)
-    except ValueError:
-        raise FormatError('Invalid Version "%s"' % version)
-
-    if v == FormatV3.VERSION:
+    if version == 3:
         return FormatV3
-    elif v == FormatV2.VERSION:
+    elif version == 2:
         return FormatV2
-    elif v == FormatV1.VERSION:
+    elif version == 1 or version is None:
         return FormatV1
     else:
-        raise FormatError('Unspported config version')
+        raise FormatError('Unspported config version {}'.format(version))
 
 
 class ConfigFormat(object):
@@ -54,7 +45,7 @@ class ConfigFormat(object):
 
 
 class FormatV1(ConfigFormat):
-    VERSION = Version('1.0.0')
+    VERSION = '1.0.0'
 
     def __init__(self, **context):
         self._context = context
@@ -68,7 +59,7 @@ class FormatV1(ConfigFormat):
 
 
 class FormatV2(ConfigFormat):
-    VERSION = Version('2.0.0')
+    VERSION = '2.0.0'
 
     STAGE_CONFIG = dict(
         Order=(six.integer_types, None),
@@ -211,7 +202,7 @@ def have_parameter_reference_pattern(config):
 
 
 class FormatV3(FormatV2):
-    VERSION = Version('3.0.0')
+    VERSION = '3.0.0'
 
     def validate(self, config):
         schema = load_schema(str(FormatV2.VERSION))  # use same schema as v2

@@ -19,7 +19,7 @@ Resources:
   LambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./index.js
+      CodeUri: ./src
       Handler: index.handler
       Runtime: nodejs8.10
       Events:
