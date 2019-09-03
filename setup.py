@@ -29,16 +29,12 @@ Features:
 
 
 install_requires = [
-    # AWS dependency: as of Oct-2018
-    'boto3>=1.9.0,<2',
-    'botocore>=1.12.0,<2',
-    'awscli>=1.16.0,<2'
-    # Other: reasonably recent
+    'botocore',
+    'awscli>=1.16.0'
     'six>=1.10.0',
     'click>=6.0,<8',
-    'PyYAML>=3.10,<=5.1', # following awscli's requirements
-    'jsonschema>=2.6.0',
-    'semantic_version>=2.0.0'
+    'PyYAML>=3.10',
+    'jsonschema>=2.6.0'
 ]
 
 test_requires = [
