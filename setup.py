@@ -30,6 +30,7 @@ Features:
 
 install_requires = [
     'botocore',
+    'boto3',
     'awscli>=1.16.0'
     'six>=1.10.0',
     'click>=6.0,<8',
