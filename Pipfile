@@ -6,9 +6,21 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
+pytest-dotenv = "*"
+flake8 = "*"
+flake8-mypy = "*"
+flake8-bugbear = "*"
+flake8-docstrings = "*"
+coverage = "*"
 mock = "*"
+bandit = "*"
+black = "*"
 
 [packages]
-awscfncli2 = {path = ".", editable = true}
+awscfncli2 = {editable = true,path = "."}
 
 [requires]
+
+
+[pipenv]
+allow_prereleases = true

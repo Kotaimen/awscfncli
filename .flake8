@@ -1,0 +1,8 @@
+[flake8]
+max-complexity = 10
+max-line-length = 88
+exclude =
+    .git,
+    __pycache__,
+    samples
+ignore =
