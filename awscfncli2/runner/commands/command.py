@@ -1,4 +1,4 @@
-from ...cli.utils import StackPrettyPrinter
+from awscfncli2.cli.utils.pprint import StackPrettyPrinter
 
 
 class Command(object):

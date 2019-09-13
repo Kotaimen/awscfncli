@@ -13,3 +13,5 @@ with open(os.path.join(os.path.dirname(__file__),
 with open(os.path.join(os.path.dirname(__file__),
                        'sample-config.yaml')) as fp:
     SAMPLE_CONFIG = fp.read()
+
+DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']

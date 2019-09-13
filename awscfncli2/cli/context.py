@@ -4,7 +4,7 @@ from ..runner import Boto3Profile, Boto3RunBook, StackSelector
 from ..config import load_config
 
 
-class ClickContext(object):
+class Context(object):
     """Click context object
 
     Manage config parsing, transforming deployment process.
