@@ -2,12 +2,12 @@
 
 import click
 
-from . import stack
-from ..utils import command_exception_handler, tail_stack_events
-from ...cli import ClickContext
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.cli.utils.events import tail_stack_events
 
 
-@stack.command()
+@click.command()
 @click.option('--timeout', '-t', type=click.IntRange(min=0, max=3600),
               default=300, help='wait time in seconds before exit')
 @click.option('--events', '-n', type=click.IntRange(min=0, max=100),
@@ -17,9 +17,12 @@ from ...cli import ClickContext
 @click.pass_context
 @command_exception_handler
 def tail(ctx, timeout, events):
-    """Wath stack events, not this command will only select first one
-    if mutable stacks matches stack selector."""
-    assert isinstance(ctx.obj, ClickContext)
+    """Tailing stack events.
+
+    This command will only select first one if mutable stacks matches
+    stack selector.
+    """
+    assert isinstance(ctx.obj, Context)
 
     for stack_context in ctx.obj.runner.contexts:
         stack_context.make_boto3_parameters()

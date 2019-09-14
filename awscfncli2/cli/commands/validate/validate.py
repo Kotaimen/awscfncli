@@ -1,19 +1,16 @@
-#  -*- encoding: utf-8 -*-
-
 import click
 
-from ..main import cfn_cli
-from ..utils import command_exception_handler
-from ..utils import echo_pair_if_exists
-from ...cli import ClickContext
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.cli.utils.pprint import echo_pair_if_exists
 
 
-@cfn_cli.command()
+@click.command('validate')
 @click.pass_context
 @command_exception_handler
-def validate(ctx):
-    """Validate templates"""
-    assert isinstance(ctx.obj, ClickContext)
+def cli(ctx):
+    """Validate template file."""
+    assert isinstance(ctx.obj, Context)
 
     for stack_context in ctx.obj.runner.contexts:
         stack_context.make_boto3_parameters()

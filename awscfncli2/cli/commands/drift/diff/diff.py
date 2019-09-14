@@ -1,21 +1,19 @@
 #  -*- encoding: utf-8 -*-
 
 import click
-import botocore.exceptions
 
-from . import drift
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import DriftDiffOptions, DriftDiffCommand
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.runner.commands.drift_diff_command import DriftDiffOptions, \
+    DriftDiffCommand
 
 
-@drift.command()
-
+@click.command()
 @click.pass_context
 @command_exception_handler
 def diff(ctx):
     """Show stack resource drifts."""
-    assert isinstance(ctx.obj, ClickContext)
+    assert isinstance(ctx.obj, Context)
 
     options = DriftDiffOptions(
     )

@@ -1,13 +1,14 @@
 import click
 
-from . import stack
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.runner.commands.stack_status_command import StackStatusOptions, \
+    StackStatusCommand
 
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import StackStatusOptions, StackStatusCommand
 
+# TODO: Deprecate this
 
-@stack.command()
+@click.command()
 @click.option('--stack-resources', '-r', is_flag=True, default=True,
               help='Display stack resources.')
 @click.option('--stack-exports', '-e', is_flag=True, default=True,
@@ -15,9 +16,11 @@ from ...runner import StackStatusOptions, StackStatusCommand
 @click.pass_context
 @command_exception_handler
 def describe(ctx, stack_resources, stack_exports):
-    """List deployment status, resources and of stacks, identical with stack
-    status command but defaults to print all information"""
-    assert isinstance(ctx.obj, ClickContext)
+    """Deprecated, use "status" command instead."""
+
+    assert isinstance(ctx.obj, Context)
+
+    ctx.obj.ppt.secho('Deprecated, use "status" command instead!', fg='red')
 
     options = StackStatusOptions(
         dry_run=False,

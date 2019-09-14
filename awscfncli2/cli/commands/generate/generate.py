@@ -8,20 +8,23 @@ from awscfncli2.config import ANNOTATED_SAMPLE_CONFIG
 
 
 @click.command('generate')
+# TODO: Deprecate this
 @click.option('--annotated',
               expose_value=False,
               hidden=True,
               is_flag=True,
               default=True,
-              help='Generate an annotated config, this option is deprecated and will '
-                   'be removed from future versions.')
+              help='This option is deprecated and will be removed in future versions.')
 @click.pass_context
 @command_exception_handler
 def cli(ctx):
-    """Generate a sample configuration file to cfn-cli.yaml."""
+    """Generate sample configuration file.
+
+    Generate a annotated configuration file as `cfn-cli.yaml` in working directory.
+    """
     context = ctx.ensure_object(Context)
     if os.path.exists(context.config_filename):
-        click.secho(f'Refuse to overwrite existing file {context.config_filename}',
+        click.secho(f'Cowardly refusing overwrite existing {context.config_filename}.',
                     fg='red')
     else:
         click.secho('Writing to {}'.format(context.config_filename))

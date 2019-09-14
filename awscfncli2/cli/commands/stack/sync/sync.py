@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
 import click
 
-from . import stack
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import StackSyncOptions, StackSyncCommand
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.runner.commands.stack_sync_command import StackSyncOptions, \
+    StackSyncCommand
 
 
-@stack.command()
+@click.command()
 @click.option('--no-wait', '-w', is_flag=True, default=False,
               help='Exit immediately after ChangeSet is created.')
 @click.option('--confirm', is_flag=True, default=False,
@@ -18,14 +18,13 @@ from ...runner import StackSyncOptions, StackSyncCommand
 @click.pass_context
 @command_exception_handler
 def sync(ctx, no_wait, confirm, use_previous_template):
-    """Create and execute ChangeSets (SAM)
+    """Sync stacks.
 
     Combines "aws cloudformation package" and "aws cloudformation deploy" command
-    into one.  If the stack is not created yet, a CREATE type ChangeSet is created,
+    into one.  If stack is not created yet, a CREATE type ChangeSet is created,
     otherwise UPDATE ChangeSet is created.
-
     """
-    assert isinstance(ctx.obj, ClickContext)
+    assert isinstance(ctx.obj, Context)
 
     options = StackSyncOptions(
         no_wait=no_wait,

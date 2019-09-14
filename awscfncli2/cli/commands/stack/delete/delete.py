@@ -2,13 +2,13 @@
 
 import click
 
-from . import stack
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import StackDeleteOptions, StackDeleteCommand
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.runner.commands.stack_delete_command import StackDeleteOptions, \
+    StackDeleteCommand
 
 
-@stack.command()
+@click.command()
 @click.option('--quiet', '-q', is_flag=True, default=False,
               help='Suppress warning if more than one stack is being deleted.')
 @click.option('--no-wait', '-w', is_flag=True, default=False,
@@ -18,8 +18,11 @@ from ...runner import StackDeleteOptions, StackDeleteCommand
 @click.pass_context
 @command_exception_handler
 def delete(ctx, quiet, no_wait, ignore_missing):
-    """Delete stacks"""
-    assert isinstance(ctx.obj, ClickContext)
+    """Delete stacks.
+
+    By default this command will abort if the stack being deleted does not exist,
+    ignore this using --ignore-missing option."""
+    assert isinstance(ctx.obj, Context)
 
     # prompt user if more than one stack is being deleted
     if len(ctx.obj.runner.contexts) > 1:
@@ -38,4 +41,3 @@ def delete(ctx, quiet, no_wait, ignore_missing):
     )
 
     ctx.obj.runner.run(command, rev=True)
-

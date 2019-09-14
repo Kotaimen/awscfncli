@@ -1,16 +1,15 @@
 # -*- encoding: utf-8 -*-
 
 import click
-import botocore.exceptions
 
-from . import stack
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import StackUpdateOptions, StackUpdateCommand
-from ...config import CANNED_STACK_POLICIES
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.config import CANNED_STACK_POLICIES
+from awscfncli2.runner.commands.stack_update_command import StackUpdateOptions, \
+    StackUpdateCommand
 
 
-@stack.command()
+@click.command()
 @click.option('--no-wait', '-w', is_flag=True, default=False,
               help='Exit immediately after update is started.')
 @click.option('--use-previous-template', is_flag=True, default=False,
@@ -30,8 +29,11 @@ from ...config import CANNED_STACK_POLICIES
 @command_exception_handler
 def update(ctx, no_wait, use_previous_template, ignore_no_update,
            override_policy):
-    """Update an existing stack"""
-    assert isinstance(ctx.obj, ClickContext)
+    """Update existing stacks.
+
+    Any
+    """
+    assert isinstance(ctx.obj, Context)
 
     options = StackUpdateOptions(
         no_wait=no_wait,

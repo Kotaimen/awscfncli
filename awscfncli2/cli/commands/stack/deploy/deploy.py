@@ -2,13 +2,13 @@
 
 import click
 
-from . import stack
-from ..utils import command_exception_handler
-from ...cli import ClickContext
-from ...runner import StackDeployOptions, StackDeployCommand
+from awscfncli2.cli.context import Context
+from awscfncli2.cli.utils.deco import command_exception_handler
+from awscfncli2.runner.commands.stack_deploy_command import StackDeployCommand, \
+    StackDeployOptions
 
 
-@stack.command()
+@click.command()
 @click.option('--no-wait', '-w', is_flag=True, default=False,
               help='Exit immediately after deploy is started.')
 @click.option('--on-failure',
@@ -37,8 +37,8 @@ def deploy(ctx, no_wait, on_failure,
            disable_rollback,
            timeout_in_minutes,
            ignore_existing, ):
-    """Deploy a new stack"""
-    assert isinstance(ctx.obj, ClickContext)
+    """Deploy new stacks."""
+    assert isinstance(ctx.obj, Context)
 
     options = StackDeployOptions(
         no_wait=no_wait,

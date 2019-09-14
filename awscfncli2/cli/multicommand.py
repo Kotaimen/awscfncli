@@ -8,9 +8,13 @@ import click
 
 logger = logging.getLogger(__name__)
 
-COMMAND_PACKAGE_MAPPING = OrderedDict(
-    [("generate", "awscfncli2.cli.commands.generate")]
-)
+COMMAND_PACKAGE_MAPPING = OrderedDict([
+    ("generate", "awscfncli2.cli.commands.generate"),
+    ("status", "awscfncli2.cli.commands.status"),
+    ("validate", "awscfncli2.cli.commands.validate"),
+    ("stack", "awscfncli2.cli.commands.stack"),
+    ("drift", "awscfncli2.cli.commands.drift"),
+])
 
 
 class MultiCommand(click.MultiCommand):
