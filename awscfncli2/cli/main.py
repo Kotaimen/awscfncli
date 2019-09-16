@@ -1,17 +1,15 @@
-#  -*- encoding: utf-8 -*-
-
-"""Main cli entry point"""
+"""Main click command."""
 
 import logging
-import os
 
 import click
 
 from awscfncli2 import __version__
-from awscfncli2.cli.context import Context
-from awscfncli2.config import DEFAULT_CONFIG_FILE_NAMES
 from .multicommand import MultiCommand
-from .utils.pprint import StackPrettyPrinter
+from .context import Context, Options, DefaultContextBuilder
+
+CONTEXT_BUILDER = DefaultContextBuilder
+VERBOSITY_LOGLEVEL_MAPPING = [logging.WARNING, logging.INFO, logging.DEBUG]
 
 
 @click.command(cls=MultiCommand)
@@ -28,16 +26,17 @@ from .utils.pprint import StackPrettyPrinter
                    '"*", which means all stacks in all stages.')
 @click.option('-p', '--profile',
               type=click.STRING, default=None,
-              help='Override AWS profile specified in the config file.  Don\'t use '
-                   'this against stacks deploys to multiple profiles.')
+              help='Override AWS profile specified in the config file.  Warning: '
+                   'Don\'t use this option on stacks in different accounts.')
 @click.option('-r', '--region',
               type=click.STRING, default=None,
-              help='Override AWS region specified in the config.  Don\'t use '
-                   'this against stacks deploys to multiple regions.')
+              help='Override AWS region specified in the config.  Warning: Don\'t use '
+                   'this option on stacks in different regions.')
 @click.option('-a', '--artifact-store',
-              type=click.STRING, default=None,
+              type=click.STRING, default='',
               help='Override artifact store specified in the config.  Artifact store is'
-                   'the s3 bucket used to store packaged template resource.')
+                   'the s3 bucket used to store packaged template resource.  Warning: '
+                   'Don\'t use this option on stacks in different accounts & regions.')
 @click.option('-v', '--verbose', count=True,
               help='Be more verbose, can be specified multiple times.')
 @click.pass_context
@@ -72,41 +71,22 @@ def cli(ctx, file, stack, profile, region, artifact_store, verbose):
         CFN_STACK=StageName.StackName cfn-cli <command>
     """
 
-    # Set logging level according to verbosity
+    # Setup global logging level
+    if verbose >= 2: verbose = 2  # cap at 2
 
-    if verbose >= 2:
-        logging.getLogger().setLevel(logging.DEBUG)
-    elif verbose == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:
-        logging.getLogger().setLevel(logging.WARNING)
+    logger = logging.getLogger()
+    logger.setLevel(VERBOSITY_LOGLEVEL_MAPPING[verbose])
 
-    ppt = StackPrettyPrinter(verbosity=verbose)
-
-    # Find config file
-    if file is None:
-        # no config file is specified, try default names
-        for fn in DEFAULT_CONFIG_FILE_NAMES:
-            file = fn
-            if os.path.exists(file) and os.path.isfile(file):
-                break
-    elif os.path.isdir(file):
-        # specified a directory, try default names under given dir
-        base = file
-        for fn in DEFAULT_CONFIG_FILE_NAMES:
-            file = os.path.join(base, fn)
-            if os.path.exists(file) and os.path.isfile(file):
-                break
-
-    # Builds the context object
-    ctx_obj = Context(
+    # Build context from command options
+    options = Options(
         config_filename=file,
         stack_selector=stack,
         profile_name=profile,
         region_name=region,
         artifact_store=artifact_store,
-        pretty_printer=ppt,
+        verbosity=verbose,
     )
+    context: Context = CONTEXT_BUILDER(options).build()
 
     # Assign context object
-    ctx.obj = ctx_obj
+    ctx.obj = context

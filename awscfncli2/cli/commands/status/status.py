@@ -1,7 +1,7 @@
 import click
 
 from awscfncli2.cli.utils.deco import command_exception_handler
-from awscfncli2.runner import StackStatusOptions, StackStatusCommand
+from awscfncli2.runner.commands.stack_status_command import StackStatusOptions, StackStatusCommand
 
 
 @click.command('status')

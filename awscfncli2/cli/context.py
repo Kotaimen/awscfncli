@@ -1,32 +1,76 @@
+"""Click context object.
+
+Options - data object contains options from main cli
+ContextBuilder -
+
+Context - click context object,
+"""
+import os
 import threading
+from collections import namedtuple
 
-from ..runner import Boto3Profile, Boto3RunBook, StackSelector
-from ..config import load_config
+from awscfncli2.config import load_config, DEFAULT_CONFIG_FILE_NAMES
+from awscfncli2.runner import Boto3Profile, Boto3RunBook, StackSelector
+from .utils.pprint import StackPrettyPrinter
 
 
-class Context(object):
+class Options(namedtuple(
+    'Options',
+    [
+        'config_filename',
+        'stack_selector',
+        'profile_name',
+        'region_name',
+        'artifact_store',
+        'verbosity',
+    ]
+)):
+    pass
+
+
+class ContextBuilder:
+    """Build Context from given Options."""
+
+    def __init__(self, options: Options):
+        self._opt = options
+
+    def build(self):
+        """Build Context from given Options.
+
+        A new Context object is returned every time.
+        """
+        raise NotImplementedError
+
+
+class Context:
     """Click context object
 
-    Manage config parsing, transforming deployment process.
+
+    # Manage config parsing, transforming deployment process.
     """
 
     def __init__(self,
-                 config_filename,
-                 stack_selector,
-                 profile_name,
-                 region_name,
-                 artifact_store,
-                 pretty_printer):
-        self._config_filename = config_filename
-        self._stack_selector = StackSelector(stack_selector)
-        self._boto3_profile = Boto3Profile(profile_name=profile_name,
-                                           region_name=region_name)
-        self._artifact_store = artifact_store
+                 config_filename: str,
+                 artifact_store: str,
+                 pretty_printer: StackPrettyPrinter,
+                 stack_selector: StackSelector,
+                 boto3_profile: Boto3Profile,
+                 builder,
+                 ):
+        # simple
+        self._config_filename: str = config_filename
+        self._artifact_store: str = artifact_store
+        # complex
+        self._pretty_printer: StackPrettyPrinter = pretty_printer
+        self._stack_selector = stack_selector
+        self._boto3_profile = boto3_profile
+        # lazy-loaded
         self._deployments = None
-        self._pretty_printer = pretty_printer
-        self._runner = None
+        self._command_runner = None
 
-        self._lock = threading.Lock()
+        # internals
+        self.__builder = builder
+        self.__lock = threading.RLock()
 
     @property
     def config_filename(self):
@@ -44,33 +88,92 @@ class Context(object):
         return self._boto3_profile
 
     @property
-    def deployments(self):
-        """Stack configurations"""
-        # lazy loading the deployments so we don't get error if user is just
-        # looking at command help
-        with self._lock:
-            if self._deployments is None:
-                self._deployments = load_config(self._config_filename)
-        return self._deployments
-
-    @property
     def verbosity(self):
+        """Verbosity level"""
         return self._pretty_printer.verbosity
 
     @property
-    def runner(self):
-
-        if self._runner is None:
-            self._runner = Boto3RunBook(
-                self.boto3_profile,
-                self._artifact_store,
-                self.deployments,
-                self.stack_selector,
-                self.ppt
-            )
-
-        return self._runner
+    def ppt(self):
+        """CLI pretty printer"""
+        return self._pretty_printer
 
     @property
-    def ppt(self):
-        return self._pretty_printer
+    def deployments(self):
+        """Stack deployment spec."""
+        # XXX: Lazy-loading so we don't get error if user is just looking at help
+        with self.__lock:
+            if self._deployments is None:
+                self._deployments = self.__builder.parse_config(self.config_filename)
+        return self._deployments
+
+    @property
+    def runner(self):
+        """Command runner."""
+        with self.__lock:
+            if self._command_runner is None:
+                self._command_runner = self.__builder.build_runner(
+                    self.boto3_profile,
+                    self._artifact_store,
+                    self.deployments,
+                    self.stack_selector,
+                    self.ppt
+                )
+        return self._command_runner
+
+
+class DefaultContextBuilder(ContextBuilder):
+    """Default context builder."""
+
+    def _find_default_config_file(self):
+        """Try find default config file if none is specified in the CLI"""
+        config_filename = self._opt.config_filename
+        if config_filename is None:
+            # no config file is specified, try default names
+            for fn in DEFAULT_CONFIG_FILE_NAMES:
+                config_filename = fn
+                if os.path.exists(config_filename) and os.path.isfile(config_filename):
+                    break
+        elif os.path.isdir(config_filename):
+            # specified a directory, try default names under given dir
+            base = config_filename
+            for fn in DEFAULT_CONFIG_FILE_NAMES:
+                config_filename = os.path.join(base, fn)
+                if os.path.exists(config_filename) and os.path.isfile(config_filename):
+                    break
+        return config_filename
+
+    def build(self) -> Context:
+        config_filename = self._find_default_config_file()
+
+        stack_selector = StackSelector(self._opt.stack_selector)
+
+        boto3_profile = Boto3Profile(profile_name=self._opt.profile_name,
+                                     region_name=self._opt.region_name)
+
+        pretty_printer = StackPrettyPrinter(verbosity=self._opt.verbosity)
+
+        context = Context(
+            config_filename=config_filename,
+            stack_selector=stack_selector,
+            boto3_profile=boto3_profile,
+            pretty_printer=pretty_printer,
+            artifact_store=self._opt.artifact_store,
+            builder=self)
+
+        return context
+
+    @staticmethod
+    def parse_config(config_filename):
+        """Parse configuration file from options."""
+        return load_config(config_filename)
+
+    @staticmethod
+    def build_runner(boto3_profile, artifact_store, deployments, stack_selector, pretty_printer):
+        """Build command runner from options."""
+        return Boto3RunBook(
+            boto3_profile,
+            artifact_store,
+            deployments,
+            stack_selector,
+            pretty_printer
+        )

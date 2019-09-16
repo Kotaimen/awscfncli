@@ -1,3 +1,4 @@
+"""Proxy interfaces for cli print."""
 import difflib
 import json
 
