@@ -15,9 +15,11 @@ from ...runner import StackSyncOptions, StackSyncCommand
 @click.option('--use-previous-template', is_flag=True, default=False,
               help='Reuse the existing template that is associated with the '
                    'stack that you are updating.')
+@click.option('--disable-tail-events', is_flag=True, default=False,
+              help='Disable tailing of cloudformation events')
 @click.pass_context
 @command_exception_handler
-def sync(ctx, no_wait, confirm, use_previous_template):
+def sync(ctx, no_wait, confirm, use_previous_template, disable_tail_events):
     """Create and execute ChangeSets (SAM)
 
     Combines "aws cloudformation package" and "aws cloudformation deploy" command
@@ -31,6 +33,7 @@ def sync(ctx, no_wait, confirm, use_previous_template):
         no_wait=no_wait,
         confirm=confirm,
         use_previous_template=use_previous_template,
+        disable_tail_events=disable_tail_events
     )
 
     command = StackSyncCommand(
