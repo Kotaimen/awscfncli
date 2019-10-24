@@ -11,7 +11,8 @@ from .utils import update_termination_protection
 class StackSyncOptions(namedtuple('StackSyncOptions',
                                   ['no_wait',
                                    'confirm',
-                                   'use_previous_template'])):
+                                   'use_previous_template',
+                                   'disable_describe_events'])):
     pass
 
 
@@ -104,9 +105,9 @@ class StackSyncCommand(Command):
             self.ppt.secho('ChangeSet execution started.')
         else:
             if is_new_stack:
-                self.ppt.wait_until_deploy_complete(session, stack)
+                self.ppt.wait_until_deploy_complete(session, stack, self.options.disable_describe_events)
             else:
-                self.ppt.wait_until_update_complete(session, stack)
+                self.ppt.wait_until_update_complete(session, stack, self.options.disable_describe_events)
             self.ppt.secho('ChangeSet execution complete.', fg='green')
 
     def check_changeset_type(self, client, parameters):

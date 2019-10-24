@@ -321,8 +321,9 @@ class StackPrettyPrinter(object):
             else:
                 click.secho('      ' + line)
 
-    def wait_until_deploy_complete(self, session, stack):
-        start_tail_stack_events_daemon(session, stack, latest_events=0)
+    def wait_until_deploy_complete(self, session, stack, disable_tail_events=False):
+        if not disable_tail_events:
+            start_tail_stack_events_daemon(session, stack, latest_events=0)
 
         waiter = session.client('cloudformation').get_waiter(
             'stack_create_complete')
@@ -335,8 +336,9 @@ class StackPrettyPrinter(object):
             'stack_delete_complete')
         waiter.wait(StackName=stack.stack_id)
 
-    def wait_until_update_complete(self, session, stack):
-        start_tail_stack_events_daemon(session, stack)
+    def wait_until_update_complete(self, session, stack, disable_tail_events=False):
+        if not disable_tail_events:
+            start_tail_stack_events_daemon(session, stack)
 
         waiter = session.client('cloudformation').get_waiter(
             'stack_update_complete')
