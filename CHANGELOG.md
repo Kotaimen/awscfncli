@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.19 (2019-10-24)
+Issues:
+- Add disable-tail-events option to stack sync command, workaround for throttling 
+  during concurrent deployment. (Contributed by KotMeow).  
+
 ## Version 2.1.18 (2019-9-2)
 Issues
 - Don't use semantic_version for parsing config version, fixes 
