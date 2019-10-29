@@ -39,7 +39,7 @@ setup(
     # License detail
     license='MIT',
 
-    # Classification and Keyw1ords
+    # Classification and Keywords
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -53,10 +53,10 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
-    python_requires=">=3.6",
+    python_requires='>=3.6',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
-        # 'awscfncli2.config': ['*.json', '*.yaml']
+        'awscfncli2.config': ['*.json', '*.yaml']
     },
     install_requires=install_requires,
     entry_points='''

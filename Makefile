@@ -9,7 +9,7 @@ test:
 dev: lint test
 
 lint:
-	flake8
+	flake8 --format=pylint
 	bandit -r awscfncli2 -c bandit
 
 black:

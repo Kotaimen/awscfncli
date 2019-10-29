@@ -2,6 +2,7 @@
 max-complexity = 10
 max-line-length = 88
 exclude =
+    setup.py
     .git,
     __pycache__,
     samples
