@@ -31,7 +31,7 @@ def update(ctx, no_wait, use_previous_template, ignore_no_update,
            override_policy):
     """Update existing stacks.
 
-    Any
+    Any stack configuration changes are also applied as well.
     """
     assert isinstance(ctx.obj, Context)
 
