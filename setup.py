@@ -16,6 +16,8 @@ install_requires = [
     'boto3',
     'awscli',
     'click~=7.0',
+    # Use my fork as click_completion authors haven't merged PR yet
+    'click_completion @ git+https://github.com/kotaimen/click-completion.git#egg=click_completion',
     'PyYAML>=5.1',
     'jsonschema>=2.6.0'
 ]

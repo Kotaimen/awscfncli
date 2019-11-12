@@ -1,4 +1,6 @@
 """Dynamic Autocomplete helpers"""
+import click
+import click_completion.core
 
 from awscfncli2.config import find_default_config, load_config, ConfigError
 
@@ -16,6 +18,7 @@ def profile_auto_complete(ctx, args, incomplete):
 def stack_auto_complete(ctx, args, incomplete):
     """Autocomplete for --stack
 
+    By default, returns qualified names start with qualified stack
 
     """
     import argparse
@@ -27,14 +30,26 @@ def stack_auto_complete(ctx, args, incomplete):
 
     try:
         deployments = load_config(config_filename)
-    except ConfigError:
+    except ConfigError as e:
         # ignore any config parsing errors
-        return
+        return list()
 
     # get a sorted list of qualified names
+
     stack_names = sorted(
-        d.stack_key.qualified_name for d in deployments.query_stacks('*'))
+        d.stack_key.qualified_name for d in deployments.query_stacks())
 
     # remove meta chars
     incomplete = incomplete.lower().translate({'*': '', '?': ''})
-    return list(s for s in stack_names if s.lower().startswith(incomplete))
+    return list(
+        (s.stack_key.qualified_name, s.parameters.StackName) for s in deployments.query_stacks()
+        if s.stack_key.qualified_name.lower().startswith(incomplete)
+    )
+
+
+def install_callback(ctx, attr, value):
+    if not value or ctx.resilient_parsing:
+        return value
+    shell, path = click_completion.core.install()
+    click.echo(f'{shell} completion installed in {path}')
+    exit(0)

@@ -3,17 +3,25 @@
 import logging
 
 import click
+import click_completion
 
 from awscfncli2 import __version__
+from .autocomplete import stack_auto_complete, profile_auto_complete, install_callback
 from .context import Context, Options, DefaultContextBuilder
 from .multicommand import MultiCommand
-from .autocomplete import stack_auto_complete, profile_auto_complete
 
 CONTEXT_BUILDER = DefaultContextBuilder
 VERBOSITY_LOGLEVEL_MAPPING = [logging.WARNING, logging.INFO, logging.DEBUG]
 
+click_completion.init()
+
+
 @click.command(cls=MultiCommand)
 @click.version_option(version=__version__)
+@click.option('--install-completion', is_flag=True, callback=install_callback,
+              expose_value=False,
+              help='Automatically install completion for the current shell. Make sure '
+                   'to have psutil installed.')
 @click.option('-f', '--file',
               type=click.Path(exists=False, dir_okay=True),
               default=None,
