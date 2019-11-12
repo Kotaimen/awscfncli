@@ -1,7 +1,7 @@
 """Click context object.
 
 Options - data object contains options from main cli
-ContextBuilder -
+ContextBuilder - build context from given options
 
 Context - click context object,
 """
@@ -9,7 +9,7 @@ import os
 import threading
 from collections import namedtuple
 
-from awscfncli2.config import load_config, DEFAULT_CONFIG_FILE_NAMES
+from awscfncli2.config import load_config, find_default_config
 from awscfncli2.runner import Boto3Profile, Boto3RunBook, StackSelector
 from .utils.pprint import StackPrettyPrinter
 
@@ -124,26 +124,8 @@ class Context:
 class DefaultContextBuilder(ContextBuilder):
     """Default context builder."""
 
-    def _find_default_config_file(self):
-        """Try find default config file if none is specified in the CLI"""
-        config_filename = self._opt.config_filename
-        if config_filename is None:
-            # no config file is specified, try default names
-            for fn in DEFAULT_CONFIG_FILE_NAMES:
-                config_filename = fn
-                if os.path.exists(config_filename) and os.path.isfile(config_filename):
-                    break
-        elif os.path.isdir(config_filename):
-            # specified a directory, try default names under given dir
-            base = config_filename
-            for fn in DEFAULT_CONFIG_FILE_NAMES:
-                config_filename = os.path.join(base, fn)
-                if os.path.exists(config_filename) and os.path.isfile(config_filename):
-                    break
-        return config_filename
-
     def build(self) -> Context:
-        config_filename = self._find_default_config_file()
+        config_filename = find_default_config(self._opt.config_filename)
 
         stack_selector = StackSelector(self._opt.stack_selector)
 
