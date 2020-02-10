@@ -1,7 +1,6 @@
 #  -*- encoding: utf-8 -*-
 
 import click
-
 from . import stack
 from ..utils import command_exception_handler
 from ...cli import ClickContext
@@ -40,12 +39,19 @@ def deploy(ctx, no_wait, on_failure,
     """Deploy a new stack"""
     assert isinstance(ctx.obj, ClickContext)
 
+    try:    
+        auto_deploy = ctx.obj.global_settings.getboolean('behaviours', 'auto_deploy', fallback=False)
+    except Exception as ex:
+        ctx.obj.ppt.secho("Error processing Global Config file:\n " + str(ex), fg='red')
+        return
+
     options = StackDeployOptions(
         no_wait=no_wait,
         on_failure=on_failure,
         disable_rollback=disable_rollback,
         timeout_in_minutes=timeout_in_minutes,
-        ignore_existing=ignore_existing
+        ignore_existing=ignore_existing,
+        auto_deploy=auto_deploy
     )
 
     command = StackDeployCommand(

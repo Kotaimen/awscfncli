@@ -16,7 +16,8 @@ class ClickContext(object):
                  profile_name,
                  region_name,
                  artifact_store,
-                 pretty_printer):
+                 pretty_printer,
+                 global_settings):
         self._config_filename = config_filename
         self._stack_selector = StackSelector(stack_selector)
         self._boto3_profile = Boto3Profile(profile_name=profile_name,
@@ -25,6 +26,7 @@ class ClickContext(object):
         self._deployments = None
         self._pretty_printer = pretty_printer
         self._runner = None
+        self._global_settings = global_settings
 
         self._lock = threading.Lock()
 
@@ -32,7 +34,7 @@ class ClickContext(object):
     def config_filename(self):
         """Config file name"""
         return self._config_filename
-
+    
     @property
     def stack_selector(self):
         """Stack selector"""
@@ -74,3 +76,8 @@ class ClickContext(object):
     @property
     def ppt(self):
         return self._pretty_printer
+
+    @property
+    def global_settings(self):
+        return self._global_settings
+

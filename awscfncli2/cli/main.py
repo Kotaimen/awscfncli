@@ -6,6 +6,7 @@ import logging
 import os
 import click
 import pkg_resources
+from configparser import SafeConfigParser
 
 from .context import ClickContext
 from .utils import StackPrettyPrinter
@@ -13,7 +14,7 @@ from .utils import StackPrettyPrinter
 VERSION = pkg_resources.require('awscfncli2')[0].version
 
 DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
-
+DEFAULT_GLOBAL_CONFIG_FILE_NAME = '~/.cfn-cli/config'
 
 @click.group()
 @click.pass_context
@@ -89,7 +90,13 @@ def cfn_cli(ctx, file, stack, profile, region, artifact_store, verbose):
             file = os.path.join(base, fn)
             if os.path.exists(file) and os.path.isfile(file):
                 break
-
+            
+    # look for global config file
+    global_config_file = os.path.expanduser(DEFAULT_GLOBAL_CONFIG_FILE_NAME)
+    cp = SafeConfigParser()
+    if os.path.exists(global_config_file):
+        cp.read(global_config_file)
+        
     # Builds the context object
     ctx_obj = ClickContext(
         config_filename=file,
@@ -98,7 +105,7 @@ def cfn_cli(ctx, file, stack, profile, region, artifact_store, verbose):
         region_name=region,
         artifact_store = artifact_store,
         pretty_printer=StackPrettyPrinter(verbosity=verbose),
-
+        global_settings=cp
     )
 
     # Assign context object
