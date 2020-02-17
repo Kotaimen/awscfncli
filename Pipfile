@@ -19,7 +19,7 @@ flake8-mypy = "*"
 flake8-bugbear = "*"
 flake8-docstrings = "*"
 bandit = "*"
-black = "*"
+#black = "*"
 
 [packages]
 awscfncli2 = {editable = true,path = "."}
@@ -27,4 +27,4 @@ awscfncli2 = {editable = true,path = "."}
 [requires]
 
 [pipenv]
-allow_prereleases = true
+#allow_prereleases = true

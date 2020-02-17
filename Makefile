@@ -14,23 +14,24 @@ env:
 update:
 	pipenv update --dev
 
-build:
+dist:
 	python setup.py sdist bdist_wheel
 
 deploy: build
 	twine upload --verbose dist/*
 
 lint:
-	black --check awscfncli2/* tests/*
-	bandit -r awscfncli2 -c bandit
-	flake8 --format=pylint
-	pylint awscfncli2
+	#black --check awscfncli2/* tests/*
+	pipenv run bandit -r awscfncli2 -c bandit
+	pipenv run flake8 --format=pylint
+	pipenv run pylint awscfncli2
 
 test:
-	pytests
+	pipenv run pytest tests/unit
+	pipenv run pytest tests/unit
 
 format:
-	black awscfncli2/* tests/*
+	pipenv run black awscfncli2/* tests/*
 
 
 define HELP_MESSAGE
@@ -41,7 +42,8 @@ env
 update
   Update pipenv environment.
 
-build:
+dist:
+  Build dist package.
 
 lint
   Run code quality checks.
