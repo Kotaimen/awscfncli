@@ -18,7 +18,7 @@ from awscfncli2.runner.commands.stack_sync_command import StackSyncOptions, \
 @click.pass_context
 @command_exception_handler
 def sync(ctx, no_wait, confirm, use_previous_template):
-    """Sync stacks.
+    """Apply changes using ChangeSets
 
     Combines "aws cloudformation package" and "aws cloudformation deploy" command
     into one.  If stack is not created yet, a CREATE type ChangeSet is created,
