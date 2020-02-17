@@ -13,18 +13,12 @@ BuildSpec: |
       commands:
         - echo Entered the pre_build phase...
         - cfn-cli --version
-        - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
       finally:
         - echo Leaving pre_build phrase..
     build:
       commands:
         - echo Entered the build phase...
-        - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack deploy
-        - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml -s Default.DDB stack delete -qi
-        - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack sync
-        - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift detect
-        - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production drift diff
-        - cfn-cli -v -f samples/SAM/api_backend -s Production.ApiBackend-Production stack delete -qi
+        - ./tests/smoke/smoke-test.sh
       finally:
         - echo Leaving build phase...
     post_build:
