@@ -294,7 +294,7 @@ Also `NotificationARNs`, `ResourceTypes`, `RollbackConfiguration` are supported 
 
 ### Config File
 
-New configuration file supports mutilable stages and stacks, to convert an `0.x` configure file to current version,
+New configuration file supports multiple stages and stacks, to convert an `0.x` configure file to current version,
 
 1. Add following block to the head of conf file and indent properly:
 
@@ -346,7 +346,7 @@ Stages:
 - `cfn` is renamed to `cfn-cli` to avoid conflict with `troposphere`. 
 - `template` command is removed.
 - `changeset` command is removed, but a new `sync` command is added.
-- Because config file supports mutilable stages and stacks, stack selector must be specified when you want to operate a subset of stacks.
+- Because config file supports multiple stages and stacks, stack selector must be specified when you want to operate a subset of stacks.
 
 
 ### Sync
@@ -359,5 +359,5 @@ Is replaced by:
 
     cfn-cli -s sam.api sync
 
-`sync` uses `ChangeSet` internally which is usful when dealing with template transforms (eg: SAM or macros). 
+`sync` uses `ChangeSet` internally which is useful when dealing with template transforms (eg: SAM or macros). 
 
