@@ -6,19 +6,22 @@ BuildSpec: |
         python: ${PYTHON_VERSION}
       commands:
         - echo Entered the install phase...
-        - pip install -U .
+        - pip install pipenv
+        - make env
       finally:
         - echo Leaving install phase...
     pre_build:
       commands:
         - echo Entered the pre_build phase...
-        - cfn-cli --version
+        - pipenv run cfn-cli --version
       finally:
         - echo Leaving pre_build phrase..
     build:
       commands:
         - echo Entered the build phase...
-        - ./tests/smoke/smoke-test.sh
+        - make build
+        - make test
+        - pipenv run ./tests/smoke/smoke-test.sh
       finally:
         - echo Leaving build phase...
     post_build:

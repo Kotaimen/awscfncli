@@ -9,13 +9,13 @@ target:
 	@exit 0
 
 env:
-	pipenv sync --dev
+	pipenv install
 
 update:
 	pipenv update --dev
 
-dist:
-	python setup.py sdist bdist_wheel
+build:
+	python setup.py build
 
 deploy: build
 	twine upload --verbose dist/*
@@ -26,7 +26,7 @@ lint:
 	pipenv run flake8 --format=pylint
 	pipenv run pylint awscfncli2
 
-test:
+test: build
 	pipenv run pytest tests/unit
 	pipenv run pytest tests/unit
 
@@ -42,7 +42,7 @@ env
 update
   Update pipenv environment.
 
-dist:
+build:
   Build dist package.
 
 lint

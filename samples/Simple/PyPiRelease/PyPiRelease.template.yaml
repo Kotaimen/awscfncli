@@ -257,21 +257,21 @@ Resources:
 
         - Name: Test
           Actions:
-#            - Name: TestPY37
-#              RunOrder: 1
-#              ActionTypeId:
-#                Category: Test
-#                Owner: AWS
-#                Version: 1
-#                Provider: CodeBuild
-#              Configuration:
-#                ProjectName: !Ref TestProject
-#                EnvironmentVariables: >
-#                  [
-#                    {"name": "PYTHON_VERSION", "value": "3.7", "type": "PLAINTEXT"}
-#                  ]
-#              InputArtifacts:
-#                - Name: SourceArtifact
+            - Name: TestPY37
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref TestProject37
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.7", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
             - Name: TestPY38
               RunOrder: 2
               ActionTypeId:
@@ -280,7 +280,7 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref TestProject
+                ProjectName: !Ref TestProject38
                 EnvironmentVariables: >
                   [
                     {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
@@ -313,17 +313,34 @@ Resources:
               InputArtifacts:
                 - Name: SourceArtifact
 
-  TestProject:
+  TestProject37:
     Type: AWS::CodeBuild::Project
     Properties:
-
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
+        Image: aws/codebuild/standard:2.0
+        ComputeType: BUILD_GENERAL1_SMALL
+      Source:
+        Type: CODEPIPELINE
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: buildspec-snippet.yml
+
+  TestProject38:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
       Source:
         Type: CODEPIPELINE
@@ -367,7 +384,7 @@ Resources:
           phases:
             install:
               runtime-versions:
-                python: 3.7
+                python: 3.8
               commands:
                 - echo Entered the install phase...
                 - pip install -U twine wheel
