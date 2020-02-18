@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import os
+
 from setuptools import setup, find_packages
 
 __author__ = 'kotaimen'
@@ -8,50 +9,25 @@ __date__ = '22-Feb-2018'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-long_description = """
-
-AWS CloudFormation CLI
-**********************
-
-Introduction
-============
-
-``awscfncli`` AWS CloudFormation stack management command line interface.
-
-Features:
-
-* awscli a-like CLI interface.
-* Simple YAML stacks configuration file.
-* Tracking stack events in the CLI.
-* Managing stacks across different stages and accounts.
-
-"""
-
+long_description = open('README.md').read()
 
 install_requires = [
     'botocore',
     'boto3',
-    'awscli>=1.16.0'
-    'six>=1.10.0',
-    'click>=6.0,<8',
-    'PyYAML>=3.10',
+    'awscli',
+    'click~=7.0',
+    # XXX Use my fork as click_completion authors haven't merged PR yet
+    'click_completion @ git+https://github.com/kotaimen/click-completion.git#egg=click_completion',
+    'PyYAML<5.3,>=3.10', # Fix ERROR: awscli xxx has requirement PyYAML<5.3,>=3.10 , but you'll have pyyaml 5.3 which is incompatible.
     'jsonschema>=2.6.0'
 ]
-
-test_requires = [
-    'pytest',
-    'pytest-cov',
-    'mock'
-]
-
-dev_requires = test_requires
 
 setup(
     # Project Name
     name='awscfncli2',
 
     # Version and description
-    version='2.1.19',
+    version='3.0.0b0',
     description='AWS CloudFormation CLI',
     long_description=long_description,
 
@@ -67,40 +43,27 @@ setup(
 
     # Classification and Keywords
     classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-
-        'License :: OSI Approved :: MIT License',
-
-        'Operating System :: OS Independent',
-
         'Development Status :: 5 - Production/Stable',
-
-        'Natural Language :: English',
-
+        'Environment :: Console',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Internet',
+        'Topic :: Software Development :: Build Tools',
         'Topic :: Utilities',
     ],
-    keywords='awscfncli awscfncli2 aws cfn cli cloudformation stack '
-             'template changeset commandline development sam serverless',
-
+    keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
+    python_requires='>=3.6',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
         'awscfncli2.config': ['*.json', '*.yaml']
-
     },
     install_requires=install_requires,
-    extras_require={
-        'test': test_requires,
-        'dev': dev_requires
-    },
-
     entry_points='''
-        [console_scripts]
-        cfn-cli=awscfncli2.__main__:main
+    [console_scripts]
+    cfn-cli=awscfncli2.__main__:main
     ''',
 )

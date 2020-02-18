@@ -1,5 +1,0 @@
-Version: 2
-Stages:
-  Dev:
-    Vpc:
-      Template: "test.template.yaml"

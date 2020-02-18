@@ -4,11 +4,27 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+twine = "*"
+wheel = "*"
+
+mock = "*"
+coverage = "*"
 pytest = "*"
 pytest-cov = "*"
-mock = "*"
+pytest-dotenv = "*"
+
+pylint = "*"
+flake8 = "*"
+flake8-mypy = "*"
+flake8-bugbear = "*"
+flake8-docstrings = "*"
+bandit = "*"
+#black = "*"
 
 [packages]
-awscfncli2 = {path = ".", editable = true}
+awscfncli2 = {editable = true,path = "."}
 
 [requires]
+
+[pipenv]
+#allow_prereleases = true

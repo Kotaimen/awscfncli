@@ -1,4 +1,4 @@
-""" Status string to click.style mapping """
+"""Status string to click.style mapping"""
 
 STACK_STATUS_TO_COLOR = {
     'CREATE_IN_PROGRESS': dict(fg='yellow'),
@@ -63,9 +63,7 @@ DRIFT_STATUS_TO_COLOR = {
     'NOT_CHECKED': None,
     'IN_SYNC': dict(fg='green'),
     'UNKNOWN': dict(fg='white', dim=True),
-
     'DRIFTED': dict(fg='red'),
-
     'DETECTION_IN_PROGRESS': dict(fg='yellow'),
     'DETECTION_FAILED': dict(fg='red'),
     'DETECTION_COMPLETE': dict(fg='green'),

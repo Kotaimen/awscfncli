@@ -5,7 +5,7 @@ class RunBookError(Exception):
     pass
 
 
-class StackDeploymentContext(object):
+class StackDeploymentContext:
     @property
     def stack_key(self):
         raise NotImplementedError
@@ -23,7 +23,7 @@ class StackDeploymentContext(object):
         raise NotImplementedError
 
 
-class RunBook(object):
+class RunBook:
     def __init__(self):
         self._contexts = list()
 

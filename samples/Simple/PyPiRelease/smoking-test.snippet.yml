@@ -1,0 +1,28 @@
+BuildSpec: |
+  version: 0.2
+  phases:
+    install:
+      runtime-versions:
+        python: 3.8
+      commands:
+        - echo Entered the install phase...
+        - pip install .
+      finally:
+        - echo Leaving install phase...
+    pre_build:
+      commands:
+        - echo Entered the pre_build phase...
+        - cfn-cli --version
+      finally:
+        - echo Leaving pre_build phrase..
+    build:
+      commands:
+        - echo Entered the build phase...
+        - ./tests/smoke/smoke-test.sh
+      finally:
+        - echo Leaving build phase...
+    post_build:
+      commands:
+        - echo Entered the post_build phase...
+      finally:
+        - echo Leaving post_build phase...

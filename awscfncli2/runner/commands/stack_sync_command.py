@@ -3,9 +3,9 @@ from collections import namedtuple
 
 import botocore.exceptions
 
+from awscfncli2.cli.utils.pprint import echo_pair
 from .command import Command
 from .utils import update_termination_protection
-from ...cli.utils import echo_pair
 
 
 class StackSyncOptions(namedtuple('StackSyncOptions',
@@ -109,7 +109,6 @@ class StackSyncCommand(Command):
             else:
                 self.ppt.wait_until_update_complete(session, stack, self.options.disable_tail_events)
             self.ppt.secho('ChangeSet execution complete.', fg='green')
-
 
     def check_changeset_type(self, client, parameters):
         try:

@@ -1,30 +1,79 @@
 # AWS CloudFormation CLI
 
-Friendly AWS CloudFormation CLI.
+The missing AWS CloudFormation CLI.
+
+> [Official `cfncli`](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html) is not designed to manage stacks at this point. 
 
 ## Introduction
 
-`awscfncli` helps build and manage complex AWS CloudFormation stacks. 
+`awscfncli` helps build and manage AWS CloudFormation stacks. 
 
 Features:
 
 - Manage stacks in different accounts & regions in a single YAML config file.
-- Organize stack using stages and operate on subset using unix globs.
-- Cross-stack parameter reference across account & region.
+
+- Organize stack using stages and blueprints. 
+
+- Select stacks to operate on using globs.
+
+- Cross-stack parameter reference.
+
 - Automatically package and upload template resources.
-- Push button SAM support using `stack sync` command.
-- Display and tracking stack events in the console.
- 
+
+- Push button SAM deployment using `stack sync` command.
+
+  > Now `samcli`  is getting better at deploying SAM template automatically.
+- Display and tracking stack events in the CLI.
+
+- List stack resources, outputs and exports in the CLI.
+
 ## Install
 
-Install using [pip](https://pip.pypa.io/) from 
-[pypi](https://pypi.python.org/pypi/awscfncli):
+Install using [pip](https://pip.pypa.io/) from [pypi](https://pypi.python.org/pypi/awscfncli):
 
     pip install awscfncli2
 
-To enable click supported auto-complete, add following line to `.bachrc`
-    
-    eval "$(_CFN_CLI_COMPLETE=source cfn-cli)"
+If you are install `cfn-cli` globally, using [`pipx`](https://github.com/pipxproject/pipx) is recommended:
+
+    pipx install awscfncli2 
+
+### Auto Completion
+
+Auto completion is supported by `click` and `click_completion`, supported shells are `bash`, `zsh` , `fish` and `Powershell`.  
+
+To install auto completion, run this in target shell:
+
+```
+> cfn-cli --install-completion
+fish completion installed in /Users/Bob/.config/fish/completions/cfn-cli.fish
+```
+
+Three types of auto completions are supported:
+
+- Commands and sub commands.
+- Options and parameters.
+- Dynamic complete for `--profile` and `--stacks`.
+
+```
+> cfn-cli drift d<TAB><TAB> 
+detect  (Detect stack drifts.)  diff  (Show stack resource drifts.)
+
+> cfn-cli stack deploy --<TAB> <TAB>
+--disable-rollback  (Disable rollback if stack creation failed. You can specify ei…)
+--help                                                 (Show this message and exit.)
+--ignore-existing               (Don't exit with error if the stack already exists.)
+--no-wait                                (Exit immediately after deploy is started.)
+--on-failure  (Determines what action will be taken if stack creation fails. This …)
+--timeout-in-minutes  (The amount of time in minutes that can pass before the stac…)
+
+> cfn-cli stack deploy --on-failure <TAB> <TAB>
+DELETE  DO_NOTHING  ROLLBACK
+
+> cfn-cli -s <TAB><TAB>
+Develop.ApiBackend-Develop           (ApiBackend-Develop)
+Production.ApiBackend-Production  (ApiBackend-Production)
+Staging.ApiBackend-Staging           (ApiBackend-Staging)
+```
 
 ## Usage
 
@@ -72,20 +121,19 @@ stage name `*` is specfied, thus `*` is equivalent to
 
 Use `--help` to see help on a particular command.
 
-- `drift` - Drift detection.
-    - `detect` - Detect stack drifts.
-    - `diff` - Show stack resource drifts.
-- `generate` - Generate a sample configuration file.
+- `generate` - Generate sample configuration file.
+- `status` - Print stack status and resources.
+- `validate` - Validate template file.
 - `stack` - Stack operations.
-    - `sync` - Create ChangeSet and execute it (required by SAM).
+    - `sync` -Apply changes using ChangeSets
     - `deploy` - Deploy new stacks.
-    - `update` - Update stacks.
-    - `describe` - Describe stacks details (same as `status`)
+    - `update` - Update existing stacks.
     - `tail` - Print stack events.
     - `delete` - Delete stacks.
     - `cancel` - Cancel stack update.
-- `status` - Alias for `stack describe`.
-- `validate` - Validate templates
+- `drift` - Drift detection.
+    - `detect` - Detect stack drifts.
+    - `diff` - Show stack resource drifts.
 
 
 ## Automatic Packaging
@@ -119,7 +167,7 @@ The following resource property are supported by `awscfncli` and official
 - `TemplateURL` property for the `AWS::CloudFormation::Stack` resource
 - `Command.ScriptLocation` property for the `AWS::Glue::Job` resource
   
-## Config File
+## Configuration
 
 `awscfncli` uses a yaml config file to manage which stacks to deploy and
 how to deploy them. By default, it is cfn-cli.yml.
@@ -246,7 +294,7 @@ Also `NotificationARNs`, `ResourceTypes`, `RollbackConfiguration` are supported 
 
 ### Config File
 
-New configuration file supports mutilable stages and stacks, to convert an `0.x` configure file to current version,
+New configuration file supports multiple stages and stacks, to convert an `0.x` configure file to current version,
 
 1. Add following block to the head of conf file and indent properly:
 
@@ -298,7 +346,7 @@ Stages:
 - `cfn` is renamed to `cfn-cli` to avoid conflict with `troposphere`. 
 - `template` command is removed.
 - `changeset` command is removed, but a new `sync` command is added.
-- Because config file supports mutilable stages and stacks, stack selector must be specified when you want to operate a subset of stacks.
+- Because config file supports multiple stages and stacks, stack selector must be specified when you want to operate a subset of stacks.
 
 
 ### Sync
@@ -311,4 +359,5 @@ Is replaced by:
 
     cfn-cli -s sam.api sync
 
-`sync` uses `ChangeSet` internally which is usful when dealing with template transforms (eg: SAM or macros). 
+`sync` uses `ChangeSet` internally which is useful when dealing with template transforms (eg: SAM or macros). 
+

@@ -4,11 +4,11 @@ from functools import wraps
 import botocore.exceptions
 import click
 
-from ...config import ConfigError
+from awscfncli2.config import ConfigError
 
 
 def command_exception_handler(f):
-    """Capture and pretty print exceptions"""
+    """Capture and pretty print exceptions."""
 
     @wraps(f)
     def wrapper(ctx, *args, **kwargs):

@@ -1,0 +1,12 @@
+[flake8]
+max-complexity = 10
+max-line-length = 88
+exclude =
+    .git,
+    .tox,
+    .pytest_cache,
+    __pycache__,
+    setup.py
+    samples
+    tests
+ignore =

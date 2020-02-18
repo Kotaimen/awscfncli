@@ -231,6 +231,11 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactBucket
+      RestartExecutionOnUpdate: false
+      DisableInboundStageTransitions:
+        - StageName: Release
+          Reason: "Disabled transition"
+
       Stages:
 
         - Name: Source
@@ -252,7 +257,7 @@ Resources:
 
         - Name: Test
           Actions:
-            - Name: TestPY37
+            - Name: UnittestPy38
               RunOrder: 1
               ActionTypeId:
                 Category: Test
@@ -260,10 +265,44 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref TestProjectPY37
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
+                  ]
               InputArtifacts:
                 - Name: SourceArtifact
-            - Name: TestPY36
+            - Name: UnittestPy37
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.7", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: UnittestPy36
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.6", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: SmokingTest
               RunOrder: 2
               ActionTypeId:
                 Category: Test
@@ -271,22 +310,11 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref TestProjectPY36
-              InputArtifacts:
-                - Name: SourceArtifact
-            - Name: TestPY27
-              RunOrder: 3
-              ActionTypeId:
-                Category: Test
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref TestProjectPY27
+                ProjectName: !Ref SmokingTestProject
               InputArtifacts:
                 - Name: SourceArtifact
 
-        - Name: Deploy
+        - Name: Release
           Actions:
             - Name: Approve
               RunOrder: 1
@@ -299,7 +327,6 @@ Resources:
                 NotificationArn: !Ref ApprovalTopic
                 ExternalEntityLink: https://github.com/Kotaimen/awscfncli
                 CustomData: Upload to PyPi
-
             - Name: PyPiRelease
               RunOrder: 2
               ActionTypeId:
@@ -312,31 +339,26 @@ Resources:
               InputArtifacts:
                 - Name: SourceArtifact
 
-  TestProjectPY37:
+  UnittestProject:
     Type: AWS::CodeBuild::Project
     Properties:
-
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       TimeoutInMinutes: 30
       Artifacts:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:2.0
+        Image: aws/codebuild/standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
-        EnvironmentVariables:
-          - Name: PYTHON_VERSION
-            Type: PLAINTEXT
-            Value: 3.7
+        PrivilegedMode: true
       Source:
         Type: CODEPIPELINE
         'Fn::Transform':
           Name: 'AWS::Include'
           Parameters:
-            Location: buildspec-snippet.yml
+            Location: unittest.snippet.yml
 
-
-  TestProjectPY36:
+  SmokingTestProject:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -345,78 +367,14 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/python:3.6.5
+        Image: aws/codebuild/standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - echo Entered the install phase...
-                - pip3 install -U .
-              finally:
-                - echo Leaving install phase...
-            pre_build:
-              commands:
-                - echo Entered the pre_build phase...
-              finally:
-                - echo Leaving pre_build phrase..
-            build:
-              commands:
-                - echo Entered the build phase...
-                - cfn-cli --version
-                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
-              finally:
-                - echo Leaving build phase...
-            post_build:
-              commands:
-                - echo Entered the post_build phase...
-              finally:
-                - echo Leaving post_build phase...
-
-  TestProjectPY27:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-      TimeoutInMinutes: 30
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        Type: LINUX_CONTAINER
-        Image: aws/codebuild/ubuntu-base:14.04
-        ComputeType: BUILD_GENERAL1_SMALL
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - echo Entered the install phase...
-                - apt update -q
-                - apt install -yq python-pip
-                - pip install -U .
-              finally:
-                - echo Leaving install phase...
-            pre_build:
-              commands:
-                - echo Entered the pre_build phase...
-              finally:
-                - echo Leaving pre_build phrase..
-            build:
-              commands:
-                - echo Entered the build phase...
-                - cfn-cli --version
-                - cfn-cli -v -f samples/Simple/DynamoDB/cfn-cli.yml validate
-              finally:
-                - echo Leaving build phase...
-            post_build:
-              commands:
-                - echo Entered the post_build phase...
-              finally:
-                - echo Leaving post_build phase...
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: smoking-test.snippet.yml
 
   ReleaseProject:
     Type: AWS::CodeBuild::Project
@@ -427,7 +385,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:2.0
+        Image: aws/codebuild/standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
         - Name: TWINE_USERNAME
@@ -448,35 +406,10 @@ Resources:
               - ""
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              runtime-versions:
-                python: 3.7
-              commands:
-                - echo Entered the install phase...
-                - pip install -U twine wheel
-              finally:
-                - echo Leaving install phase...
-            pre_build:
-              commands:
-                - echo Entered the pre_build phase...
-                - python3 --version
-              finally:
-                - echo Leaving pre_build phrase..
-            build:
-              commands:
-                - echo Entered the build phase...
-                - python3 setup.py sdist bdist_wheel
-              finally:
-                - echo Leaving build phase...
-            post_build:
-              commands:
-                - echo Entered the post_build phase...
-                - python3 -m twine upload --verbose dist/*
-              finally:
-                - echo Leaving post_build phase...
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: pypi-release.snippet.yml
 
 Outputs:
 

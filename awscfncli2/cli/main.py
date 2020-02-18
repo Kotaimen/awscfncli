@@ -1,105 +1,100 @@
-#  -*- encoding: utf-8 -*-
-
-"""Main cli entrypoint"""
+"""Main click command."""
 
 import logging
-import os
+
 import click
-import pkg_resources
+import click_completion
 
-from .context import ClickContext
-from .utils import StackPrettyPrinter
+from awscfncli2 import __version__
+from .autocomplete import stack_auto_complete, profile_auto_complete, install_callback
+from .context import Context, Options, DefaultContextBuilder
+from .multicommand import MultiCommand
 
-VERSION = pkg_resources.require('awscfncli2')[0].version
+CONTEXT_BUILDER = DefaultContextBuilder
+VERBOSITY_LOGLEVEL_MAPPING = [logging.WARNING, logging.INFO, logging.DEBUG]
 
-DEFAULT_CONFIG_FILE_NAMES = ['cfn-cli.yaml', 'cfn-cli.yml']
+click_completion.init()
 
 
-@click.group()
-@click.pass_context
-@click.version_option(version=VERSION)
+@click.command(cls=MultiCommand)
+@click.version_option(version=__version__)
+@click.option('--install-completion', is_flag=True, callback=install_callback,
+              expose_value=False,
+              help='Automatically install completion for the current shell. Make sure '
+                   'to have psutil installed.')
 @click.option('-f', '--file',
               type=click.Path(exists=False, dir_okay=True),
               default=None,
-              help='Specify an alternate stack configuration file '
-                   '(default: cfn-cli.yml).')
-@click.option('-s', '--stack',
+              help='Specify an alternate stack configuration file, default is '
+                   'cfn-cli.yml.')
+@click.option('-s', '--stack', autocompletion=stack_auto_complete,
               type=click.STRING, default='*',
-              help='Stack selector, specify stacks to operate on, defined by '
-                   'STAGE_NAME.STACK_NAME (default value is "*", which means '
-                   'all stacks in all stages).')
-@click.option('-p', '--profile',
+              help='Select stacks to operate on, defined by STAGE_NAME.STACK_NAME, '
+                   'nix glob is supported to select multiple stacks. Default value is '
+                   '"*", which means all stacks in all stages.')
+@click.option('-p', '--profile', autocompletion=profile_auto_complete,
               type=click.STRING, default=None,
-              help='Override AWS profile specified in the config.')
+              help='Override AWS profile specified in the config file.  Warning: '
+                   'Don\'t use this option on stacks in different accounts.')
 @click.option('-r', '--region',
               type=click.STRING, default=None,
-              help='Override AWS region specified in the config.')
+              help='Override AWS region specified in the config.  Warning: Don\'t use '
+                   'this option on stacks in different regions.')
 @click.option('-a', '--artifact-store',
-              type=click.STRING, default=None,
-              help='Override ArtifactStore (AWS bucket name) specified in the config.')
+              type=click.STRING, default='',
+              help='Override artifact store specified in the config.  Artifact store is'
+                   'the s3 bucket used to store packaged template resource.  Warning: '
+                   'Don\'t use this option on stacks in different accounts & regions.')
 @click.option('-v', '--verbose', count=True,
               help='Be more verbose, can be specified multiple times.')
-def cfn_cli(ctx, file, stack, profile, region, artifact_store, verbose):
-    """AWS CloudFormation stack management command line interface.
+@click.pass_context
+def cli(ctx, file, stack, profile, region, artifact_store, verbose):
+    """AWS CloudFormation CLI - The missing CLI for CloudFormation.
+
+    Quickstart: use `cfn-cli generate` to generate a new project.
+
+    cfn-cli operates on a single YAML based config file and can manages stacks
+    across regions & accounts.  By default, cfn-cli will try to locate config file
+    cfn-cli.yml in current directory, override this using -f option:
+
+    \b
+        cfn-cli -f some-other-config-file.yaml <command>
+
+    If the config contains multiple stacks, they can be can be selected using
+    full qualified stack name:
+
+    \b
+        cfn-cli -s StageName.StackName <command>
+
+    Unix style globs is also supported when selecting stacks to operate on:
+    \b
+        cfn-cli -s Backend.* <command>
+
+    By default, command operates on all stacks in every stages, with order specified
+    in the config file.
 
     Options can also be specified using environment variables:
 
     \b
-        CFN_STACK=Default.DDB1 cfn-cli deploy
-    
-    By default, cfn-cli will try to locate cfn-cli.yml file in 
-    current directory, override this using -f option.
-
-    Stack can be selected using full qualified name:
-    
-    \b
-        cfn-cli -s Default.DDB1 describe
-    
-    Default is the stage name and DDB1 is stack name, unix globs is also 
-    supported when selecting stacks to operate on:
-    
-    \b
-        cfn-cli -s Default.DDB* describe
-        cfn-cli -s Def*.DDB1 describe
-
-    If "." is missing from stack selector, "cfn-cli" will assume
-    stage name "*" is specified, thus "*" is equivalent to "*.*", which
-    means all stacks in all stages.
+        CFN_STACK=StageName.StackName cfn-cli <command>
     """
 
-    # Set logging level according to verbosity
-    if verbose == 2:
-        logging.getLogger().setLevel(logging.DEBUG)
-    elif verbose == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:
-        logging.getLogger().setLevel(logging.WARNING)
+    # Setup global logging level
+    if verbose >= 2: verbose = 2  # cap at 2
 
-    # Find config file
-    if file is None:
-        # no config file is specified, try default names
-        for fn in DEFAULT_CONFIG_FILE_NAMES:
-            file = fn
-            if os.path.exists(file) and os.path.isfile(file):
-                break
-    elif os.path.isdir(file):
-        # specified a directory, try default names under given dir
-        base = file
-        for fn in DEFAULT_CONFIG_FILE_NAMES:
-            file = os.path.join(base, fn)
-            if os.path.exists(file) and os.path.isfile(file):
-                break
+    logger = logging.getLogger()
+    logger.setLevel(VERBOSITY_LOGLEVEL_MAPPING[verbose])
 
-    # Builds the context object
-    ctx_obj = ClickContext(
+    # Build context from command options
+    options = Options(
         config_filename=file,
         stack_selector=stack,
         profile_name=profile,
         region_name=region,
-        artifact_store = artifact_store,
-        pretty_printer=StackPrettyPrinter(verbosity=verbose),
-
+        artifact_store=artifact_store,
+        verbosity=verbose,
     )
+    context: Context = CONTEXT_BUILDER(options).build()
 
     # Assign context object
-    ctx.obj = ctx_obj
+    ctx.obj = context
