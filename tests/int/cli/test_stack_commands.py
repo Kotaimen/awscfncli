@@ -108,7 +108,8 @@ def test_stack_sync_command(cli_runner):
         result = cli_runner.invoke(
             cli,
             "-f cfn-cli.yaml -s Develop.Table stack sync "
-            "--no-wait --confirm --use-previous-template",
+            "--no-wait --confirm --use-previous-template "
+            "--disable-tail-events"
         )
 
         assert result.exit_code == 0
@@ -122,6 +123,7 @@ def test_stack_sync_command(cli_runner):
             "no_wait": True,
             "confirm": True,
             "use_previous_template": True,
+            "disable_tail_events": True,
         }
 
 

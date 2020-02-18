@@ -27,8 +27,7 @@ lint:
 	pipenv run pylint awscfncli2
 
 test: build
-	pipenv run pytest tests/unit
-	pipenv run pytest tests/unit
+	pipenv run pytest -v tests/unit tests/int
 
 format:
 	pipenv run black awscfncli2/* tests/*
