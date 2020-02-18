@@ -1,5 +1,18 @@
 # Changelog
 
+## V3
+
+### Version 3.0.0b0 (2020-02-18)
+
+Features:
+
+- Drop support for Python2.7.
+- Switch dev environment to pipenv.
+- Be more forgiven with package dependency.
+- Refactored `cli` package.
+- Minor change to cli command & options.
+- Command line auto complete support. 
+
 ## V2
 
 ### Version 2.1.19 (2019-10-24)
