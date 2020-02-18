@@ -10,6 +10,7 @@ target:
 
 env:
 	pipenv install
+	pipenv lock -dr > requirements-dev.txt
 
 update:
 	pipenv update --dev
@@ -17,20 +18,24 @@ update:
 build:
 	python setup.py build
 
+install:
+	pip install -r requirements-dev.txt
+	pip install -U .
+
 deploy: build
 	twine upload --verbose dist/*
 
 lint:
 	#black --check awscfncli2/* tests/*
-	pipenv run bandit -r awscfncli2 -c bandit
-	pipenv run flake8 --format=pylint
-	pipenv run pylint awscfncli2
+	bandit -r awscfncli2 -c bandit
+	flake8 --format=pylint
+	pylint awscfncli2
 
 test: build
-	pipenv run pytest -v tests/unit tests/int
+	pytest -v tests/unit tests/int
 
-format:
-	pipenv run black awscfncli2/* tests/*
+#format:
+	#black awscfncli2/* tests/*
 
 
 define HELP_MESSAGE
