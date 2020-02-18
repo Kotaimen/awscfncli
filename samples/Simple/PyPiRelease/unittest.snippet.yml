@@ -1,0 +1,26 @@
+BuildSpec: |
+  version: 0.2
+  phases:
+    install:
+      runtime-versions:
+        docker: 18
+      commands:
+        - echo Entered the install phase...
+      finally:
+        - echo Leaving install phase...
+    pre_build:
+      commands:
+        - echo Entered the pre_build phase...
+      finally:
+        - echo Leaving pre_build phrase..
+    build:
+      commands:
+        - echo Entered the build phase...
+        - docker container run --rm -w /app -v $(pwd):/app python:${PYTHON_VERSION} make install test
+      finally:
+        - echo Leaving build phase...
+    post_build:
+      commands:
+        - echo Entered the post_build phase...
+      finally:
+        - echo Leaving post_build phase...

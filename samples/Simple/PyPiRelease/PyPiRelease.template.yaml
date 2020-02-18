@@ -257,7 +257,7 @@ Resources:
 
         - Name: Test
           Actions:
-            - Name: TestPY37
+            - Name: UnittestPy38
               RunOrder: 1
               ActionTypeId:
                 Category: Test
@@ -265,14 +265,44 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref TestProject37
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: UnittestPy37
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref UnittestProject
                 EnvironmentVariables: >
                   [
                     {"name": "PYTHON_VERSION", "value": "3.7", "type": "PLAINTEXT"}
                   ]
               InputArtifacts:
                 - Name: SourceArtifact
-            - Name: TestPY38
+            - Name: UnittestPy36
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.6", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: SmokingTest
               RunOrder: 2
               ActionTypeId:
                 Category: Test
@@ -280,11 +310,7 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref TestProject38
-                EnvironmentVariables: >
-                  [
-                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
-                  ]
+                ProjectName: !Ref SmokingTestProject
               InputArtifacts:
                 - Name: SourceArtifact
 
@@ -313,7 +339,7 @@ Resources:
               InputArtifacts:
                 - Name: SourceArtifact
 
-  TestProject37:
+  UnittestProject:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -322,16 +348,17 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:2.0
+        Image: aws/codebuild/standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
+        PrivilegedMode: true
       Source:
         Type: CODEPIPELINE
         'Fn::Transform':
           Name: 'AWS::Include'
           Parameters:
-            Location: buildspec-snippet.yml
+            Location: unittest.snippet.yml
 
-  TestProject38:
+  SmokingTestProject:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -347,7 +374,7 @@ Resources:
         'Fn::Transform':
           Name: 'AWS::Include'
           Parameters:
-            Location: buildspec-snippet.yml
+            Location: smoking-test.snippet.yml
 
   ReleaseProject:
     Type: AWS::CodeBuild::Project
@@ -379,35 +406,10 @@ Resources:
               - ""
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              runtime-versions:
-                python: 3.8
-              commands:
-                - echo Entered the install phase...
-                - pip install -U twine wheel
-              finally:
-                - echo Leaving install phase...
-            pre_build:
-              commands:
-                - echo Entered the pre_build phase...
-                - python3 --version
-              finally:
-                - echo Leaving pre_build phrase..
-            build:
-              commands:
-                - echo Entered the build phase...
-                - python3 setup.py sdist bdist_wheel
-              finally:
-                - echo Leaving build phase...
-            post_build:
-              commands:
-                - echo Entered the post_build phase...
-                - python3 -m twine upload --verbose dist/*
-              finally:
-                - echo Leaving post_build phase...
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: pypi-release.snippet.yml
 
 Outputs:
 

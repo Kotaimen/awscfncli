@@ -1,0 +1,29 @@
+BuildSpec: |
+  version: 0.2
+  phases:
+    install:
+      runtime-versions:
+        python: 3.8
+      commands:
+        - echo Entered the install phase...
+        - pip install -U twine wheel
+      finally:
+        - echo Leaving install phase...
+    pre_build:
+      commands:
+        - echo Entered the pre_build phase...
+        - python3 --version
+      finally:
+        - echo Leaving pre_build phrase..
+    build:
+      commands:
+        - echo Entered the build phase...
+        - python3 setup.py sdist bdist_wheel
+      finally:
+        - echo Leaving build phase...
+    post_build:
+      commands:
+        - echo Entered the post_build phase...
+        - python3 -m twine upload --verbose dist/*
+      finally:
+        - echo Leaving post_build phase...

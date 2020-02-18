@@ -3,25 +3,22 @@ BuildSpec: |
   phases:
     install:
       runtime-versions:
-        python: ${PYTHON_VERSION}
+        python: 3.8
       commands:
         - echo Entered the install phase...
-        - pip install pipenv
-        - make env
+        - pip install .
       finally:
         - echo Leaving install phase...
     pre_build:
       commands:
         - echo Entered the pre_build phase...
-        - pipenv run cfn-cli --version
+        - cfn-cli --version
       finally:
         - echo Leaving pre_build phrase..
     build:
       commands:
         - echo Entered the build phase...
-        - make build
-        - make test
-        - pipenv run ./tests/smoke/smoke-test.sh
+        - ./tests/smoke/smoke-test.sh
       finally:
         - echo Leaving build phase...
     post_build:
