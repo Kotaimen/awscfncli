@@ -3,7 +3,6 @@
 import logging
 
 import click
-import click_completion
 
 from awscfncli2 import __version__
 from .autocomplete import stack_auto_complete, profile_auto_complete, install_callback
@@ -13,6 +12,10 @@ from .multicommand import MultiCommand
 CONTEXT_BUILDER = DefaultContextBuilder
 VERBOSITY_LOGLEVEL_MAPPING = [logging.WARNING, logging.INFO, logging.DEBUG]
 
+import click_completion
+# XXX: Monkey patch dynamic completion
+from . monkeypatch_clickcompletion import monkey_patch
+monkey_patch()
 click_completion.init()
 
 

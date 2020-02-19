@@ -16,8 +16,7 @@ install_requires = [
     'boto3',
     'awscli',
     'click~=7.0',
-    # XXX Use my fork as click_completion authors haven't merged PR yet
-    'click_completion @ git+https://github.com/kotaimen/click-completion.git#egg=click_completion',
+    'click_completion==0.5.2',
     'PyYAML<5.3,>=3.10', # Fix ERROR: awscli xxx has requirement PyYAML<5.3,>=3.10 , but you'll have pyyaml 5.3 which is incompatible.
     'jsonschema>=2.6.0'
 ]

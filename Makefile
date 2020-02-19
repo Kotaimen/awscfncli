@@ -9,7 +9,7 @@ target:
 	@exit 0
 
 env:
-	pipenv install
+	pipenv install --dev
 	pipenv lock -dr > requirements-dev.txt
 
 update:
