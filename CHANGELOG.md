@@ -2,6 +2,13 @@
 
 ## V3
 
+### Version 3.0.0b1 (2020-02-19)
+
+Issues:
+
+- Use monkey patching for dynamic auto complete as PyPi don't allow use git as upper stream package.
+- Add 1.x unitests back. 
+
 ### Version 3.0.0b0 (2020-02-18)
 
 Features:
