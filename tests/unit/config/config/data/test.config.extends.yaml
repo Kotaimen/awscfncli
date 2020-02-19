@@ -1,0 +1,29 @@
+Version: 3
+Blueprints:
+  Base:
+    Template: 'test.template.yaml'
+    Region: 'cn-east-1'
+    Profile: "ray"
+    Capabilities: [CAPABILITY_IAM]
+    Tags:
+      Project: 'demo'
+      Environment: 'dev'
+Stages:
+  Staging:
+    Vpc0:
+      Extends: 'Base'
+      Capabilities: [CAPABILITY_NAMED_IAM]
+      Tags:
+        Environment: 'staging'
+        Test: 'test'
+    Vpc1:
+      Extends: 'Base'
+      Region: 'us-east-1'
+      Tags:
+        Project: 'dummy'
+  Prod:
+    Vpc0:
+      Extends: 'Base'
+      Tags:
+        Environment: 'prod'
+        Project: 'test'
