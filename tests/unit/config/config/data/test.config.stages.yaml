@@ -1,0 +1,17 @@
+Version: 3
+Stages:
+  Staging:
+    Vpc:
+      Template: "test.template.yaml"
+
+  # Stage with same prefix
+  Staging1:
+    Vpc:
+      Template: "test.template.yaml"
+
+  Production:
+    Vpc1:
+      Template: "test.template.yaml"
+
+    Vpc2:
+      Template: "test.template.yaml"
