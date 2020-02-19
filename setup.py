@@ -29,6 +29,7 @@ setup(
     version='3.0.0b1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
+    long_description_content_type='text/markdown',
 
     # Author details
     author='Kotaimen, Ray',
