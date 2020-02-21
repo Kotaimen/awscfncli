@@ -20,6 +20,12 @@ STACK_STATUS_TO_COLOR = {
     'UPDATE_ROLLBACK_COMPLETE': dict(fg='green'),
     'UPDATE_FAILED': dict(fg='red'),
     'REVIEW_IN_PROGRESS': dict(fg='yellow'),
+    'IMPORT_FAILED': dict(fg='red'),
+    'IMPORT_COMPLETE': dict(fg='green'),
+    'IMPORT_IN_PROGRESS': dict(fg='yellow'),
+    'IMPORT_ROLLBACK_IN_PROGRESS': dict(fg='red'),
+    'IMPORT_ROLLBACK_FAILED': dict(fg='red'),
+    'IMPORT_ROLLBACK_COMPLETE': dict(fg='red'),
     # custom status:
     'STACK_NOT_FOUND': dict(fg='red')
 }
