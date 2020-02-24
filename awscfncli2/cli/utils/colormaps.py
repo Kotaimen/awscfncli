@@ -1,6 +1,6 @@
 """Status string to click.style mapping"""
 
-STACK_STATUS_TO_COLOR = {
+_STACK_STATUS_TO_COLOR = {
     'CREATE_IN_PROGRESS': dict(fg='yellow'),
     'CREATE_FAILED': dict(fg='red'),
     'CREATE_COMPLETE': dict(fg='green'),
@@ -30,43 +30,43 @@ STACK_STATUS_TO_COLOR = {
     'STACK_NOT_FOUND': dict(fg='red')
 }
 
-CHANGESET_STATUS_TO_COLOR = {
-    'UNAVAILABLE': None,
+_CHANGESET_STATUS_TO_COLOR = {
+    'UNAVAILABLE': dict(fg='white', dim=True),
     'AVAILABLE': dict(fg='green'),
     'EXECUTE_IN_PROGRESS': dict(fg='yellow'),
     'EXECUTE_COMPLETE': dict(fg='green'),
     'EXECUTE_FAILED': dict(fg='red'),
-    'OBSOLETE': None,
+    'OBSOLETE': dict(fg='white', dim=True),
 
-    'CREATE_PENDING': None,
+    'CREATE_PENDING': dict(fg='yellow'),
     'CREATE_IN_PROGRESS': dict(fg='yellow'),
     'CREATE_COMPLETE': dict(fg='green'),
-    'DELETE_COMPLETE': None,
+    'DELETE_COMPLETE': dict(fg='green'),
     'FAILED': dict(fg='red'),
 }
 
-CHANGESET_ACTION_TO_COLOR = {
+_CHANGESET_ACTION_TO_COLOR = {
     'Add': dict(fg='green'),
     'Modify': dict(fg='yellow'),
     'Remove': dict(fg='red'),
 }
 
-CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR = {
+_CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR = {
     'Never': dict(fg='green'),
     'Conditionally': dict(fg='yellow'),
     'Always': dict(fg='red'),
 }
 
-CHANGESET_REPLACEMENT_TO_COLOR = {
+_CHANGESET_REPLACEMENT_TO_COLOR = {
     'True': dict(fg='red'),
     'Conditional': dict(fg='yellow'),
     'False': dict(fg='green'),
 }
 
-DRIFT_STATUS_TO_COLOR = {
+_DRIFT_STATUS_TO_COLOR = {
     'DELETED': dict(fg='red'),
     'MODIFIED': dict(fg='yellow'),
-    'NOT_CHECKED': None,
+    'NOT_CHECKED': dict(fg='white', dim=True),
     'IN_SYNC': dict(fg='green'),
     'UNKNOWN': dict(fg='white', dim=True),
     'DRIFTED': dict(fg='red'),
@@ -74,3 +74,25 @@ DRIFT_STATUS_TO_COLOR = {
     'DETECTION_FAILED': dict(fg='red'),
     'DETECTION_COMPLETE': dict(fg='green'),
 }
+
+
+class ColorMap:
+    """Return a default colormap when status missing from mapping."""
+
+    def __init__(self, mapping):
+        self._mapping = mapping
+
+    def __getitem__(self, status):
+        try:
+            return self._mapping[status]
+        except KeyError:
+            return dict()
+
+
+STACK_STATUS_TO_COLOR = ColorMap(_STACK_STATUS_TO_COLOR)
+CHANGESET_STATUS_TO_COLOR = ColorMap(_CHANGESET_STATUS_TO_COLOR)
+CHANGESET_ACTION_TO_COLOR = ColorMap(_CHANGESET_ACTION_TO_COLOR)
+CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR = ColorMap(
+    _CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR)
+CHANGESET_REPLACEMENT_TO_COLOR = ColorMap(_CHANGESET_REPLACEMENT_TO_COLOR)
+DRIFT_STATUS_TO_COLOR = ColorMap(_DRIFT_STATUS_TO_COLOR)
