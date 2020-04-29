@@ -3,6 +3,7 @@ from collections import namedtuple
 
 import botocore.exceptions
 
+from awscfncli2.cli.utils.deco import retry_on_throttling
 from awscfncli2.cli.utils.pprint import echo_pair
 from .command import Command
 from .utils import update_termination_protection
@@ -63,16 +64,14 @@ class StackSyncCommand(Command):
         # create changeset
         echo_pair('ChangeSet Name', changeset_name)
         echo_pair('ChangeSet Type', changeset_type)
-        result = client.create_change_set(**parameters)
+
+        result = self.create_change_set(client, parameters)
         changeset_id = result['Id']
         echo_pair('ChangeSet ARN', changeset_id)
 
         self.ppt.wait_until_changset_complete(client, changeset_id)
 
-        result = client.describe_change_set(
-            ChangeSetName=changeset_name,
-            StackName=parameters['StackName'],
-        )
+        result = self.describe_change_set(client, changeset_name, parameters)
         self.ppt.pprint_changeset(result)
 
         # termination protection should be set after the creation of stack
@@ -110,12 +109,28 @@ class StackSyncCommand(Command):
                 self.ppt.wait_until_update_complete(session, stack, self.options.disable_tail_events)
             self.ppt.secho('ChangeSet execution complete.', fg='green')
 
+    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    def create_change_set(self, client, parameters):
+        return client.create_change_set(**parameters)
+
+    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    def describe_change_set(self, client, changeset_name, parameters):
+        return client.describe_change_set(
+            ChangeSetName=changeset_name,
+            StackName=parameters['StackName'],
+        )
+
+    @retry_on_throttling(tries=5, delay=4, backoff=2)
     def check_changeset_type(self, client, parameters):
         try:
             # check whether stack is already created.
             status = client.describe_stacks(StackName=parameters['StackName'])
             stack_status = status['Stacks'][0]['StackStatus']
         except botocore.exceptions.ClientError as e:
+
+            if 'Rate exceeded' in str(e):
+                # stack might exist but we got Throttling error, retry is needed so rerasing exception
+                raise
             # stack not yet created
             is_new_stack = True
             changeset_type = 'CREATE'
