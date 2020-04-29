@@ -1,4 +1,3 @@
-import logging
 import time
 import traceback
 from functools import wraps
@@ -7,8 +6,6 @@ import botocore.exceptions
 import click
 
 from awscfncli2.config import ConfigError
-
-logger = logging.getLogger(__name__)
 
 
 def command_exception_handler(f):
@@ -54,7 +51,7 @@ def retry_on_throttling(tries=4, delay=2, backoff=2):
                     return f(*args, **kwargs)
                 except (botocore.exceptions.WaiterError, botocore.exceptions.ClientError) as e:
                     if 'Rate exceeded' in str(e):
-                        logger.warning(f"{str(e)}, Retrying in {mdelay} seconds...")
+                        click.secho(f"{str(e)}, Retrying in {mdelay} seconds...")
                         time.sleep(mdelay)
                         mtries -= 1
                         mdelay *= backoff
