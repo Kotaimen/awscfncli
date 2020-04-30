@@ -18,7 +18,8 @@ install_requires = [
     'click~=7.0',
     'click_completion==0.5.2',
     'PyYAML<5.3,>=3.10', # Fix ERROR: awscli xxx has requirement PyYAML<5.3,>=3.10 , but you'll have pyyaml 5.3 which is incompatible.
-    'jsonschema>=2.6.0'
+    'jsonschema>=2.6.0',
+    'backoff'
 ]
 
 setup(

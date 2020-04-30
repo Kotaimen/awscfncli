@@ -2,6 +2,7 @@
 import difflib
 import json
 
+import backoff
 import botocore.exceptions
 import click
 import yaml
@@ -9,7 +10,7 @@ import yaml
 from .colormaps import CHANGESET_STATUS_TO_COLOR, CHANGESET_ACTION_TO_COLOR, \
     CHANGESET_REPLACEMENT_TO_COLOR, DRIFT_STATUS_TO_COLOR, \
     STACK_STATUS_TO_COLOR, CHANGESET_RESOURCE_REPLACEMENT_TO_COLOR
-from .deco import retry_on_throttling
+from .common import is_rate_limited_exception, is_not_rate_limited_exception
 from .events import start_tail_stack_events_daemon
 from .pager import custom_paginator
 
@@ -322,7 +323,8 @@ class StackPrettyPrinter(object):
             else:
                 click.secho('      ' + line)
 
-    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    @backoff.on_exception(backoff.expo, botocore.exceptions.WaiterError, max_tries=10,
+                          giveup=is_not_rate_limited_exception)
     def wait_until_deploy_complete(self, session, stack, disable_tail_events=False):
         if not disable_tail_events:
             start_tail_stack_events_daemon(session, stack, latest_events=0)
@@ -331,7 +333,8 @@ class StackPrettyPrinter(object):
             'stack_create_complete')
         waiter.wait(StackName=stack.stack_id)
 
-    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    @backoff.on_exception(backoff.expo, botocore.exceptions.WaiterError, max_tries=10,
+                          giveup=is_not_rate_limited_exception)
     def wait_until_delete_complete(self, session, stack):
         start_tail_stack_events_daemon(session, stack)
 
@@ -339,7 +342,8 @@ class StackPrettyPrinter(object):
             'stack_delete_complete')
         waiter.wait(StackName=stack.stack_id)
 
-    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    @backoff.on_exception(backoff.expo, botocore.exceptions.WaiterError, max_tries=10,
+                          giveup=is_not_rate_limited_exception)
     def wait_until_update_complete(self, session, stack, disable_tail_events=False):
         if not disable_tail_events:
             start_tail_stack_events_daemon(session, stack)
@@ -348,13 +352,14 @@ class StackPrettyPrinter(object):
             'stack_update_complete')
         waiter.wait(StackName=stack.stack_id)
 
-    @retry_on_throttling(tries=5, delay=4, backoff=2)
+    @backoff.on_exception(backoff.expo, botocore.exceptions.WaiterError, max_tries=10,
+                          giveup=is_not_rate_limited_exception)
     def wait_until_changset_complete(self, client, changeset_id):
         waiter = client.get_waiter('change_set_create_complete')
         try:
             waiter.wait(ChangeSetName=changeset_id)
         except botocore.exceptions.WaiterError as e:
-            if 'Rate exceeded' in str(e):
+            if is_rate_limited_exception(e):
                 # change set might be created successfully but we got throttling error, retry is needed so rerasing exception
                 raise
             click.secho('ChangeSet create failed.', fg='red')
