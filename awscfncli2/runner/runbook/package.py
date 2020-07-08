@@ -107,9 +107,10 @@ def package_template(ppt, session, template_path, bucket_region,
     if len(template_data) <= TEMPLATE_BODY_SIZE_LIMIT:
         template_url = None
     else:
-        ppt.secho('Template body is too large, uploading as artifact.',
-                  fg='red')
-        with tempfile.NamedTemporaryFile(mode='wb') as fp:
+        ppt.secho('Template body is too large, uploading as artifact.',fg='red')
+
+        tempfile_path = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
+        with open(tempfile_path, 'wb') as fp:
             # write template body to local temp file
             fp.write(template_data)
             fp.flush()
