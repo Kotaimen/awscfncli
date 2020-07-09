@@ -2,6 +2,11 @@
 
 ## V3
 
+### Version 3.0.0 (2020-05-02)
+
+Features:
+- Added backoff to `sync` command when CloudFormation API is throttled (contributed by KotMeow).
+
 ### Version 3.0.0b1 (2020-02-19)
 
 Issues:
