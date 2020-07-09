@@ -17,7 +17,7 @@ install_requires = [
     'awscli',
     'click~=7.0',
     'click_completion==0.5.2',
-    'PyYAML<5.3,>=3.10', # Fix ERROR: awscli xxx has requirement PyYAML<5.3,>=3.10 , but you'll have pyyaml 5.3 which is incompatible.
+    'PyYAML<5.4,>=3.10',
     'jsonschema>=2.6.0',
     'backoff'
 ]
@@ -57,7 +57,7 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
         'awscfncli2.config': ['*.json', '*.yaml']
