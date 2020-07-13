@@ -21,7 +21,7 @@ build:
 
 install:
 	pip install -r requirements-dev.txt
-	pip install -U .
+	pip install .
 
 deploy: build
 	twine upload --verbose dist/*
