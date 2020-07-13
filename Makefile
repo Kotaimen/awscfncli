@@ -11,6 +11,7 @@ target:
 env:
 	pipenv install --dev
 	pipenv lock -dr > requirements-dev.txt
+	pipenv lock -r > requirements.txt
 
 update:
 	pipenv update --dev
