@@ -2,6 +2,10 @@
 
 ## V3
 
+### Version 3.0.1 (2020-07-14)
+Issues:
+- Fixes #63: Permission denied on Windows when template > TEMPLATE_BODY_SIZE_LIMIT.
+
 ### Version 3.0.0 (2020-05-02)
 
 Features:
