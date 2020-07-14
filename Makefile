@@ -11,6 +11,7 @@ target:
 env:
 	pipenv install --dev
 	pipenv lock -dr > requirements-dev.txt
+	pipenv lock -r > requirements.txt
 
 update:
 	pipenv update --dev
@@ -20,7 +21,7 @@ build:
 
 install:
 	pip install -r requirements-dev.txt
-	pip install -U .
+	pip install .
 
 deploy: build
 	twine upload --verbose dist/*

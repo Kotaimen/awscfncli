@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import logging
 import os
 import tempfile
@@ -32,6 +31,10 @@ except ImportError:
 from ...config import ConfigError
 
 TEMPLATE_BODY_SIZE_LIMIT = 51200
+
+
+def generate_tempfile():
+    return os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
 
 
 def package_template(ppt, session, template_path, bucket_region,
@@ -91,7 +94,6 @@ def package_template(ppt, session, template_path, bucket_region,
             force_upload=False
         )
 
-
     template = Template(template_path, os.getcwd(), s3_uploader,
                         resources_to_export=EXPORTS)
 
@@ -109,7 +111,9 @@ def package_template(ppt, session, template_path, bucket_region,
     else:
         ppt.secho('Template body is too large, uploading as artifact.',
                   fg='red')
-        with tempfile.NamedTemporaryFile(mode='wb') as fp:
+
+        tempfile_path = generate_tempfile()
+        with open(tempfile_path, 'wb') as fp:
             # write template body to local temp file
             fp.write(template_data)
             fp.flush()
