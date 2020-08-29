@@ -56,7 +56,7 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
         'awscfncli2.config': ['*.json', '*.yaml']
