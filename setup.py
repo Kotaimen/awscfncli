@@ -17,7 +17,7 @@ install_requires = [
     'awscli',
     'click~=7.0',
     'click_completion==0.5.2',
-    'PyYAML<5.4,>=3.10',
+    'PyYAML>=3.10,<5.5',
     'jsonschema>=2.6.0',
     'backoff'
 ]
