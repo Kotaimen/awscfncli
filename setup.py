@@ -12,14 +12,15 @@ here = os.path.abspath(os.path.dirname(__file__))
 long_description = open('README.md').read()
 
 install_requires = [
-    'botocore',
-    'boto3',
-    'awscli',
-    'click~=7.0',
+    'botocore>=1.17',
+    'boto3>=1.14',
+    'awscli>=1.18',
+    'click>=7.0',
     'click_completion==0.5.2',
-    'PyYAML<5.4,>=3.10',
-    'jsonschema>=2.6.0',
-    'backoff'
+    'PyYAML>=5',
+    'jsonschema>=3',
+    # 'aws-sam-cli>=1.1.0',
+    'backoff>=1.10.0'
 ]
 
 setup(
