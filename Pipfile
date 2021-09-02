@@ -16,11 +16,11 @@ flake8 = "*"
 flake8-mypy = "*"
 flake8-bugbear = "*"
 flake8-docstrings = "*"
-#black = "*"
+black = "==21.8b0"
 
 [packages]
+awscfncli2 = {editable = true,path = "."}
 
 [requires]
 
 [pipenv]
-#allow_prereleases = true

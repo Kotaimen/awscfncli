@@ -2,6 +2,12 @@
 
 ## V3
 
+### Version 3.1.0 (2021-09-02)
+Features:
+- Exit immediately on `stack sync --no-wait --confirm`
+Issues:
+- Refresh 3rd party dependencies.
+
 ### Version 3.0.1 (2020-07-14)
 Issues:
 - Fixes #63: Permission denied on Windows when template > TEMPLATE_BODY_SIZE_LIMIT.
