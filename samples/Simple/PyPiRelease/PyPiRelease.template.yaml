@@ -3,12 +3,12 @@ Description: Automated pipeline to release awscfncli to PIP
 Parameters:
 
   PyPiUsername:
-    Type: String
-    Description: Parameter name storing PyPi username
+    Type: AWS::SSM::Parameter::Name
+    Description: SSM parameter name storing PyPi username
 
   PyPiPassword:
-    Type: String
-    Description: Parameter name storing PyPi password
+    Type: AWS::SSM::Parameter::Name
+    Description: SSM parameter name storing PyPi password
 
   UseTestPyPi:
     Type: String
@@ -16,11 +16,23 @@ Parameters:
     Description: Use Test PyPi for package upload
     AllowedValues: ["true", "false"]
 
-  InputArtifactPrefix:
+  ConnectionArn:
     Type: String
-    Description: S3 prefix of input code package
-    MinLength: 1
-    MaxLength: 256
+    Description: >
+      The connection ARN that is configured and authenticated for the
+      source provider.
+
+  FullRepositoryId:
+    Type: String
+    Description: >
+      The owner and name of the repository where source changes are to be
+      detected.
+
+  BranchName:
+    Type: String
+    Default: main
+    Description: >
+      The name of the branch where source changes are to be detected.
 
 Conditions:
 
@@ -28,21 +40,21 @@ Conditions:
 
 Resources:
 
-  SourceBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              KMSMasterKeyID: aws/s3
-              SSEAlgorithm: aws:kms
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+#  SourceBucket:
+#    Type: AWS::S3::Bucket
+#    Properties:
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              KMSMasterKeyID: aws/s3
+#              SSEAlgorithm: aws:kms
+#      VersioningConfiguration:
+#        Status: Enabled
+#      PublicAccessBlockConfiguration:
+#        BlockPublicAcls: true
+#        BlockPublicPolicy: true
+#        IgnorePublicAcls: true
+#        RestrictPublicBuckets: true
 
   ArtifactBucket:
     Type: AWS::S3::Bucket
@@ -151,6 +163,10 @@ Resources:
             Effect: Allow
             Resource: arn:aws:s3:::elasticbeanstalk*
           - Action:
+              - codestar-connections:UseConnection
+            Effect: Allow
+            Resource: !Ref ConnectionArn
+          - Action:
               - codecommit:GetBranch
               - codecommit:GetCommit
               - codecommit:UploadArchive
@@ -209,13 +225,9 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
-              - s3:PutObject
-              - s3:PutObjectVersion
+              - s3:*
             Resource:
               - !Join ["/", [ "Fn::GetAtt": ArtifactBucket.Arn , "*" ]]
-              - !Join ["/", [ "Fn::GetAtt": SourceBucket.Arn , "*" ]]
       Roles:
         - !Ref CodePipelineServiceRole
         - !Ref CodeBuildServiceRole
@@ -240,38 +252,24 @@ Resources:
 
         - Name: Source
           Actions:
-            - Name: S3Source
-              RunOrder: 1
+            - Name: GithubSource
+              InputArtifacts: []
               ActionTypeId:
-                Category: Source
-                Owner: AWS
                 Version: 1
-                Provider: S3
+                Owner: AWS
+                Category: Source
+                Provider: CodeStarSourceConnection
+              RunOrder: 1
               Configuration:
-                S3Bucket: !Ref SourceBucket
-                S3ObjectKey: !Ref InputArtifactPrefix
-                # XXX: not recommended by aws but saves a trail and cw events
-                PollForSourceChanges: true
+                ConnectionArn: !Ref ConnectionArn
+                FullRepositoryId: !Ref FullRepositoryId
+                BranchName: !Ref BranchName
+                OutputArtifactFormat: CODE_ZIP
               OutputArtifacts:
                 - Name: SourceArtifact
 
         - Name: Test
           Actions:
-            - Name: UnittestPy38
-              RunOrder: 1
-              ActionTypeId:
-                Category: Test
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref UnittestProject
-                EnvironmentVariables: >
-                  [
-                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
-                  ]
-              InputArtifacts:
-                - Name: SourceArtifact
             - Name: UnittestPy37
               RunOrder: 1
               ActionTypeId:
@@ -287,7 +285,7 @@ Resources:
                   ]
               InputArtifacts:
                 - Name: SourceArtifact
-            - Name: UnittestPy36
+            - Name: UnittestPy38
               RunOrder: 1
               ActionTypeId:
                 Category: Test
@@ -298,7 +296,22 @@ Resources:
                 ProjectName: !Ref UnittestProject
                 EnvironmentVariables: >
                   [
-                    {"name": "PYTHON_VERSION", "value": "3.6", "type": "PLAINTEXT"}
+                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
+                  ]
+              InputArtifacts:
+                - Name: SourceArtifact
+            - Name: UnittestPy39
+              RunOrder: 1
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref UnittestProject
+                EnvironmentVariables: >
+                  [
+                    {"name": "PYTHON_VERSION", "value": "3.9", "type": "PLAINTEXT"}
                   ]
               InputArtifacts:
                 - Name: SourceArtifact
@@ -348,7 +361,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
         PrivilegedMode: true
       Source:
@@ -367,7 +380,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
       Source:
         Type: CODEPIPELINE
@@ -385,7 +398,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
         - Name: TWINE_USERNAME
