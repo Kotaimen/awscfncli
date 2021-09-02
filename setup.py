@@ -49,6 +49,7 @@ setup(
         'Environment :: Console',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -57,7 +58,7 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
         'awscfncli2.config': ['*.json', '*.yaml']
