@@ -88,6 +88,8 @@ class StackSyncCommand(Command):
             return
 
         if self.options.confirm:
+            if self.options.no_wait:
+                return 
             if not self.ppt.confirm('Do you want to execute ChangeSet?'):
                 return
 
