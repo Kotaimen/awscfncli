@@ -12,15 +12,14 @@ here = os.path.abspath(os.path.dirname(__file__))
 long_description = open('README.md').read()
 
 install_requires = [
-    'botocore>=1.17',
-    'boto3>=1.14',
-    'awscli>=1.18',
-    'click>=7.0',
+    'botocore>=1.17,<2',
+    'boto3>=1.14,<2',
+    'awscli>=1.18,<2',
+    'click>=7.0,<8',
     'click_completion==0.5.2',
-    'PyYAML>=5',
-    'jsonschema>=3',
-    # 'aws-sam-cli>=1.1.0',
-    'backoff>=1.10.0'
+    'PyYAML>=5,<6',
+    'jsonschema>=3,<6',
+    'backoff>=1.10.0,<2'
 ]
 
 setup(
@@ -28,7 +27,7 @@ setup(
     name='awscfncli2',
 
     # Version and description
-    version='3.1.0',
+    version='3.1.1',
     description='AWS CloudFormation CLI',
     long_description=long_description,
     long_description_content_type='text/markdown',

@@ -270,7 +270,7 @@ Resources:
 
         - Name: Test
           Actions:
-            - Name: UnittestPy37
+            - Name: UnittestPy39Amd64
               RunOrder: 1
               ActionTypeId:
                 Category: Test
@@ -281,11 +281,11 @@ Resources:
                 ProjectName: !Ref UnittestProject
                 EnvironmentVariables: >
                   [
-                    {"name": "PYTHON_VERSION", "value": "3.7", "type": "PLAINTEXT"}
+                    {"name": "PYTHON_VERSION", "value": "3.9", "type": "PLAINTEXT"}
                   ]
               InputArtifacts:
                 - Name: SourceArtifact
-            - Name: UnittestPy38
+            - Name: UnittestPy39Arm64
               RunOrder: 1
               ActionTypeId:
                 Category: Test
@@ -293,22 +293,7 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref UnittestProject
-                EnvironmentVariables: >
-                  [
-                    {"name": "PYTHON_VERSION", "value": "3.8", "type": "PLAINTEXT"}
-                  ]
-              InputArtifacts:
-                - Name: SourceArtifact
-            - Name: UnittestPy39
-              RunOrder: 1
-              ActionTypeId:
-                Category: Test
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref UnittestProject
+                ProjectName: !Ref ArmUnittestProject
                 EnvironmentVariables: >
                   [
                     {"name": "PYTHON_VERSION", "value": "3.9", "type": "PLAINTEXT"}
@@ -361,7 +346,26 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+        ComputeType: BUILD_GENERAL1_SMALL
+        PrivilegedMode: true
+      Source:
+        Type: CODEPIPELINE
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: unittest.snippet.yml
+
+  ArmUnittestProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      TimeoutInMinutes: 30
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: ARM_CONTAINER
+        Image: aws/codebuild/amazonlinux2-aarch64-standard:2.0
         ComputeType: BUILD_GENERAL1_SMALL
         PrivilegedMode: true
       Source:
@@ -380,7 +384,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
         ComputeType: BUILD_GENERAL1_SMALL
       Source:
         Type: CODEPIPELINE
@@ -398,7 +402,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
         - Name: TWINE_USERNAME
