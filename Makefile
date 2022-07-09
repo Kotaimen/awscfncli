@@ -10,14 +10,14 @@ target:
 
 env:
 	pipenv install --dev
-	pipenv lock -dr > requirements-dev.txt
-	pipenv lock -r > requirements.txt
+	pipenv requirements --dev > requirements-dev.txt
+	pipenv requirements > requirements.txt
 
 update:
 	pipenv update --dev
 
 build:
-	python setup.py build
+	python3 setup.py build
 
 install:
 	pip install -r requirements-dev.txt
