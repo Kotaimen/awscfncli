@@ -5,9 +5,9 @@ import logging
 import click
 
 from awscfncli2 import __version__
-from .autocomplete import stack_auto_complete, profile_auto_complete, install_callback
-from .context import Context, Options, DefaultContextBuilder
-from .multicommand import MultiCommand
+from awscfncli2.cli.autocomplete import stack_auto_complete, profile_auto_complete, install_callback
+from awscfncli2.cli.context import Context, Options, DefaultContextBuilder
+from awscfncli2.cli.multicommand import MultiCommand
 
 CONTEXT_BUILDER = DefaultContextBuilder
 VERBOSITY_LOGLEVEL_MAPPING = [logging.WARNING, logging.INFO, logging.DEBUG]
@@ -30,12 +30,12 @@ click_completion.init()
               default=None,
               help='Specify an alternate stack configuration file, default is '
                    'cfn-cli.yml.')
-@click.option('-s', '--stack', autocompletion=stack_auto_complete,
+@click.option('-s', '--stack', shell_complete=stack_auto_complete,
               type=click.STRING, default='*',
               help='Select stacks to operate on, defined by STAGE_NAME.STACK_NAME, '
                    'nix glob is supported to select multiple stacks. Default value is '
                    '"*", which means all stacks in all stages.')
-@click.option('-p', '--profile', autocompletion=profile_auto_complete,
+@click.option('-p', '--profile', shell_complete=profile_auto_complete,
               type=click.STRING, default=None,
               help='Override AWS profile specified in the config file.  Warning: '
                    'Don\'t use this option on stacks in different accounts.')
@@ -98,6 +98,5 @@ def cli(ctx, file, stack, profile, region, artifact_store, verbose):
         verbosity=verbose,
     )
     context: Context = CONTEXT_BUILDER(options).build()
-
     # Assign context object
     ctx.obj = context

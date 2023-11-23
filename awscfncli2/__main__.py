@@ -3,7 +3,7 @@
 __author__ = 'kotaimen'
 __date__ = '28-Feb-2018'
 
-from .cli.main import cli
+from cli.main import cli
 
 
 def main():
