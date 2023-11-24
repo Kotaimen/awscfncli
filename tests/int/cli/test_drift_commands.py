@@ -3,13 +3,13 @@ from unittest.mock import patch
 import click.testing
 import pytest
 
-from awscfncli2.cli.context import Context
-from awscfncli2.cli.main import cli
-from awscfncli2.runner.commands.drift_detect_command import (
+from cfncli.cli.context import Context
+from cfncli.cli.main import cli
+from cfncli.runner.commands.drift_detect_command import (
     DriftDetectCommand,
     DriftDetectOptions,
 )
-from awscfncli2.runner.commands.drift_diff_command import (
+from cfncli.runner.commands.drift_diff_command import (
     DriftDiffCommand,
     DriftDiffOptions,
 )

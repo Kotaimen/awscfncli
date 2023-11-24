@@ -3,8 +3,8 @@
 import os
 import pytest
 import shutil
-from awscfncli2 import config
-from awscfncli2.config import StackKey
+from cfncli import config
+from cfncli.config import StackKey
 
 @pytest.fixture
 def data_dir(tmpdir):

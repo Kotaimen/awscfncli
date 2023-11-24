@@ -24,11 +24,11 @@ Highlights:
 
 Install from [pypi](https://pypi.python.org/pypi/awscfncli):
 
-    pip install --user --pre awscfncli2 
+    pip install --user --pre cfncli 
 
 When install globally, use [`pipx`](https://github.com/pipxproject/pipx) is recommended:
 
-    pipx install awscfncli2 
+    pipx install cfncli 
 
 ## Usage
 

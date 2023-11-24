@@ -1,4 +1,4 @@
-from awscfncli2.runner import StackSelector
+from cfncli.runner import StackSelector
 
 
 class TestStackSelector(object):

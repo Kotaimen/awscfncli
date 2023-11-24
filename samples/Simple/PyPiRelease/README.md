@@ -1,6 +1,6 @@
 # PyPi Release
 
-`awscfncli2`'s automatic PyPi release pipeline.
+`cfncli`'s automatic PyPi release pipeline.
 
 Required out-of-stack resources:
    

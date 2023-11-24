@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from awscfncli2.runner.runbook.package import generate_tempfile
+from cfncli.runner.runbook.package import generate_tempfile
 
 
 class TestPackage(object):

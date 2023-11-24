@@ -27,16 +27,16 @@ deploy: build
 	twine upload --verbose dist/*
 
 lint:
-	#black --check awscfncli2/* tests/*
-	bandit -r awscfncli2 -c bandit
+	#black --check cfncli/* tests/*
+	bandit -r cfncli -c bandit
 	flake8 --format=pylint
-	pylint awscfncli2
+	pylint cfncli
 
 test: build
 	pytest -v tests/unit tests/int
 
 #format:
-	#black awscfncli2/* tests/*
+	#black cfncli/* tests/*
 
 
 define HELP_MESSAGE

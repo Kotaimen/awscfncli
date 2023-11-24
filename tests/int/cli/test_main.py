@@ -2,8 +2,8 @@ import os
 from unittest.mock import patch
 import click.testing
 
-from awscfncli2.cli.main import cli
-from awscfncli2.cli.context import Context
+from cfncli.cli.main import cli
+from cfncli.cli.context import Context
 
 
 def test_main():

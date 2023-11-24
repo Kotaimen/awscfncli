@@ -3,25 +3,25 @@ from unittest.mock import patch
 import click.testing
 import pytest
 
-from awscfncli2.cli.context import Context
-from awscfncli2.cli.main import cli
-from awscfncli2.runner.commands.stack_delete_command import (
+from cfncli.cli.context import Context
+from cfncli.cli.main import cli
+from cfncli.runner.commands.stack_delete_command import (
     StackDeleteCommand,
     StackDeleteOptions,
 )
-from awscfncli2.runner.commands.stack_deploy_command import (
+from cfncli.runner.commands.stack_deploy_command import (
     StackDeployCommand,
     StackDeployOptions,
 )
-from awscfncli2.runner.commands.stack_status_command import (
+from cfncli.runner.commands.stack_status_command import (
     StackStatusCommand,
     StackStatusOptions,
 )
-from awscfncli2.runner.commands.stack_sync_command import (
+from cfncli.runner.commands.stack_sync_command import (
     StackSyncCommand,
     StackSyncOptions,
 )
-from awscfncli2.runner.commands.stack_update_command import (
+from cfncli.runner.commands.stack_update_command import (
     StackUpdateCommand,
     StackUpdateOptions,
 )

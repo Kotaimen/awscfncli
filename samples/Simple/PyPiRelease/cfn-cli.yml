@@ -6,7 +6,7 @@ Stages:
 
     ReleasePipeline:
       Order: 1
-      StackName: Awscfncli2-PyPiRelease
+      StackName: cfncli-PyPiRelease
       Template: PyPiRelease.template.yaml
       Region: us-west-2
       StackPolicy: ALLOW_ALL

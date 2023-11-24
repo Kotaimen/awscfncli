@@ -60,11 +60,11 @@ setup(
     python_requires='>=3.7',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={
-        'awscfncli2.config': ['*.json', '*.yaml']
+        'cfncli.config': ['*.json', '*.yaml']
     },
     install_requires=install_requires,
     entry_points='''
     [console_scripts]
-    cfn-cli=awscfncli2.__main__:main
+    cfn-cli=cfncli.__main__:main
     ''',
 )

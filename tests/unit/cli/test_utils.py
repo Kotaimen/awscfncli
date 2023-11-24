@@ -1,4 +1,4 @@
-from awscfncli2.cli.utils.colormaps import STACK_STATUS_TO_COLOR
+from cfncli.cli.utils.colormaps import STACK_STATUS_TO_COLOR
 
 
 def test_stack_status_to_color():

@@ -1,4 +1,4 @@
-from awscfncli2.runner import Boto3Profile
+from cfncli.runner import Boto3Profile
 
 
 class TestStackSelector(object):

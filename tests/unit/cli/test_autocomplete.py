@@ -1,7 +1,7 @@
 import os
 
-from awscfncli2.cli.autocomplete import stack_auto_complete
-from awscfncli2.config import ANNOTATED_SAMPLE_CONFIG
+from cfncli.cli.autocomplete import stack_auto_complete
+from cfncli.config import ANNOTATED_SAMPLE_CONFIG
 
 
 def test_stack_auto_complete(tmp_path):

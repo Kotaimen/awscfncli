@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from awscfncli2.config import find_default_config
+from cfncli.config import find_default_config
 
 
 def test_default_config_empty(tmp_path):
