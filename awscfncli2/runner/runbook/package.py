@@ -4,29 +4,20 @@ import logging
 import os
 import tempfile
 
-from awscli.customizations.cloudformation import exceptions
-from awscli.customizations.cloudformation.artifact_exporter import Template, \
+##
+## Please see README.md for the reasoning behind the use of these external libraries
+## and why they are maintined in our repo vs used as a dependency.
+##
+
+from awscfncli2.ext_customizations.cloudformation import exceptions
+from awscfncli2.ext_customizations.cloudformation.artifact_exporter import Template, \
     Resource, make_abs_path
-from awscli.customizations.s3uploader import S3Uploader
-from awscli.customizations.cloudformation.yamlhelper import yaml_dump
+from awscfncli2.ext_customizations.s3uploader.s3uploader import S3Uploader
+from awscfncli2.ext_customizations.cloudformation.yamlhelper import yaml_dump
 from botocore.exceptions import ClientError
+from awscfncli2.ext_customizations.cloudformation.artifact_exporter import \
+    RESOURCES_EXPORT_LIST as EXPORTS
 
-# Before 1.11.16, unsupported now
-# from awscli.customizations.cloudformation.s3uploader import S3Uploader
-
-try:
-
-    from awscli.customizations.cloudformation.artifact_exporter import \
-        RESOURCES_EXPORT_LIST as EXPORTS
-except ImportError:
-    try:
-        # for awscli < 1.16.77
-        from awscli.customizations.cloudformation.artifact_exporter import \
-            EXPORT_LIST as EXPORTS
-    except ImportError:
-        # for awscli < 1.16.23
-        from awscli.customizations.cloudformation.artifact_exporter import \
-            EXPORT_DICT as EXPORTS
 
 from ...config import ConfigError
 

@@ -4,40 +4,41 @@ import os
 
 from setuptools import setup, find_packages
 
-__author__ = 'kotaimen'
-__date__ = '22-Feb-2018'
+__author__ = 'andyfase'
+__date__ = '23-Nov-2023'
 
-here = os.path.abspath(os.path.dirname(__file__))
+# here = os.path.abspath(os.path.dirname(__file__))
 
 long_description = open('README.md').read()
 
 install_requires = [
-    'botocore>=1.17,<2',
-    'boto3>=1.14,<2',
-    'awscli>=1.18,<2',
-    'click>=7.0,<8',
-    'click_completion==0.5.2',
-    'PyYAML>=5,<6',
-    'jsonschema>=3,<6',
-    'backoff>=1.10.0,<2'
+    'backoff>2.2',
+    'boto3>1.29',
+    'botocore>1.32',
+    'click>8',
+    'click-completion>0.5',
+    'colorama>0.4',
+    'jsonschema>4',
+    'pyyaml>6',
+    's3transfer>=0.7'
 ]
 
 setup(
     # Project Name
-    name='awscfncli2',
+    name='cfncli',
 
     # Version and description
-    version='3.1.1',
-    description='AWS CloudFormation CLI',
+    version='0.0.5',
+    description='CloudFormation CLI Wrapper',
     long_description=long_description,
     long_description_content_type='text/markdown',
 
     # Author details
-    author='Kotaimen, Ray',
-    author_email='kotaimen.c@gmail.com, gliese.q@gmail.com',
+    author='Fase, Andy',
+    author_email='andyfase@gmail.com',
 
     # Project home
-    url='https://github.com/Kotaimen/awscfncli',
+    url='https://github.com/andyfase/cfncli',
 
     # License detail
     license='MIT',
@@ -46,9 +47,8 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -56,7 +56,7 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'Topic :: Utilities',
     ],
-    keywords='aws cfn cli awscfncli cloudformation changeset sam serverless',
+    keywords='aws cfn cli cloudformation changeset sam serverless',
     python_requires='>=3.7',
     packages=find_packages(exclude=['tests.*', 'tests']),
     package_data={

@@ -1,10 +1,2 @@
--i https://pypi.org/simple
-awscli @ git+https://github.com/aws/aws-cli.git@v2
-backoff==2.2.1
-boto3==1.29.6
-botocore==1.32.6
-click==8.1.7
-click-completion==0.5.2
-colorama==0.4.6
-jsonschema==4.20.0
-pyyaml==6.0.1
+--index-url https://pypi.python.org/simple/
+-e .
